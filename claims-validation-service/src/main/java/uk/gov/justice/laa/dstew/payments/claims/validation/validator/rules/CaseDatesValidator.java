@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import uk.gov.justice.laa.dstew.payments.claims.model.AreaOfLaw;
 import uk.gov.justice.laa.dstew.payments.claims.model.Claim;
 import uk.gov.justice.laa.dstew.payments.claims.model.ValidationIssue;
 import uk.gov.justice.laa.dstew.payments.claims.validation.validator.ValidationContext;
@@ -35,7 +36,7 @@ public class CaseDatesValidator implements ClaimValidator {
            claim.getCaseStartDate(), OLDEST_DATE_ALLOWED));
 
     // Case Concluded Date - depends on area of law
-    String areaOfLaw = claim.getAreaOfLaw() != null ? claim.getAreaOfLaw().getValue() : null;
+    AreaOfLaw areaOfLaw = claim.getAreaOfLaw();
     LocalDate earliestConcludedDate = getEarliestCaseConcludedDate(areaOfLaw);
     issues.addAll(checkDateNotInFutureAndWithinAllowedPeriod(
         "Case Concluded Date", claim.getCaseConcludedDate(), earliestConcludedDate));
@@ -51,8 +52,8 @@ public class CaseDatesValidator implements ClaimValidator {
     return issues;
   }
 
-  private LocalDate getEarliestCaseConcludedDate(String areaOfLaw) {
-    if ("CRIME_LOWER".equalsIgnoreCase(areaOfLaw)) {
+  private LocalDate getEarliestCaseConcludedDate(AreaOfLaw areaOfLaw) {
+    if (areaOfLaw == AreaOfLaw.CRIME_LOWER) {
       return MIN_REP_ORDER_DATE;
     }
     return EARLIEST_CASE_CONCLUDED_DATE;

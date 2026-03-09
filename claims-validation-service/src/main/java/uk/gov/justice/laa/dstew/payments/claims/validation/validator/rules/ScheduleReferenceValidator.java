@@ -7,7 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.gov.justice.laa.dstew.payments.claims.model.Claim;
 import uk.gov.justice.laa.dstew.payments.claims.model.ValidationIssue;
-import uk.gov.justice.laa.dstew.payments.claims.model.ValidationSeverity;
+import uk.gov.justice.laa.dstew.payments.claims.validation.error.ClaimValidationError;
 import uk.gov.justice.laa.dstew.payments.claims.validation.validator.ValidationContext;
 
 /**
@@ -35,10 +35,7 @@ public class ScheduleReferenceValidator implements ClaimValidator {
     log.debug("Validating schedule reference: {}", scheduleRef);
 
     if (!SCHEDULE_REF_PATTERN.matcher(scheduleRef).matches()) {
-      issues.add(new ValidationIssue(
-          "INVALID_SCHEDULE_REFERENCE",
-          "Schedule reference '" + scheduleRef + "' has an invalid format",
-          ValidationSeverity.ERROR));
+      issues.add(ClaimValidationError.INVALID_SCHEDULE_REFERENCE.toValidationIssue());
     }
 
     return issues;

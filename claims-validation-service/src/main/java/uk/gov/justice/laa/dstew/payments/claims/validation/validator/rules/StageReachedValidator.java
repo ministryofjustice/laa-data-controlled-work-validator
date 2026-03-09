@@ -5,9 +5,10 @@ import java.util.List;
 import java.util.regex.Pattern;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import uk.gov.justice.laa.dstew.payments.claims.model.AreaOfLaw;
 import uk.gov.justice.laa.dstew.payments.claims.model.Claim;
 import uk.gov.justice.laa.dstew.payments.claims.model.ValidationIssue;
-import uk.gov.justice.laa.dstew.payments.claims.model.ValidationSeverity;
+import uk.gov.justice.laa.dstew.payments.claims.validation.error.ClaimValidationError;
 import uk.gov.justice.laa.dstew.payments.claims.validation.validator.ValidationContext;
 
 /**
@@ -31,30 +32,26 @@ public class StageReachedValidator implements ClaimValidator {
       return issues; // Optional field
     }
 
-    String areaOfLaw = claim.getAreaOfLaw() != null ? claim.getAreaOfLaw().getValue() : null;
+    AreaOfLaw areaOfLaw = claim.getAreaOfLaw();
 
     log.debug("Validating stage reached: {} for area of law: {}", stageReached, areaOfLaw);
 
     Pattern pattern = getPattern(areaOfLaw);
     if (pattern != null && !pattern.matcher(stageReached).matches()) {
-      issues.add(new ValidationIssue(
-          "INVALID_STAGE_REACHED",
-          "Stage reached code '" + stageReached
-              + "' does not match expected pattern for " + areaOfLaw,
-          ValidationSeverity.ERROR));
+      issues.add(ClaimValidationError.INVALID_STAGE_REACHED.toValidationIssue());
     }
 
     return issues;
   }
 
-  private Pattern getPattern(String areaOfLaw) {
+  private Pattern getPattern(AreaOfLaw areaOfLaw) {
     if (areaOfLaw == null) {
       return null;
     }
 
-    return switch (areaOfLaw.toUpperCase()) {
-      case "LEGAL_HELP" -> LEGAL_HELP_PATTERN;
-      case "CRIME_LOWER" -> CRIME_LOWER_PATTERN;
+    return switch (areaOfLaw) {
+      case LEGAL_HELP -> LEGAL_HELP_PATTERN;
+      case CRIME_LOWER -> CRIME_LOWER_PATTERN;
       default -> null; // No validation for other areas
     };
   }

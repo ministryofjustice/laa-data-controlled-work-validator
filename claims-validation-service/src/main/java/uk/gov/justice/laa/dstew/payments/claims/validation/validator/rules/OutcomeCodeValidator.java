@@ -7,7 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.gov.justice.laa.dstew.payments.claims.model.Claim;
 import uk.gov.justice.laa.dstew.payments.claims.model.ValidationIssue;
-import uk.gov.justice.laa.dstew.payments.claims.model.ValidationSeverity;
+import uk.gov.justice.laa.dstew.payments.claims.validation.error.ClaimValidationError;
 import uk.gov.justice.laa.dstew.payments.claims.validation.validator.ValidationContext;
 
 /**
@@ -40,10 +40,7 @@ public class OutcomeCodeValidator implements ClaimValidator {
     log.debug("Validating outcome code: {}", outcomeCode);
 
     if (!VALID_OUTCOME_CODES.contains(outcomeCode)) {
-      issues.add(new ValidationIssue(
-          "INVALID_OUTCOME_CODE",
-          "Outcome code '" + outcomeCode + "' is not valid",
-          ValidationSeverity.ERROR));
+      issues.add(ClaimValidationError.INVALID_OUTCOME_CODE.toValidationIssue(outcomeCode));
     }
 
     return issues;

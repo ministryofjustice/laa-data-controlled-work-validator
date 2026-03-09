@@ -5,10 +5,9 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import uk.gov.justice.laa.dstew.payments.claims.model.ValidationIssue;
-import uk.gov.justice.laa.dstew.payments.claims.model.ValidationSeverity;
+import uk.gov.justice.laa.dstew.payments.claims.validation.error.ClaimValidationError;
 
 /**
  * Utility class for date validation operations.
@@ -44,22 +43,13 @@ public final class DateValidationUtils {
       LocalDate date = LocalDate.parse(dateValue, DATE_FORMATTER_YYYY_MM_DD);
 
       if (date.isAfter(LocalDate.now())) {
-        issues.add(new ValidationIssue(
-            "INVALID_" + toErrorCode(fieldName),
-            fieldName + " must be in the past",
-            ValidationSeverity.ERROR));
+        issues.add(getDateError(fieldName, "must be in the past"));
       } else if (date.isBefore(minDate)) {
-        issues.add(new ValidationIssue(
-            "INVALID_" + toErrorCode(fieldName),
-            fieldName + " must be after " + minDate,
-            ValidationSeverity.ERROR));
+        issues.add(getDateError(fieldName, "must be after " + minDate));
       }
     } catch (DateTimeParseException e) {
       log.debug("Failed to parse date for {}: {}", fieldName, dateValue);
-      issues.add(new ValidationIssue(
-          "INVALID_" + toErrorCode(fieldName) + "_FORMAT",
-          fieldName + " has an invalid date format",
-          ValidationSeverity.ERROR));
+      issues.add(ClaimValidationError.INVALID_DATE_FORMAT.toValidationIssue(fieldName));
     }
 
     return issues;
@@ -85,44 +75,29 @@ public final class DateValidationUtils {
       LocalDate date = LocalDate.parse(dateValue, DATE_FORMATTER_YYYY_MM_DD);
 
       if (date.isAfter(LocalDate.now())) {
-        issues.add(new ValidationIssue(
-            "INVALID_" + toErrorCode(fieldName),
-            fieldName + " cannot be in the future",
-            ValidationSeverity.ERROR));
+        issues.add(getDateError(fieldName, "cannot be in the future"));
       } else if (date.isBefore(earliestAllowed)) {
-        issues.add(new ValidationIssue(
-            "INVALID_" + toErrorCode(fieldName),
-            fieldName + " must be on or after " + earliestAllowed,
-            ValidationSeverity.ERROR));
+        issues.add(getDateError(fieldName, "must be on or after " + earliestAllowed));
       }
     } catch (DateTimeParseException e) {
       log.debug("Failed to parse date for {}: {}", fieldName, dateValue);
-      issues.add(new ValidationIssue(
-          "INVALID_" + toErrorCode(fieldName) + "_FORMAT",
-          fieldName + " has an invalid date format",
-          ValidationSeverity.ERROR));
+      issues.add(ClaimValidationError.INVALID_DATE_FORMAT.toValidationIssue(fieldName));
     }
 
     return issues;
   }
 
   /**
-   * Gets a string value from a claim map.
-   *
-   * @param claim the claim map
-   * @param fieldName the field name
-   * @return the string value or null
+   * Gets the appropriate date validation error for a field.
    */
-  public static String getStringValue(Map<String, Object> claim, String fieldName) {
-    Object value = claim.get(fieldName);
-    return value != null ? value.toString() : null;
-  }
-
-  /**
-   * Converts a field name to an error code format.
-   * e.g., "Case Start Date" -> "CASE_START_DATE"
-   */
-  private static String toErrorCode(String fieldName) {
-    return fieldName.toUpperCase().replaceAll("\\s+", "_");
+  private static ValidationIssue getDateError(String fieldName, String reason) {
+    return switch (fieldName) {
+      case "Case Start Date" -> ClaimValidationError.INVALID_CASE_START_DATE.toValidationIssue(reason);
+      case "Case Concluded Date" -> ClaimValidationError.INVALID_CASE_CONCLUDED_DATE.toValidationIssue(reason);
+      case "Transfer Date" -> ClaimValidationError.INVALID_TRANSFER_DATE.toValidationIssue(reason);
+      case "Representation Order Date" -> ClaimValidationError.INVALID_REPRESENTATION_ORDER_DATE.toValidationIssue(reason);
+      case "Client Date of Birth", "Client 2 Date of Birth" -> ClaimValidationError.INVALID_CLIENT_DATE_OF_BIRTH.toValidationIssue(reason);
+      default -> ClaimValidationError.INVALID_DATE_FORMAT.toValidationIssue(fieldName + " " + reason);
+    };
   }
 }

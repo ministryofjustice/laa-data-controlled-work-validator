@@ -1,13 +1,15 @@
 package uk.gov.justice.laa.dstew.payments.claims.validation.validator.rules;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import uk.gov.justice.laa.dstew.payments.claims.model.AreaOfLaw;
 import uk.gov.justice.laa.dstew.payments.claims.model.Claim;
 import uk.gov.justice.laa.dstew.payments.claims.model.ValidationIssue;
-import uk.gov.justice.laa.dstew.payments.claims.model.ValidationSeverity;
+import uk.gov.justice.laa.dstew.payments.claims.validation.error.ClaimValidationError;
 import uk.gov.justice.laa.dstew.payments.claims.validation.validator.ValidationContext;
 
 /**
@@ -39,30 +41,27 @@ public class MatterTypeValidator implements ClaimValidator {
     }
 
     matterType = matterType.toUpperCase();
-    String areaOfLaw = claim.getAreaOfLaw() != null ? claim.getAreaOfLaw().getValue() : null;
+    AreaOfLaw areaOfLaw = claim.getAreaOfLaw();
 
     log.debug("Validating matter type: {} for area of law: {}", matterType, areaOfLaw);
 
     Set<String> validTypes = getValidMatterTypes(areaOfLaw);
     if (validTypes != null && !validTypes.contains(matterType)) {
-      issues.add(new ValidationIssue(
-          "INVALID_MATTER_TYPE_CODE",
-          "Matter type code '" + matterType
-              + "' is not valid for area of law: " + areaOfLaw,
-          ValidationSeverity.ERROR));
+      issues.add(ClaimValidationError.INVALID_MATTER_TYPE_CODE
+          .toValidationIssue(matterType + " for area of law: " + areaOfLaw));
     }
 
     return issues;
   }
 
-  private Set<String> getValidMatterTypes(String areaOfLaw) {
+  private Set<String> getValidMatterTypes(AreaOfLaw areaOfLaw) {
     if (areaOfLaw == null) {
-      return null; // No validation without area of law
+      return Collections.emptySet(); // No validation without area of law
     }
 
-    return switch (areaOfLaw.toUpperCase()) {
-      case "LEGAL_HELP" -> VALID_LEGAL_HELP_MATTER_TYPES;
-      case "CRIME_LOWER" -> VALID_CRIME_LOWER_MATTER_TYPES;
+    return switch (areaOfLaw) {
+      case LEGAL_HELP -> VALID_LEGAL_HELP_MATTER_TYPES;
+      case CRIME_LOWER -> VALID_CRIME_LOWER_MATTER_TYPES;
       default -> null;
     };
   }

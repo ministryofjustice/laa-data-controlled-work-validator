@@ -6,6 +6,7 @@ import java.util.function.Predicate;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import uk.gov.justice.laa.dstew.payments.claims.model.AreaOfLaw;
 import uk.gov.justice.laa.dstew.payments.claims.model.Claim;
 import uk.gov.justice.laa.dstew.payments.claims.model.ValidationIssue;
 import uk.gov.justice.laa.dstew.payments.claims.validation.validator.ValidationContext;
@@ -26,12 +27,12 @@ public class DuplicateClaimValidator implements ClaimValidator {
   public List<ValidationIssue> validate(Claim claim, ValidationContext context) {
     List<ValidationIssue> issues = new ArrayList<>();
 
-    if (claim.getAreaOfLaw() == null) {
+    AreaOfLaw areaOfLaw = claim.getAreaOfLaw();
+    if (areaOfLaw == null) {
       log.debug("No area of law set, skipping duplicate claim validation");
       return issues;
     }
 
-    String areaOfLaw = claim.getAreaOfLaw().getValue();
     String officeCode = claim.getOfficeAccountNumber();
     List<Claim> submissionClaims = context.getRelatedClaims();
     String feeType = claim.getFeeCode(); // TODO: Confirm if this should be fee calculation type
@@ -40,7 +41,7 @@ public class DuplicateClaimValidator implements ClaimValidator {
 
     // Find strategies compatible with this area of law
     Predicate<DuplicateClaimValidationStrategy> areaOfLawPredicate =
-        strategy -> strategy.compatibleAreaOfLaws().contains(claim.getAreaOfLaw());
+        strategy -> strategy.compatibleAreaOfLaws().contains(areaOfLaw);
 
     List<DuplicateClaimValidationStrategy> compatibleStrategies =
         strategyList.stream().filter(areaOfLawPredicate).toList();

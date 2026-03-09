@@ -2,7 +2,9 @@ package uk.gov.justice.laa.dstew.payments.claims.validation.service;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -41,8 +43,8 @@ public class ValidationService {
     // Build validation context
     ValidationContext context = buildValidationContext(request);
 
-    // Collect all validation issues
-    List<ValidationIssue> issues = new ArrayList<>();
+    // Collect unique validation issues (LinkedHashSet preserves insertion order)
+    Set<ValidationIssue> issues = new LinkedHashSet<>();
 
     // Run all validators in priority order
     validators.stream()
@@ -64,7 +66,7 @@ public class ValidationService {
 
     ValidationResult result = new ValidationResult();
     result.setIsValid(isValid);
-    result.setIssues(issues);
+    result.setIssues(new ArrayList<>(issues));
     return result;
   }
 

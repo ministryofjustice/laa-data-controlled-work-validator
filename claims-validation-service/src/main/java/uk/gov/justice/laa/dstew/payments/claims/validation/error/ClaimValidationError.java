@@ -22,27 +22,32 @@ public enum ClaimValidationError {
 
   // Date validation errors
   INVALID_CASE_START_DATE(
-      "Case start date must be in the past",
+      "Case start date is invalid: %s",
       null,
       "DATE",
       ValidationSeverity.ERROR),
   INVALID_CASE_CONCLUDED_DATE(
-      "Case concluded date must be after case start date",
+      "Case concluded date is invalid: %s",
       null,
       "DATE",
       ValidationSeverity.ERROR),
   INVALID_TRANSFER_DATE(
-      "Transfer date must be between case start date and case concluded date",
+      "Transfer date is invalid: %s",
       null,
       "DATE",
       ValidationSeverity.ERROR),
   INVALID_REPRESENTATION_ORDER_DATE(
-      "Representation order date must be in the past",
+      "Representation order date is invalid: %s",
       null,
       "DATE",
       ValidationSeverity.ERROR),
   INVALID_CLIENT_DATE_OF_BIRTH(
-      "Client date of birth must be in the past",
+      "Client date of birth is invalid: %s",
+      null,
+      "DATE",
+      ValidationSeverity.ERROR),
+  INVALID_DATE_FORMAT(
+      "%s has an invalid date format",
       null,
       "DATE",
       ValidationSeverity.ERROR),

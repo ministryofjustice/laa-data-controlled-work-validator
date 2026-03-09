@@ -5,9 +5,10 @@ import java.util.ArrayList;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import uk.gov.justice.laa.dstew.payments.claims.model.AreaOfLaw;
 import uk.gov.justice.laa.dstew.payments.claims.model.Claim;
 import uk.gov.justice.laa.dstew.payments.claims.model.ValidationIssue;
-import uk.gov.justice.laa.dstew.payments.claims.model.ValidationSeverity;
+import uk.gov.justice.laa.dstew.payments.claims.validation.error.ClaimValidationError;
 import uk.gov.justice.laa.dstew.payments.claims.validation.validator.ValidationContext;
 
 /**
@@ -33,28 +34,25 @@ public class DisbursementsValidator implements ClaimValidator {
       return issues; // No VAT amount to validate
     }
 
-    String areaOfLaw = claim.getAreaOfLaw() != null ? claim.getAreaOfLaw().getValue() : null;
+    AreaOfLaw areaOfLaw = claim.getAreaOfLaw();
     BigDecimal maxAllowed = getMaxVatAmount(areaOfLaw);
 
     if (vatAmount.compareTo(maxAllowed) > 0) {
-      issues.add(new ValidationIssue(
-          "INVALID_DISBURSEMENT_VAT_AMOUNT",
-          "Disbursements VAT Amount has exceeded the maximum accepted value",
-          ValidationSeverity.ERROR));
+      issues.add(ClaimValidationError.INVALID_DISBURSEMENT_VAT_AMOUNT.toValidationIssue());
     }
 
     log.debug("Disbursements validation completed, found {} issues", issues.size());
     return issues;
   }
 
-  private BigDecimal getMaxVatAmount(String areaOfLaw) {
+  private BigDecimal getMaxVatAmount(AreaOfLaw areaOfLaw) {
     if (areaOfLaw == null) {
       return MAX_VAT_LEGAL_HELP; // Default
     }
 
-    return switch (areaOfLaw.toUpperCase()) {
-      case "CRIME_LOWER" -> MAX_VAT_CRIME_LOWER;
-      case "MEDIATION" -> MAX_VAT_MEDIATION;
+    return switch (areaOfLaw) {
+      case CRIME_LOWER -> MAX_VAT_CRIME_LOWER;
+      case MEDIATION -> MAX_VAT_MEDIATION;
       default -> MAX_VAT_LEGAL_HELP;
     };
   }

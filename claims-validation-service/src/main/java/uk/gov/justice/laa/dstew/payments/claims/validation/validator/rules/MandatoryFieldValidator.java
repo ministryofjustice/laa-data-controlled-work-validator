@@ -27,6 +27,7 @@ public class MandatoryFieldValidator implements ClaimValidator {
     if (claim.getAreaOfLaw() == null) {
       issues.add(ClaimValidationError.MISSING_MANDATORY_FIELD.toValidationIssue("areaOfLaw"));
     }
+
     if (!hasValue(claim.getOfficeAccountNumber())) {
       issues.add(ClaimValidationError.MISSING_MANDATORY_FIELD
           .toValidationIssue("officeAccountNumber"));
