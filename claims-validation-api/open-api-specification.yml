@@ -44,8 +44,22 @@ components:
           $ref: '#/components/schemas/Claim'
         scope:
           type: string
-          description: Optional validation scope (e.g., "fee")
+          description: Optional validation scope (e.g., "fee", "disbursement", "all")
           example: "fee"
+        areaOfLaw:
+          type: string
+          description: Area of law for the submission
+          enum: [LEGAL_HELP, CRIME_LOWER, MEDIATION]
+          example: "LEGAL_HELP"
+        officeAccountNumber:
+          type: string
+          description: Provider office account number
+          example: "1A234B"
+        relatedClaims:
+          type: array
+          description: Other claims in the same submission (for duplicate checking)
+          items:
+            $ref: '#/components/schemas/Claim'
 
     Claim:
       type: object

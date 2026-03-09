@@ -19,6 +19,6 @@ pluginManagement {
     }
 }
 
-rootProject.name = 'laa-spring-boot-microservice-template'
+rootProject.name = 'laa-claims-validation-api'
 
 include 'claims-validation-service', 'claims-validation-api'

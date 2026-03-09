@@ -18,6 +18,12 @@ public class WebClientConfig {
   @Value("${external.validation.base-url:http://localhost:8080}")
   private String baseUrl;
 
+  @Value("${external.fee-scheme.base-url:http://localhost:8081}")
+  private String feeSchemeBaseUrl;
+
+  @Value("${external.data-claims.base-url:http://localhost:8082}")
+  private String dataClaimsBaseUrl;
+
   @Value("${external.validation.connect-timeout-ms:5000}")
   private int connectTimeoutMs;
 
@@ -31,6 +37,30 @@ public class WebClientConfig {
    */
   @Bean
   public WebClient externalValidationWebClient() {
+    return createWebClient(baseUrl);
+  }
+
+  /**
+   * Creates a WebClient for Fee Scheme Platform API calls.
+   *
+   * @return the configured WebClient
+   */
+  @Bean
+  public WebClient feeSchemeWebClient() {
+    return createWebClient(feeSchemeBaseUrl);
+  }
+
+  /**
+   * Creates a WebClient for Data Claims API calls (duplicate checking).
+   *
+   * @return the configured WebClient
+   */
+  @Bean
+  public WebClient dataClaimsWebClient() {
+    return createWebClient(dataClaimsBaseUrl);
+  }
+
+  private WebClient createWebClient(String baseUrl) {
     HttpClient httpClient = HttpClient.create()
         .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, connectTimeoutMs)
         .responseTimeout(Duration.ofMillis(readTimeoutMs));
@@ -41,4 +71,3 @@ public class WebClientConfig {
         .build();
   }
 }
-

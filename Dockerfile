@@ -2,11 +2,11 @@
 FROM amazoncorretto:21-alpine
 
 # Set up working directory in the container
-RUN mkdir -p /opt/laa-spring-boot-microservice/
-WORKDIR /opt/laa-spring-boot-microservice/
+RUN mkdir -p /opt/laa-claims-validation/
+WORKDIR /opt/laa-claims-validation/
 
 # Copy the JAR file into the container
-COPY spring-boot-microservice-service/build/libs/spring-boot-microservice-service-1.0.0.jar app.jar
+COPY claims-validation-service/build/libs/claims-validation-service-1.0.0.jar app.jar
 
 # Create a group and non-root user
 RUN addgroup -S appgroup && adduser -u 1001 -S appuser -G appgroup
@@ -18,4 +18,4 @@ USER 1001
 EXPOSE 8081 8181
 
 # Run the JAR file
-CMD java -jar app.jar
+CMD ["java", "-jar", "app.jar"]

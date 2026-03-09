@@ -1,81 +1,53 @@
 package uk.gov.justice.laa.dstew.payments.claims.validation.validator;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
 import uk.gov.justice.laa.dstew.payments.claims.model.ValidationIssue;
 
 /**
- * Validator for applying business rules to claims.
+ * Interface for validation rules that can be applied to claims.
+ * Implementations should define specific business rules and return
+ * any validation issues found.
+ *
+ * <p>This is a stateless interface - validators receive all required
+ * data as parameters and return results without side effects.</p>
  */
-@Component
-@Slf4j
-public class ClaimValidator {
+public interface ClaimValidator {
 
   /**
-   * Validates the given claim based on the provided scope.
+   * Validates the given claim and returns any issues found.
    *
-   * @param claim the claim to validate (as a Map)
-   * @param scope the optional validation scope (e.g., "fee")
-   * @return a list of validation issues found
+   * @param claim the claim data as a Map
+   * @param context additional context needed for validation
+   * @return a list of validation issues found, or an empty list if valid
    */
-  public List<ValidationIssue> validate(Map<String, Object> claim, String scope) {
-    List<ValidationIssue> issues = new ArrayList<>();
+  List<ValidationIssue> validate(Map<String, Object> claim, ValidationContext context);
 
-    log.debug("Running validation for scope: {}", scope);
-
-    // TODO: Implement business rules based on scope
-    // Apply fee-specific rules if scope is "fee"
-    if ("fee".equalsIgnoreCase(scope)) {
-      issues.addAll(validateFeeRules(claim));
-    }
-
-    // TODO: Add additional scope-based validation rules here
-    // Apply general claim validation rules
-    issues.addAll(validateGeneralRules(claim));
-
-    return issues;
+  /**
+   * Returns the priority of this validator.
+   * Lower values run first. Schema validation should be 0,
+   * basic field validation 10-50, complex business rules 100+.
+   *
+   * @return the priority value
+   */
+  default int priority() {
+    return 100;
   }
 
   /**
-   * Validates fee-specific business rules.
+   * Returns whether this validator should run for the given scope.
    *
-   * @param claim the claim to validate
-   * @return a list of fee-related validation issues
+   * @param scope the validation scope (e.g., "fee", "disbursement")
+   * @return true if this validator applies to the scope
    */
-  private List<ValidationIssue> validateFeeRules(Map<String, Object> claim) {
-    List<ValidationIssue> issues = new ArrayList<>();
-
-    // TODO: Implement fee validation rules
-    // Example: Check for missing justification on enhancement fees
-    // if (claim has enhancement fee without justification) {
-    //   issues.add(ValidationIssue.builder()
-    //       .code("FEE.MISSING_JUSTIFICATION")
-    //       .message("Enhancement fee requires a justification.")
-    //       .path(List.of("fees", 0, "justification"))
-    //       .severity(ValidationIssue.SeverityEnum.ERROR)
-    //       .build());
-    // }
-
-    log.debug("Fee validation completed, found {} issues", issues.size());
-    return issues;
+  default boolean appliesTo(String scope) {
+    return true; // By default, validators apply to all scopes
   }
 
   /**
-   * Validates general claim business rules.
+   * Returns a unique code identifying this validator.
    *
-   * @param claim the claim to validate
-   * @return a list of general validation issues
+   * @return the validator code
    */
-  private List<ValidationIssue> validateGeneralRules(Map<String, Object> claim) {
-    List<ValidationIssue> issues = new ArrayList<>();
-
-    // TODO: Implement general validation rules
-    // Example: Check for required fields, date consistency, etc.
-
-    log.debug("General validation completed, found {} issues", issues.size());
-    return issues;
-  }
+  String getValidatorCode();
 }

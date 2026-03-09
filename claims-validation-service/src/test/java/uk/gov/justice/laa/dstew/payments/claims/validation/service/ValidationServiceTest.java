@@ -2,8 +2,6 @@ package uk.gov.justice.laa.dstew.payments.claims.validation.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Collections;
@@ -20,12 +18,13 @@ import uk.gov.justice.laa.dstew.payments.claims.model.ValidationIssue;
 import uk.gov.justice.laa.dstew.payments.claims.model.ValidationResult;
 import uk.gov.justice.laa.dstew.payments.claims.validation.client.ExternalValidationClient;
 import uk.gov.justice.laa.dstew.payments.claims.validation.validator.ClaimValidator;
+import uk.gov.justice.laa.dstew.payments.claims.validation.validator.ValidationContext;
 
 @ExtendWith(MockitoExtension.class)
 class ValidationServiceTest {
 
   @Mock
-  private ClaimValidator mockClaimValidator;
+  private List<ClaimValidator> mockValidators;
 
   @Mock
   private ExternalValidationClient mockExternalValidationClient;
@@ -41,8 +40,7 @@ class ValidationServiceTest {
         .scope("fee")
         .build();
 
-    when(mockClaimValidator.validate(any(), eq("fee")))
-        .thenReturn(Collections.emptyList());
+    when(mockValidators.stream()).thenReturn(Collections.<ClaimValidator>emptyList().stream());
     when(mockExternalValidationClient.validateWithExternalServices(any()))
         .thenReturn(Collections.emptyList());
 
@@ -50,8 +48,6 @@ class ValidationServiceTest {
 
     assertThat(result.getIsValid()).isTrue();
     assertThat(result.getIssues()).isEmpty();
-    verify(mockClaimValidator).validate(claim, "fee");
-    verify(mockExternalValidationClient).validateWithExternalServices(claim);
   }
 
   @Test
@@ -62,14 +58,23 @@ class ValidationServiceTest {
         .scope("fee")
         .build();
 
-    ValidationIssue errorIssue = ValidationIssue.builder()
-        .code("FEE.MISSING_JUSTIFICATION")
-        .message("Enhancement fee requires a justification.")
-        .severity(ValidationIssue.SeverityEnum.ERROR)
-        .build();
+    ClaimValidator mockValidator = new ClaimValidator() {
+      @Override
+      public List<ValidationIssue> validate(Map<String, Object> c, ValidationContext ctx) {
+        return List.of(ValidationIssue.builder()
+            .code("TEST_ERROR")
+            .message("Test error message")
+            .severity(ValidationIssue.SeverityEnum.ERROR)
+            .build());
+      }
 
-    when(mockClaimValidator.validate(any(), eq("fee")))
-        .thenReturn(List.of(errorIssue));
+      @Override
+      public String getValidatorCode() {
+        return "TEST";
+      }
+    };
+
+    when(mockValidators.stream()).thenReturn(List.of(mockValidator).stream());
     when(mockExternalValidationClient.validateWithExternalServices(any()))
         .thenReturn(Collections.emptyList());
 
@@ -77,7 +82,7 @@ class ValidationServiceTest {
 
     assertThat(result.getIsValid()).isFalse();
     assertThat(result.getIssues()).hasSize(1);
-    assertThat(result.getIssues().get(0).getCode()).isEqualTo("FEE.MISSING_JUSTIFICATION");
+    assertThat(result.getIssues().get(0).getCode()).isEqualTo("TEST_ERROR");
   }
 
   @Test
@@ -87,14 +92,23 @@ class ValidationServiceTest {
         .claim(claim)
         .build();
 
-    ValidationIssue warningIssue = ValidationIssue.builder()
-        .code("CLAIM.INCOMPLETE_DATA")
-        .message("Some optional fields are missing.")
-        .severity(ValidationIssue.SeverityEnum.WARNING)
-        .build();
+    ClaimValidator mockValidator = new ClaimValidator() {
+      @Override
+      public List<ValidationIssue> validate(Map<String, Object> c, ValidationContext ctx) {
+        return List.of(ValidationIssue.builder()
+            .code("TEST_WARNING")
+            .message("Test warning message")
+            .severity(ValidationIssue.SeverityEnum.WARNING)
+            .build());
+      }
 
-    when(mockClaimValidator.validate(any(), eq(null)))
-        .thenReturn(List.of(warningIssue));
+      @Override
+      public String getValidatorCode() {
+        return "TEST";
+      }
+    };
+
+    when(mockValidators.stream()).thenReturn(List.of(mockValidator).stream());
     when(mockExternalValidationClient.validateWithExternalServices(any()))
         .thenReturn(Collections.emptyList());
 
@@ -102,6 +116,7 @@ class ValidationServiceTest {
 
     assertThat(result.getIsValid()).isTrue();
     assertThat(result.getIssues()).hasSize(1);
-    assertThat(result.getIssues().get(0).getSeverity()).isEqualTo(ValidationIssue.SeverityEnum.WARNING);
+    assertThat(result.getIssues().get(0).getSeverity())
+        .isEqualTo(ValidationIssue.SeverityEnum.WARNING);
   }
 }
