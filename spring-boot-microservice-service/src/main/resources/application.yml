@@ -1,0 +1,31 @@
+server:
+  port: 8081 # change to desired port number
+
+spring:
+  application:
+    name: LAA Spring Boot Microservice
+
+  # example database
+  datasource:
+    url: jdbc:h2:mem:itemsDb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: password
+
+  #do not auto create db schema, use .sql scripts
+  jpa:
+    hibernate:
+      ddl-auto: none
+
+management:
+  server:
+    port: 8181 # change to desired port number
+  # specify actuator endpoints to enable
+  endpoints:
+    web:
+      exposure:
+        include: health
+
+sentry:
+  dsn: # configure dsn url here
+  environment: # configure environment name here
