@@ -5,20 +5,20 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.justice.laa.dstew.payments.claims.model.AreaOfLaw;
+import uk.gov.justice.laa.dstew.payments.claims.model.Claim;
 import uk.gov.justice.laa.dstew.payments.claims.model.ClaimValidationRequest;
 import uk.gov.justice.laa.dstew.payments.claims.model.ValidationIssue;
 import uk.gov.justice.laa.dstew.payments.claims.model.ValidationResult;
-import uk.gov.justice.laa.dstew.payments.claims.validation.client.ExternalValidationClient;
-import uk.gov.justice.laa.dstew.payments.claims.validation.validator.ClaimValidator;
+import uk.gov.justice.laa.dstew.payments.claims.model.ValidationSeverity;
 import uk.gov.justice.laa.dstew.payments.claims.validation.validator.ValidationContext;
+import uk.gov.justice.laa.dstew.payments.claims.validation.validator.rules.ClaimValidator;
 
 @ExtendWith(MockitoExtension.class)
 class ValidationServiceTest {
@@ -26,23 +26,23 @@ class ValidationServiceTest {
   @Mock
   private List<ClaimValidator> mockValidators;
 
-  @Mock
-  private ExternalValidationClient mockExternalValidationClient;
-
   @InjectMocks
   private ValidationService validationService;
 
+  private Claim createTestClaim() {
+    Claim claim = new Claim();
+    claim.setAreaOfLaw(AreaOfLaw.LEGAL_HELP);
+    claim.setOfficeAccountNumber("1A234B");
+    return claim;
+  }
+
   @Test
   void validateClaim_returnsValidResultWhenNoIssues() {
-    Map<String, Object> claim = new HashMap<>();
-    ClaimValidationRequest request = ClaimValidationRequest.builder()
-        .claim(claim)
-        .scope("fee")
-        .build();
+    ClaimValidationRequest request = new ClaimValidationRequest();
+    request.setClaim(createTestClaim());
+    request.setScope("fee");
 
     when(mockValidators.stream()).thenReturn(Collections.<ClaimValidator>emptyList().stream());
-    when(mockExternalValidationClient.validateWithExternalServices(any()))
-        .thenReturn(Collections.emptyList());
 
     ValidationResult result = validationService.validateClaim(request);
 
@@ -52,20 +52,17 @@ class ValidationServiceTest {
 
   @Test
   void validateClaim_returnsInvalidResultWhenErrorIssuesFound() {
-    Map<String, Object> claim = new HashMap<>();
-    ClaimValidationRequest request = ClaimValidationRequest.builder()
-        .claim(claim)
-        .scope("fee")
-        .build();
+    ClaimValidationRequest request = new ClaimValidationRequest();
+    request.setClaim(createTestClaim());
+    request.setScope("fee");
 
     ClaimValidator mockValidator = new ClaimValidator() {
       @Override
-      public List<ValidationIssue> validate(Map<String, Object> c, ValidationContext ctx) {
-        return List.of(ValidationIssue.builder()
-            .code("TEST_ERROR")
-            .message("Test error message")
-            .severity(ValidationIssue.SeverityEnum.ERROR)
-            .build());
+      public List<ValidationIssue> validate(Claim claim, ValidationContext ctx) {
+        return List.of(new ValidationIssue(
+            "TEST_ERROR",
+            "Test error message",
+            ValidationSeverity.ERROR));
       }
 
       @Override
@@ -75,31 +72,26 @@ class ValidationServiceTest {
     };
 
     when(mockValidators.stream()).thenReturn(List.of(mockValidator).stream());
-    when(mockExternalValidationClient.validateWithExternalServices(any()))
-        .thenReturn(Collections.emptyList());
 
     ValidationResult result = validationService.validateClaim(request);
 
     assertThat(result.getIsValid()).isFalse();
     assertThat(result.getIssues()).hasSize(1);
-    assertThat(result.getIssues().get(0).getCode()).isEqualTo("TEST_ERROR");
+    assertThat(result.getIssues().getFirst().getCode()).isEqualTo("TEST_ERROR");
   }
 
   @Test
   void validateClaim_returnsValidResultWithWarningsOnly() {
-    Map<String, Object> claim = new HashMap<>();
-    ClaimValidationRequest request = ClaimValidationRequest.builder()
-        .claim(claim)
-        .build();
+    ClaimValidationRequest request = new ClaimValidationRequest();
+    request.setClaim(createTestClaim());
 
     ClaimValidator mockValidator = new ClaimValidator() {
       @Override
-      public List<ValidationIssue> validate(Map<String, Object> c, ValidationContext ctx) {
-        return List.of(ValidationIssue.builder()
-            .code("TEST_WARNING")
-            .message("Test warning message")
-            .severity(ValidationIssue.SeverityEnum.WARNING)
-            .build());
+      public List<ValidationIssue> validate(Claim claim, ValidationContext ctx) {
+        return List.of(new ValidationIssue(
+            "TEST_WARNING",
+            "Test warning message",
+            ValidationSeverity.WARNING));
       }
 
       @Override
@@ -109,14 +101,12 @@ class ValidationServiceTest {
     };
 
     when(mockValidators.stream()).thenReturn(List.of(mockValidator).stream());
-    when(mockExternalValidationClient.validateWithExternalServices(any()))
-        .thenReturn(Collections.emptyList());
 
     ValidationResult result = validationService.validateClaim(request);
 
     assertThat(result.getIsValid()).isTrue();
     assertThat(result.getIssues()).hasSize(1);
-    assertThat(result.getIssues().get(0).getSeverity())
-        .isEqualTo(ValidationIssue.SeverityEnum.WARNING);
+    assertThat(result.getIssues().getFirst().getSeverity())
+        .isEqualTo(ValidationSeverity.WARNING);
   }
 }

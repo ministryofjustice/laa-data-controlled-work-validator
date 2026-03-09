@@ -2,12 +2,12 @@ package uk.gov.justice.laa.dstew.payments.claims.validation.validator.rules;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.regex.Pattern;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import uk.gov.justice.laa.dstew.payments.claims.model.Claim;
 import uk.gov.justice.laa.dstew.payments.claims.model.ValidationIssue;
-import uk.gov.justice.laa.dstew.payments.claims.validation.validator.ClaimValidator;
+import uk.gov.justice.laa.dstew.payments.claims.model.ValidationSeverity;
 import uk.gov.justice.laa.dstew.payments.claims.validation.validator.ValidationContext;
 
 /**
@@ -23,27 +23,25 @@ public class StageReachedValidator implements ClaimValidator {
       "^(INV[A-M]|PRI[A-E]|PRO[C-FH-LP-TUVW]|APP[ABC]|AS|MSPLAS|YOU[EFKLXY]|VOID)$");
 
   @Override
-  public List<ValidationIssue> validate(Map<String, Object> claim, ValidationContext context) {
+  public List<ValidationIssue> validate(Claim claim, ValidationContext context) {
     List<ValidationIssue> issues = new ArrayList<>();
 
-    Object stageReachedObj = claim.get("stageReachedCode");
-    if (stageReachedObj == null) {
+    String stageReached = claim.getStageReachedCode();
+    if (stageReached == null || stageReached.isBlank()) {
       return issues; // Optional field
     }
 
-    String stageReached = stageReachedObj.toString();
-    String areaOfLaw = context.getAreaOfLaw();
+    String areaOfLaw = claim.getAreaOfLaw() != null ? claim.getAreaOfLaw().getValue() : null;
 
     log.debug("Validating stage reached: {} for area of law: {}", stageReached, areaOfLaw);
 
     Pattern pattern = getPattern(areaOfLaw);
     if (pattern != null && !pattern.matcher(stageReached).matches()) {
-      issues.add(ValidationIssue.builder()
-          .code("INVALID_STAGE_REACHED")
-          .message("Stage reached code '" + stageReached
-              + "' does not match expected pattern for " + areaOfLaw)
-          .severity(ValidationIssue.SeverityEnum.ERROR)
-          .build());
+      issues.add(new ValidationIssue(
+          "INVALID_STAGE_REACHED",
+          "Stage reached code '" + stageReached
+              + "' does not match expected pattern for " + areaOfLaw,
+          ValidationSeverity.ERROR));
     }
 
     return issues;
@@ -71,4 +69,3 @@ public class StageReachedValidator implements ClaimValidator {
     return "STAGE_REACHED";
   }
 }
-

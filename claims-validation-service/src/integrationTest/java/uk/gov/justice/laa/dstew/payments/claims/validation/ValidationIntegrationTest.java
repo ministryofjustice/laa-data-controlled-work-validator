@@ -19,7 +19,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
-import uk.gov.justice.laa.dstew.payments.claims.validation.client.DuplicateClaimClient;
+import uk.gov.justice.laa.dstew.payments.claims.validation.client.ClaimsApiClient;
 import uk.gov.justice.laa.dstew.payments.claims.validation.client.FeeSchemeClient;
 import uk.gov.justice.laa.dstew.payments.claims.validation.client.FeeSchemeClient.FeeDetailsResponse;
 
@@ -38,7 +38,7 @@ class ValidationIntegrationTest {
   private FeeSchemeClient feeSchemeClient;
 
   @MockitoBean
-  private DuplicateClaimClient duplicateClaimClient;
+  private ClaimsApiClient claimsApiClient;
 
   @BeforeEach
   void setUp() {
@@ -48,7 +48,7 @@ class ValidationIntegrationTest {
             "ABC123", "STANDARD", "LEGAL_HELP", "Description", Map.of())));
     when(feeSchemeClient.isProviderAuthorizedForCategoryOfLaw(anyString(), anyString()))
         .thenReturn(true);
-    when(duplicateClaimClient.checkForDuplicate(any(), any(), any(), any()))
+    when(claimsApiClient.checkForDuplicate(any(), any(), any(), any()))
         .thenReturn(Optional.empty());
   }
 
@@ -57,14 +57,14 @@ class ValidationIntegrationTest {
     String requestBody = """
         {
           "claim": {
+            "areaOfLaw": "LEGAL_HELP",
+            "officeAccountNumber": "1A234B",
             "feeCode": "ABC123",
             "uniqueFileNumber": "010120/001",
             "caseStartDate": "2020-01-15",
             "caseConcludedDate": "2020-06-15"
           },
-          "scope": "fee",
-          "areaOfLaw": "LEGAL_HELP",
-          "officeAccountNumber": "1A234B"
+          "scope": "fee"
         }
         """;
 
@@ -78,13 +78,15 @@ class ValidationIntegrationTest {
 
   @Test
   void validateClaim_returnsInvalidResult_whenMandatoryFieldMissing() throws Exception {
+    // Missing feeCode but has areaOfLaw and officeAccountNumber
     String requestBody = """
         {
           "claim": {
+            "areaOfLaw": "LEGAL_HELP",
+            "officeAccountNumber": "1A234B",
             "caseStartDate": "2020-01-15"
           },
-          "scope": "all",
-          "areaOfLaw": "LEGAL_HELP"
+          "scope": "all"
         }
         """;
 
@@ -102,6 +104,8 @@ class ValidationIntegrationTest {
     String requestBody = """
         {
           "claim": {
+            "areaOfLaw": "LEGAL_HELP",
+            "officeAccountNumber": "1A234B",
             "feeCode": "ABC123",
             "uniqueFileNumber": "invalid-format"
           }
@@ -121,10 +125,11 @@ class ValidationIntegrationTest {
     String requestBody = """
         {
           "claim": {
+            "areaOfLaw": "LEGAL_HELP",
+            "officeAccountNumber": "1A234B",
             "feeCode": "ABC123",
             "caseStartDate": "2030-01-15"
-          },
-          "areaOfLaw": "LEGAL_HELP"
+          }
         }
         """;
 
@@ -141,11 +146,12 @@ class ValidationIntegrationTest {
     String requestBody = """
         {
           "claim": {
+            "areaOfLaw": "CRIME_LOWER",
+            "officeAccountNumber": "1A234B",
             "feeCode": "ABC123",
             "disbursementsVatAmount": 500000.00
           },
-          "scope": "disbursement",
-          "areaOfLaw": "CRIME_LOWER"
+          "scope": "disbursement"
         }
         """;
 

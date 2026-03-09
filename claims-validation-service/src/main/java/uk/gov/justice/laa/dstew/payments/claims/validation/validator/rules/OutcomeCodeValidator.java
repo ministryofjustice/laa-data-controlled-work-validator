@@ -2,12 +2,12 @@ package uk.gov.justice.laa.dstew.payments.claims.validation.validator.rules;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import uk.gov.justice.laa.dstew.payments.claims.model.Claim;
 import uk.gov.justice.laa.dstew.payments.claims.model.ValidationIssue;
-import uk.gov.justice.laa.dstew.payments.claims.validation.validator.ClaimValidator;
+import uk.gov.justice.laa.dstew.payments.claims.model.ValidationSeverity;
 import uk.gov.justice.laa.dstew.payments.claims.validation.validator.ValidationContext;
 
 /**
@@ -27,24 +27,23 @@ public class OutcomeCodeValidator implements ClaimValidator {
   );
 
   @Override
-  public List<ValidationIssue> validate(Map<String, Object> claim, ValidationContext context) {
+  public List<ValidationIssue> validate(Claim claim, ValidationContext context) {
     List<ValidationIssue> issues = new ArrayList<>();
 
-    Object outcomeCodeObj = claim.get("outcomeCode");
-    if (outcomeCodeObj == null) {
+    String outcomeCode = claim.getOutcomeCode();
+    if (outcomeCode == null || outcomeCode.isBlank()) {
       return issues; // Optional
     }
 
-    String outcomeCode = outcomeCodeObj.toString().toUpperCase();
+    outcomeCode = outcomeCode.toUpperCase();
 
     log.debug("Validating outcome code: {}", outcomeCode);
 
     if (!VALID_OUTCOME_CODES.contains(outcomeCode)) {
-      issues.add(ValidationIssue.builder()
-          .code("INVALID_OUTCOME_CODE")
-          .message("Outcome code '" + outcomeCode + "' is not valid")
-          .severity(ValidationIssue.SeverityEnum.ERROR)
-          .build());
+      issues.add(new ValidationIssue(
+          "INVALID_OUTCOME_CODE",
+          "Outcome code '" + outcomeCode + "' is not valid",
+          ValidationSeverity.ERROR));
     }
 
     return issues;
@@ -60,4 +59,3 @@ public class OutcomeCodeValidator implements ClaimValidator {
     return "OUTCOME_CODE";
   }
 }
-

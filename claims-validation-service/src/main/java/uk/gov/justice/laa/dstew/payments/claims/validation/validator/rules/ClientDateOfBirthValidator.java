@@ -1,16 +1,14 @@
 package uk.gov.justice.laa.dstew.payments.claims.validation.validator.rules;
 
 import static uk.gov.justice.laa.dstew.payments.claims.validation.validator.util.DateValidationUtils.checkDateInPast;
-import static uk.gov.justice.laa.dstew.payments.claims.validation.validator.util.DateValidationUtils.getStringValue;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import uk.gov.justice.laa.dstew.payments.claims.model.Claim;
 import uk.gov.justice.laa.dstew.payments.claims.model.ValidationIssue;
-import uk.gov.justice.laa.dstew.payments.claims.validation.validator.ClaimValidator;
 import uk.gov.justice.laa.dstew.payments.claims.validation.validator.ValidationContext;
 
 /**
@@ -24,18 +22,18 @@ public class ClientDateOfBirthValidator implements ClaimValidator {
   private static final LocalDate MIN_BIRTH_DATE = LocalDate.of(1900, 1, 1);
 
   @Override
-  public List<ValidationIssue> validate(Map<String, Object> claim, ValidationContext context) {
+  public List<ValidationIssue> validate(Claim claim, ValidationContext context) {
     List<ValidationIssue> issues = new ArrayList<>();
 
     log.debug("Validating client dates of birth");
 
     // Client 1 Date of Birth
-    String clientDob = getStringValue(claim, "clientDateOfBirth");
-    issues.addAll(checkDateInPast("Client Date of Birth", clientDob, MIN_BIRTH_DATE));
+    issues.addAll(checkDateInPast("Client Date of Birth",
+            claim.getClientDateOfBirth(), MIN_BIRTH_DATE));
 
     // Client 2 Date of Birth (if present)
-    String client2Dob = getStringValue(claim, "client2DateOfBirth");
-    issues.addAll(checkDateInPast("Client 2 Date of Birth", client2Dob, MIN_BIRTH_DATE));
+    issues.addAll(checkDateInPast("Client 2 Date of Birth",
+            claim.getClient2DateOfBirth(), MIN_BIRTH_DATE));
 
     log.debug("Client DOB validation completed, found {} issues", issues.size());
     return issues;
@@ -51,4 +49,3 @@ public class ClientDateOfBirthValidator implements ClaimValidator {
     return "CLIENT_DATE_OF_BIRTH";
   }
 }
-

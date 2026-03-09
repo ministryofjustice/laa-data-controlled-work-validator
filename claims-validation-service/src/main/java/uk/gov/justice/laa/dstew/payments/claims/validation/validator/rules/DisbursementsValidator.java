@@ -3,11 +3,11 @@ package uk.gov.justice.laa.dstew.payments.claims.validation.validator.rules;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import uk.gov.justice.laa.dstew.payments.claims.model.Claim;
 import uk.gov.justice.laa.dstew.payments.claims.model.ValidationIssue;
-import uk.gov.justice.laa.dstew.payments.claims.validation.validator.ClaimValidator;
+import uk.gov.justice.laa.dstew.payments.claims.model.ValidationSeverity;
 import uk.gov.justice.laa.dstew.payments.claims.validation.validator.ValidationContext;
 
 /**
@@ -23,34 +23,24 @@ public class DisbursementsValidator implements ClaimValidator {
   private static final BigDecimal MAX_VAT_MEDIATION = new BigDecimal("999999999.99");
 
   @Override
-  public List<ValidationIssue> validate(Map<String, Object> claim, ValidationContext context) {
+  public List<ValidationIssue> validate(Claim claim, ValidationContext context) {
     List<ValidationIssue> issues = new ArrayList<>();
 
     log.debug("Validating disbursements");
 
-    Object vatAmountObj = claim.get("disbursementsVatAmount");
-    if (vatAmountObj == null) {
+    BigDecimal vatAmount = claim.getDisbursementsVatAmount();
+    if (vatAmount == null) {
       return issues; // No VAT amount to validate
     }
 
-    BigDecimal vatAmount = toBigDecimal(vatAmountObj);
-    if (vatAmount == null) {
-      issues.add(ValidationIssue.builder()
-          .code("INVALID_DISBURSEMENT_VAT_FORMAT")
-          .message("Disbursements VAT Amount has an invalid format")
-          .severity(ValidationIssue.SeverityEnum.ERROR)
-          .build());
-      return issues;
-    }
-
-    BigDecimal maxAllowed = getMaxVatAmount(context.getAreaOfLaw());
+    String areaOfLaw = claim.getAreaOfLaw() != null ? claim.getAreaOfLaw().getValue() : null;
+    BigDecimal maxAllowed = getMaxVatAmount(areaOfLaw);
 
     if (vatAmount.compareTo(maxAllowed) > 0) {
-      issues.add(ValidationIssue.builder()
-          .code("INVALID_DISBURSEMENT_VAT_AMOUNT")
-          .message("Disbursements VAT Amount has exceeded the maximum accepted value")
-          .severity(ValidationIssue.SeverityEnum.ERROR)
-          .build());
+      issues.add(new ValidationIssue(
+          "INVALID_DISBURSEMENT_VAT_AMOUNT",
+          "Disbursements VAT Amount has exceeded the maximum accepted value",
+          ValidationSeverity.ERROR));
     }
 
     log.debug("Disbursements validation completed, found {} issues", issues.size());
@@ -69,21 +59,6 @@ public class DisbursementsValidator implements ClaimValidator {
     };
   }
 
-  private BigDecimal toBigDecimal(Object value) {
-    try {
-      if (value instanceof BigDecimal) {
-        return (BigDecimal) value;
-      } else if (value instanceof Number) {
-        return BigDecimal.valueOf(((Number) value).doubleValue());
-      } else if (value instanceof String) {
-        return new BigDecimal((String) value);
-      }
-    } catch (NumberFormatException e) {
-      log.debug("Failed to convert to BigDecimal: {}", value);
-    }
-    return null;
-  }
-
   @Override
   public int priority() {
     return 40;
@@ -100,4 +75,3 @@ public class DisbursementsValidator implements ClaimValidator {
     return "DISBURSEMENTS";
   }
 }
-

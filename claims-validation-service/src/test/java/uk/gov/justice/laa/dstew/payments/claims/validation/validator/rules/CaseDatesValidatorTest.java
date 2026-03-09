@@ -2,12 +2,10 @@ package uk.gov.justice.laa.dstew.payments.claims.validation.validator.rules;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
+import uk.gov.justice.laa.dstew.payments.claims.model.AreaOfLaw;
+import uk.gov.justice.laa.dstew.payments.claims.model.Claim;
 import uk.gov.justice.laa.dstew.payments.claims.model.ValidationIssue;
 import uk.gov.justice.laa.dstew.payments.claims.validation.validator.ValidationContext;
 
@@ -17,15 +15,14 @@ class CaseDatesValidatorTest {
 
   @Test
   void validate_returnsNoErrors_whenAllDatesValid() {
-    Map<String, Object> claim = new HashMap<>();
-    claim.put("caseStartDate", "2020-01-15");
-    claim.put("caseConcludedDate", "2020-06-15");
-    claim.put("transferDate", "2020-03-01");
-    claim.put("representationOrderDate", "2020-01-10");
+    Claim claim = new Claim();
+    claim.setAreaOfLaw(AreaOfLaw.LEGAL_HELP);
+    claim.setCaseStartDate("2020-01-15");
+    claim.setCaseConcludedDate("2020-06-15");
+    claim.setTransferDate("2020-03-01");
+    claim.setRepresentationOrderDate("2020-01-10");
 
-    ValidationContext context = ValidationContext.builder()
-        .areaOfLaw("LEGAL_HELP")
-        .build();
+    ValidationContext context = ValidationContext.builder().build();
 
     List<ValidationIssue> issues = validator.validate(claim, context);
 
@@ -34,8 +31,8 @@ class CaseDatesValidatorTest {
 
   @Test
   void validate_returnsError_whenCaseStartDateInFuture() {
-    Map<String, Object> claim = new HashMap<>();
-    claim.put("caseStartDate", "2030-01-15");
+    Claim claim = new Claim();
+    claim.setCaseStartDate("2030-01-15");
 
     ValidationContext context = ValidationContext.builder().build();
 
@@ -47,8 +44,8 @@ class CaseDatesValidatorTest {
 
   @Test
   void validate_returnsError_whenCaseStartDateTooOld() {
-    Map<String, Object> claim = new HashMap<>();
-    claim.put("caseStartDate", "1990-01-15");
+    Claim claim = new Claim();
+    claim.setCaseStartDate("1990-01-15");
 
     ValidationContext context = ValidationContext.builder().build();
 
@@ -60,8 +57,8 @@ class CaseDatesValidatorTest {
 
   @Test
   void validate_returnsError_whenInvalidDateFormat() {
-    Map<String, Object> claim = new HashMap<>();
-    claim.put("caseStartDate", "not-a-date");
+    Claim claim = new Claim();
+    claim.setCaseStartDate("not-a-date");
 
     ValidationContext context = ValidationContext.builder().build();
 
@@ -73,7 +70,7 @@ class CaseDatesValidatorTest {
 
   @Test
   void validate_returnsNoErrors_whenDatesNotProvided() {
-    Map<String, Object> claim = new HashMap<>();
+    Claim claim = new Claim();
     ValidationContext context = ValidationContext.builder().build();
 
     List<ValidationIssue> issues = validator.validate(claim, context);
@@ -83,12 +80,11 @@ class CaseDatesValidatorTest {
 
   @Test
   void validate_usesCorrectEarliestDate_forCrimeLower() {
-    Map<String, Object> claim = new HashMap<>();
-    claim.put("caseConcludedDate", "2014-01-15"); // Before 2016 min for crime lower
+    Claim claim = new Claim();
+    claim.setAreaOfLaw(AreaOfLaw.CRIME_LOWER);
+    claim.setCaseConcludedDate("2014-01-15"); // Before 2016 min for crime lower
 
-    ValidationContext context = ValidationContext.builder()
-        .areaOfLaw("CRIME_LOWER")
-        .build();
+    ValidationContext context = ValidationContext.builder().build();
 
     List<ValidationIssue> issues = validator.validate(claim, context);
 
@@ -106,4 +102,3 @@ class CaseDatesValidatorTest {
     assertThat(validator.priority()).isEqualTo(30);
   }
 }
-

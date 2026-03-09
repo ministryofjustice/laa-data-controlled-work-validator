@@ -1,8 +1,9 @@
-package uk.gov.justice.laa.dstew.payments.claims.validation.validator;
+package uk.gov.justice.laa.dstew.payments.claims.validation.validator.rules;
 
 import java.util.List;
-import java.util.Map;
+import uk.gov.justice.laa.dstew.payments.claims.model.Claim;
 import uk.gov.justice.laa.dstew.payments.claims.model.ValidationIssue;
+import uk.gov.justice.laa.dstew.payments.claims.validation.validator.ValidationContext;
 
 /**
  * Interface for validation rules that can be applied to claims.
@@ -17,11 +18,11 @@ public interface ClaimValidator {
   /**
    * Validates the given claim and returns any issues found.
    *
-   * @param claim the claim data as a Map
+   * @param claim the strongly-typed Claim object
    * @param context additional context needed for validation
    * @return a list of validation issues found, or an empty list if valid
    */
-  List<ValidationIssue> validate(Map<String, Object> claim, ValidationContext context);
+  List<ValidationIssue> validate(Claim claim, ValidationContext context);
 
   /**
    * Returns the priority of this validator.

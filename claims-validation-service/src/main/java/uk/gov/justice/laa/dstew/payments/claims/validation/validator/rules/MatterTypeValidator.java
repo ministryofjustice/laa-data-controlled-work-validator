@@ -2,12 +2,12 @@ package uk.gov.justice.laa.dstew.payments.claims.validation.validator.rules;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import uk.gov.justice.laa.dstew.payments.claims.model.Claim;
 import uk.gov.justice.laa.dstew.payments.claims.model.ValidationIssue;
-import uk.gov.justice.laa.dstew.payments.claims.validation.validator.ClaimValidator;
+import uk.gov.justice.laa.dstew.payments.claims.model.ValidationSeverity;
 import uk.gov.justice.laa.dstew.payments.claims.validation.validator.ValidationContext;
 
 /**
@@ -30,27 +30,26 @@ public class MatterTypeValidator implements ClaimValidator {
   );
 
   @Override
-  public List<ValidationIssue> validate(Map<String, Object> claim, ValidationContext context) {
+  public List<ValidationIssue> validate(Claim claim, ValidationContext context) {
     List<ValidationIssue> issues = new ArrayList<>();
 
-    Object matterTypeObj = claim.get("matterTypeCode");
-    if (matterTypeObj == null) {
+    String matterType = claim.getMatterTypeCode();
+    if (matterType == null || matterType.isBlank()) {
       return issues; // Optional - mandatory validator handles if required
     }
 
-    String matterType = matterTypeObj.toString().toUpperCase();
-    String areaOfLaw = context.getAreaOfLaw();
+    matterType = matterType.toUpperCase();
+    String areaOfLaw = claim.getAreaOfLaw() != null ? claim.getAreaOfLaw().getValue() : null;
 
     log.debug("Validating matter type: {} for area of law: {}", matterType, areaOfLaw);
 
     Set<String> validTypes = getValidMatterTypes(areaOfLaw);
     if (validTypes != null && !validTypes.contains(matterType)) {
-      issues.add(ValidationIssue.builder()
-          .code("INVALID_MATTER_TYPE_CODE")
-          .message("Matter type code '" + matterType
-              + "' is not valid for area of law: " + areaOfLaw)
-          .severity(ValidationIssue.SeverityEnum.ERROR)
-          .build());
+      issues.add(new ValidationIssue(
+          "INVALID_MATTER_TYPE_CODE",
+          "Matter type code '" + matterType
+              + "' is not valid for area of law: " + areaOfLaw,
+          ValidationSeverity.ERROR));
     }
 
     return issues;
@@ -78,4 +77,3 @@ public class MatterTypeValidator implements ClaimValidator {
     return "MATTER_TYPE";
   }
 }
-

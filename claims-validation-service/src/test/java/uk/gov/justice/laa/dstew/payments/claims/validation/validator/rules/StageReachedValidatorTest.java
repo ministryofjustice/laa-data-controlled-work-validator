@@ -2,10 +2,10 @@ package uk.gov.justice.laa.dstew.payments.claims.validation.validator.rules;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import org.junit.jupiter.api.Test;
+import uk.gov.justice.laa.dstew.payments.claims.model.AreaOfLaw;
+import uk.gov.justice.laa.dstew.payments.claims.model.Claim;
 import uk.gov.justice.laa.dstew.payments.claims.model.ValidationIssue;
 import uk.gov.justice.laa.dstew.payments.claims.validation.validator.ValidationContext;
 
@@ -15,12 +15,11 @@ class StageReachedValidatorTest {
 
   @Test
   void validate_returnsNoErrors_whenValidLegalHelpCode() {
-    Map<String, Object> claim = new HashMap<>();
-    claim.put("stageReachedCode", "AB");
+    Claim claim = new Claim();
+    claim.setAreaOfLaw(AreaOfLaw.LEGAL_HELP);
+    claim.setStageReachedCode("AB");
 
-    ValidationContext context = ValidationContext.builder()
-        .areaOfLaw("LEGAL_HELP")
-        .build();
+    ValidationContext context = ValidationContext.builder().build();
 
     List<ValidationIssue> issues = validator.validate(claim, context);
 
@@ -29,12 +28,11 @@ class StageReachedValidatorTest {
 
   @Test
   void validate_returnsError_whenInvalidLegalHelpCode() {
-    Map<String, Object> claim = new HashMap<>();
-    claim.put("stageReachedCode", "TOOLONG");
+    Claim claim = new Claim();
+    claim.setAreaOfLaw(AreaOfLaw.LEGAL_HELP);
+    claim.setStageReachedCode("TOOLONG");
 
-    ValidationContext context = ValidationContext.builder()
-        .areaOfLaw("LEGAL_HELP")
-        .build();
+    ValidationContext context = ValidationContext.builder().build();
 
     List<ValidationIssue> issues = validator.validate(claim, context);
 
@@ -44,12 +42,11 @@ class StageReachedValidatorTest {
 
   @Test
   void validate_returnsNoErrors_whenValidCrimeLowerCode() {
-    Map<String, Object> claim = new HashMap<>();
-    claim.put("stageReachedCode", "INVA");
+    Claim claim = new Claim();
+    claim.setAreaOfLaw(AreaOfLaw.CRIME_LOWER);
+    claim.setStageReachedCode("INVA");
 
-    ValidationContext context = ValidationContext.builder()
-        .areaOfLaw("CRIME_LOWER")
-        .build();
+    ValidationContext context = ValidationContext.builder().build();
 
     List<ValidationIssue> issues = validator.validate(claim, context);
 
@@ -58,10 +55,10 @@ class StageReachedValidatorTest {
 
   @Test
   void validate_returnsNoErrors_whenNoStageReached() {
-    Map<String, Object> claim = new HashMap<>();
-    ValidationContext context = ValidationContext.builder()
-        .areaOfLaw("LEGAL_HELP")
-        .build();
+    Claim claim = new Claim();
+    claim.setAreaOfLaw(AreaOfLaw.LEGAL_HELP);
+
+    ValidationContext context = ValidationContext.builder().build();
 
     List<ValidationIssue> issues = validator.validate(claim, context);
 
@@ -70,8 +67,8 @@ class StageReachedValidatorTest {
 
   @Test
   void validate_returnsNoErrors_whenNoAreaOfLaw() {
-    Map<String, Object> claim = new HashMap<>();
-    claim.put("stageReachedCode", "XX");
+    Claim claim = new Claim();
+    claim.setStageReachedCode("XX");
 
     ValidationContext context = ValidationContext.builder().build();
 
@@ -86,4 +83,3 @@ class StageReachedValidatorTest {
     assertThat(validator.getValidatorCode()).isEqualTo("STAGE_REACHED");
   }
 }
-

@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import uk.gov.justice.laa.dstew.payments.claims.model.ValidationIssue;
+import uk.gov.justice.laa.dstew.payments.claims.model.ValidationSeverity;
 
 /**
  * Utility class for date validation operations.
@@ -43,25 +44,22 @@ public final class DateValidationUtils {
       LocalDate date = LocalDate.parse(dateValue, DATE_FORMATTER_YYYY_MM_DD);
 
       if (date.isAfter(LocalDate.now())) {
-        issues.add(ValidationIssue.builder()
-            .code("INVALID_" + toErrorCode(fieldName))
-            .message(fieldName + " must be in the past")
-            .severity(ValidationIssue.SeverityEnum.ERROR)
-            .build());
+        issues.add(new ValidationIssue(
+            "INVALID_" + toErrorCode(fieldName),
+            fieldName + " must be in the past",
+            ValidationSeverity.ERROR));
       } else if (date.isBefore(minDate)) {
-        issues.add(ValidationIssue.builder()
-            .code("INVALID_" + toErrorCode(fieldName))
-            .message(fieldName + " must be after " + minDate)
-            .severity(ValidationIssue.SeverityEnum.ERROR)
-            .build());
+        issues.add(new ValidationIssue(
+            "INVALID_" + toErrorCode(fieldName),
+            fieldName + " must be after " + minDate,
+            ValidationSeverity.ERROR));
       }
     } catch (DateTimeParseException e) {
       log.debug("Failed to parse date for {}: {}", fieldName, dateValue);
-      issues.add(ValidationIssue.builder()
-          .code("INVALID_" + toErrorCode(fieldName) + "_FORMAT")
-          .message(fieldName + " has an invalid date format")
-          .severity(ValidationIssue.SeverityEnum.ERROR)
-          .build());
+      issues.add(new ValidationIssue(
+          "INVALID_" + toErrorCode(fieldName) + "_FORMAT",
+          fieldName + " has an invalid date format",
+          ValidationSeverity.ERROR));
     }
 
     return issues;
@@ -87,25 +85,22 @@ public final class DateValidationUtils {
       LocalDate date = LocalDate.parse(dateValue, DATE_FORMATTER_YYYY_MM_DD);
 
       if (date.isAfter(LocalDate.now())) {
-        issues.add(ValidationIssue.builder()
-            .code("INVALID_" + toErrorCode(fieldName))
-            .message(fieldName + " cannot be in the future")
-            .severity(ValidationIssue.SeverityEnum.ERROR)
-            .build());
+        issues.add(new ValidationIssue(
+            "INVALID_" + toErrorCode(fieldName),
+            fieldName + " cannot be in the future",
+            ValidationSeverity.ERROR));
       } else if (date.isBefore(earliestAllowed)) {
-        issues.add(ValidationIssue.builder()
-            .code("INVALID_" + toErrorCode(fieldName))
-            .message(fieldName + " must be on or after " + earliestAllowed)
-            .severity(ValidationIssue.SeverityEnum.ERROR)
-            .build());
+        issues.add(new ValidationIssue(
+            "INVALID_" + toErrorCode(fieldName),
+            fieldName + " must be on or after " + earliestAllowed,
+            ValidationSeverity.ERROR));
       }
     } catch (DateTimeParseException e) {
       log.debug("Failed to parse date for {}: {}", fieldName, dateValue);
-      issues.add(ValidationIssue.builder()
-          .code("INVALID_" + toErrorCode(fieldName) + "_FORMAT")
-          .message(fieldName + " has an invalid date format")
-          .severity(ValidationIssue.SeverityEnum.ERROR)
-          .build());
+      issues.add(new ValidationIssue(
+          "INVALID_" + toErrorCode(fieldName) + "_FORMAT",
+          fieldName + " has an invalid date format",
+          ValidationSeverity.ERROR));
     }
 
     return issues;
@@ -131,4 +126,3 @@ public final class DateValidationUtils {
     return fieldName.toUpperCase().replaceAll("\\s+", "_");
   }
 }
-

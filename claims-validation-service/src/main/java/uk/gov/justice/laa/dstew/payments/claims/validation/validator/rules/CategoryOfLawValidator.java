@@ -2,16 +2,15 @@ package uk.gov.justice.laa.dstew.payments.claims.validation.validator.rules;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import uk.gov.justice.laa.dstew.payments.claims.model.Claim;
 import uk.gov.justice.laa.dstew.payments.claims.model.ValidationIssue;
 import uk.gov.justice.laa.dstew.payments.claims.validation.client.FeeSchemeClient;
 import uk.gov.justice.laa.dstew.payments.claims.validation.client.FeeSchemeClient.FeeDetailsResponse;
 import uk.gov.justice.laa.dstew.payments.claims.validation.error.ClaimValidationError;
-import uk.gov.justice.laa.dstew.payments.claims.validation.validator.ClaimValidator;
 import uk.gov.justice.laa.dstew.payments.claims.validation.validator.ValidationContext;
 
 /**
@@ -27,15 +26,14 @@ public class CategoryOfLawValidator implements ClaimValidator {
   private final FeeSchemeClient feeSchemeClient;
 
   @Override
-  public List<ValidationIssue> validate(Map<String, Object> claim, ValidationContext context) {
+  public List<ValidationIssue> validate(Claim claim, ValidationContext context) {
     List<ValidationIssue> issues = new ArrayList<>();
 
-    Object feeCodeObj = claim.get("feeCode");
-    if (feeCodeObj == null) {
+    String feeCode = claim.getFeeCode();
+    if (feeCode == null || feeCode.isBlank()) {
       return issues; // MandatoryFieldValidator handles this
     }
 
-    String feeCode = feeCodeObj.toString();
     log.debug("Validating category of law for fee code: {}", feeCode);
 
     try {
@@ -50,7 +48,7 @@ public class CategoryOfLawValidator implements ClaimValidator {
 
       // Check provider authorization for category of law
       String categoryOfLaw = feeDetails.get().categoryOfLaw();
-      String officeAccountNumber = context.getOfficeAccountNumber();
+      String officeAccountNumber = claim.getOfficeAccountNumber();
 
       if (officeAccountNumber != null && categoryOfLaw != null) {
         boolean authorized = feeSchemeClient.isProviderAuthorizedForCategoryOfLaw(
@@ -87,4 +85,3 @@ public class CategoryOfLawValidator implements ClaimValidator {
     return "CATEGORY_OF_LAW";
   }
 }
-

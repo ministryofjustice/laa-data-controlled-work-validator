@@ -18,6 +18,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import uk.gov.justice.laa.dstew.payments.claims.model.ClaimValidationRequest;
 import uk.gov.justice.laa.dstew.payments.claims.model.ValidationIssue;
 import uk.gov.justice.laa.dstew.payments.claims.model.ValidationResult;
+import uk.gov.justice.laa.dstew.payments.claims.model.ValidationSeverity;
 import uk.gov.justice.laa.dstew.payments.claims.validation.service.ValidationService;
 
 @WebMvcTest(ValidationController.class)
@@ -31,17 +32,16 @@ class ValidationControllerTest {
 
   @Test
   void validateClaim_returnsOkStatusAndValidResult() throws Exception {
-    ValidationResult validResult = ValidationResult.builder()
-        .isValid(true)
-        .issues(Collections.emptyList())
-        .build();
+    ValidationResult validResult = new ValidationResult();
+    validResult.setIsValid(true);
+    validResult.setIssues(Collections.emptyList());
 
     when(mockValidationService.validateClaim(any(ClaimValidationRequest.class)))
         .thenReturn(validResult);
 
     mockMvc.perform(post("/v1/validation/claim")
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{\"claim\": {}, \"scope\": \"fee\"}")
+            .content("{\"claim\": {\"areaOfLaw\": \"LEGAL_HELP\", \"officeAccountNumber\": \"1A234B\"}, \"scope\": \"fee\"}")
             .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -51,23 +51,21 @@ class ValidationControllerTest {
 
   @Test
   void validateClaim_returnsOkStatusWithIssues() throws Exception {
-    ValidationIssue issue = ValidationIssue.builder()
-        .code("FEE.MISSING_JUSTIFICATION")
-        .message("Enhancement fee requires a justification.")
-        .severity(ValidationIssue.SeverityEnum.ERROR)
-        .build();
+    ValidationIssue issue = new ValidationIssue(
+        "FEE.MISSING_JUSTIFICATION",
+        "Enhancement fee requires a justification.",
+        ValidationSeverity.ERROR);
 
-    ValidationResult invalidResult = ValidationResult.builder()
-        .isValid(false)
-        .issues(List.of(issue))
-        .build();
+    ValidationResult invalidResult = new ValidationResult();
+    invalidResult.setIsValid(false);
+    invalidResult.setIssues(List.of(issue));
 
     when(mockValidationService.validateClaim(any(ClaimValidationRequest.class)))
         .thenReturn(invalidResult);
 
     mockMvc.perform(post("/v1/validation/claim")
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{\"claim\": {\"fees\": [{\"type\": \"enhancement\"}]}}")
+            .content("{\"claim\": {\"areaOfLaw\": \"LEGAL_HELP\", \"officeAccountNumber\": \"1A234B\", \"fees\": [{\"type\": \"enhancement\"}]}}")
             .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))

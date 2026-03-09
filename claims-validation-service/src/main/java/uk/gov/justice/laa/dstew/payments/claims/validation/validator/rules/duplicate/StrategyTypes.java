@@ -1,0 +1,18 @@
+package uk.gov.justice.laa.dstew.payments.claims.validation.validator.rules.duplicate;
+
+import lombok.NoArgsConstructor;
+
+import java.util.List;
+
+/**
+ * Strategy types for duplicate claim validation.
+ *
+ * @author Jamie Briggs
+ */
+@NoArgsConstructor(access = lombok.AccessLevel.PRIVATE)
+public final class StrategyTypes {
+
+  public static final List<String> CRIME_LOWER = List.of("CRIME LOWER");
+  public static final List<String> LEGAL_HELP = List.of("LEGAL HELP");
+  public static final List<String> MEDIATION = List.of("MEDIATION");
+}

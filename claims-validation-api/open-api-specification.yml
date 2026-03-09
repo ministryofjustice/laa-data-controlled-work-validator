@@ -46,15 +46,6 @@ components:
           type: string
           description: Optional validation scope (e.g., "fee", "disbursement", "all")
           example: "fee"
-        areaOfLaw:
-          type: string
-          description: Area of law for the submission
-          enum: [LEGAL_HELP, CRIME_LOWER, MEDIATION]
-          example: "LEGAL_HELP"
-        officeAccountNumber:
-          type: string
-          description: Provider office account number
-          example: "1A234B"
         relatedClaims:
           type: array
           description: Other claims in the same submission (for duplicate checking)
@@ -63,8 +54,367 @@ components:
 
     Claim:
       type: object
-      description: Claim object (structure TBC based on claim-fields.schema.json)
-      additionalProperties: true
+      description: Claim data for validation
+      required:
+        - areaOfLaw
+        - officeAccountNumber
+      properties:
+        # Required fields
+        areaOfLaw:
+          $ref: '#/components/schemas/AreaOfLaw'
+        officeAccountNumber:
+          type: string
+          description: The unique account number assigned to the provider office by the LAA
+          example: "1A234B"
+        # Core claim fields
+        id:
+          type: string
+          format: uuid
+          description: Unique identifier for the claim
+        submissionId:
+          type: string
+          format: uuid
+          description: UUID of the parent submission
+        status:
+          $ref: '#/components/schemas/ClaimStatus'
+        lineNumber:
+          type: integer
+          description: Line number within the submission
+        scheduleReference:
+          type: string
+          description: Reference to the schedule
+        submissionPeriod:
+          type: string
+          description: Submission period (e.g., "JUL-2025")
+        # Case details
+        caseReferenceNumber:
+          type: string
+          description: Case reference number
+        uniqueFileNumber:
+          type: string
+          description: Provider's unique case reference number for controlled work billing (format DDMMYY/NNN)
+        caseStartDate:
+          type: string
+          description: Date the case was started (format YYYY-MM-DD)
+        caseConcludedDate:
+          type: string
+          description: Date the case was concluded (format YYYY-MM-DD)
+        caseId:
+          type: string
+          description: Case identifier
+        uniqueCaseId:
+          type: string
+          description: Unique case identifier
+        caseStageCode:
+          type: string
+          description: Code indicating the stage of the case
+        # Fee and matter type
+        matterTypeCode:
+          type: string
+          description: Matter type code
+        crimeMatterTypeCode:
+          type: string
+          description: Crime-specific matter type code
+        feeSchemeCode:
+          type: string
+          description: Fee scheme code
+        feeCode:
+          type: string
+          description: Alphanumeric code identifying the specific fee type or category
+        procurementAreaCode:
+          type: string
+          description: Procurement area code
+        accessPointCode:
+          type: string
+          description: Access point code
+        deliveryLocation:
+          type: string
+          description: Location where service was delivered
+        # Representation order
+        representationOrderDate:
+          type: string
+          description: Date the representation order was created (format YYYY-MM-DD)
+        # Crime-specific fields
+        suspectsDefendantsCount:
+          type: integer
+          description: Number of suspects/defendants
+        policeStationCourtAttendancesCount:
+          type: integer
+          description: Number of police station or court attendances
+        policeStationCourtPrisonId:
+          type: string
+          description: Police station, court, or prison identifier
+        dsccNumber:
+          type: string
+          description: DSCC number
+        maatId:
+          type: string
+          description: MAAT identifier
+        prisonLawPriorApprovalNumber:
+          type: string
+          description: Prison law prior approval number
+        isDutySolicitor:
+          type: boolean
+          description: Whether this is a duty solicitor case
+        isYouthCourt:
+          type: boolean
+          description: Whether this is a youth court case
+        schemeId:
+          type: string
+          description: Scheme identifier
+        # Mediation fields
+        mediationSessionsCount:
+          type: integer
+          description: Number of mediation sessions
+        mediationTimeMinutes:
+          type: integer
+          description: Total mediation time in minutes
+        outreachLocation:
+          type: string
+          description: Outreach location
+        referralSource:
+          type: string
+          description: Source of referral
+        # Client details
+        clientForename:
+          type: string
+          description: Client's first name
+        clientSurname:
+          type: string
+          description: Client's surname
+        clientDateOfBirth:
+          type: string
+          description: Client's date of birth (format YYYY-MM-DD)
+        uniqueClientNumber:
+          type: string
+          description: Unique client number
+        clientPostcode:
+          type: string
+          description: Client's postcode
+        genderCode:
+          type: string
+          description: Gender code
+        ethnicityCode:
+          type: string
+          description: Ethnicity code
+        disabilityCode:
+          type: string
+          description: Disability code
+        isLegallyAided:
+          type: boolean
+          description: Whether client is legally aided
+        clientTypeCode:
+          type: string
+          description: Client type code
+        homeOfficeClientNumber:
+          type: string
+          description: Home Office client number (for immigration cases)
+        claReferenceNumber:
+          type: string
+          description: CLA reference number
+        claExemptionCode:
+          type: string
+          description: CLA exemption code
+        # Client 2 details (for joint cases)
+        client2Forename:
+          type: string
+          description: Second client's first name
+        client2Surname:
+          type: string
+          description: Second client's surname
+        client2DateOfBirth:
+          type: string
+          description: Second client's date of birth (format YYYY-MM-DD)
+        client2Ucn:
+          type: string
+          description: Second client's unique client number
+        client2Postcode:
+          type: string
+          description: Second client's postcode
+        client2GenderCode:
+          type: string
+          description: Second client's gender code
+        client2EthnicityCode:
+          type: string
+          description: Second client's ethnicity code
+        client2DisabilityCode:
+          type: string
+          description: Second client's disability code
+        client2IsLegallyAided:
+          type: boolean
+          description: Whether second client is legally aided
+        # Stage and outcome
+        stageReachedCode:
+          type: string
+          description: Stage reached code
+        standardFeeCategoryCode:
+          type: string
+          description: Standard fee category code
+        outcomeCode:
+          type: string
+          description: Outcome code
+        # Immigration specific
+        designatedAccreditedRepresentativeCode:
+          type: string
+          description: Designated accredited representative code
+        isPostalApplicationAccepted:
+          type: boolean
+          description: Whether postal application was accepted
+        isClient2PostalApplicationAccepted:
+          type: boolean
+          description: Whether second client's postal application was accepted
+        mentalHealthTribunalReference:
+          type: string
+          description: Mental health tribunal reference
+        isNrmAdvice:
+          type: boolean
+          description: Whether NRM advice was provided
+        followOnWork:
+          type: string
+          description: Follow-on work details
+        # Transfer and exemption
+        transferDate:
+          type: string
+          description: Transfer date (format YYYY-MM-DD)
+        exemptionCriteriaSatisfied:
+          type: string
+          description: Exemption criteria satisfied
+        exceptionalCaseFundingReference:
+          type: string
+          description: Exceptional case funding reference
+        isLegacyCase:
+          type: boolean
+          description: Whether this is a legacy case
+        # Time and costs
+        adviceTime:
+          type: integer
+          description: Advice time in minutes
+        travelTime:
+          type: integer
+          description: Travel time in minutes
+        waitingTime:
+          type: integer
+          description: Waiting time in minutes
+        netProfitCostsAmount:
+          type: number
+          description: Net profit costs amount
+        netDisbursementAmount:
+          type: number
+          description: Net disbursement amount
+        netCounselCostsAmount:
+          type: number
+          description: Net counsel costs amount
+        disbursementsVatAmount:
+          type: number
+          description: Disbursements VAT amount
+        travelWaitingCostsAmount:
+          type: number
+          description: Travel and waiting costs amount
+        netWaitingCostsAmount:
+          type: number
+          description: Net waiting costs amount
+        isVatApplicable:
+          type: boolean
+          description: Whether VAT is applicable
+        isToleranceApplicable:
+          type: boolean
+          description: Whether tolerance is applicable
+        priorAuthorityReference:
+          type: string
+          description: Prior authority reference
+        isLondonRate:
+          type: boolean
+          description: Whether London rate applies
+        adjournedHearingFeeAmount:
+          type: integer
+          description: Number of times the hearing was adjourned
+        isAdditionalTravelPayment:
+          type: boolean
+          description: Whether additional travel payment applies
+        costsDamagesRecoveredAmount:
+          type: number
+          description: Costs/damages recovered amount
+        meetingsAttendedCode:
+          type: string
+          description: Meetings attended code
+        detentionTravelWaitingCostsAmount:
+          type: number
+          description: Detention travel and waiting costs amount
+        jrFormFillingAmount:
+          type: number
+          description: JR form filling amount
+        isEligibleClient:
+          type: boolean
+          description: Whether client is eligible
+        courtLocationCode:
+          type: string
+          description: Court location code
+        adviceTypeCode:
+          type: string
+          description: Advice type code
+        medicalReportsCount:
+          type: integer
+          description: Number of medical reports
+        isIrcSurgery:
+          type: boolean
+          description: Whether IRC surgery applies
+        surgeryDate:
+          type: string
+          description: Surgery date (format YYYY-MM-DD)
+        surgeryClientsCount:
+          type: integer
+          description: Number of surgery clients
+        surgeryMattersCount:
+          type: integer
+          description: Number of surgery matters
+        cmrhOralCount:
+          type: integer
+          description: CMRH oral count
+        cmrhTelephoneCount:
+          type: integer
+          description: CMRH telephone count
+        aitHearingCentreCode:
+          type: string
+          description: AIT hearing centre code
+        isSubstantiveHearing:
+          type: boolean
+          description: Whether this is a substantive hearing
+        hoInterview:
+          type: integer
+          description: Number of Home Office interviews
+        localAuthorityNumber:
+          type: string
+          description: Local authority number
+        # Metadata
+        createdByUserId:
+          type: string
+          description: ID of the user who created the claim
+        isAmended:
+          type: boolean
+          description: Whether the claim has been amended
+        hasAssessment:
+          type: boolean
+          description: Whether the claim has an assessment
+        version:
+          type: integer
+          description: Version number for optimistic locking
+
+    AreaOfLaw:
+      type: string
+      enum:
+        - CRIME_LOWER
+        - LEGAL_HELP
+        - MEDIATION
+      description: Area of law for the claim
+
+    ClaimStatus:
+      type: string
+      enum:
+        - READY_TO_PROCESS
+        - VALID
+        - INVALID
+        - VOID
+      description: Processing status of the claim
 
     ValidationResult:
       type: object
@@ -104,7 +454,12 @@ components:
           description: JSON path to the field causing the issue
           example: ["fees", 0, "justification"]
         severity:
-          type: string
-          enum: [ERROR, WARNING, INFO]
-          description: Severity level of the issue
+          $ref: '#/components/schemas/ValidationSeverity'
 
+    ValidationSeverity:
+      type: string
+      enum:
+        - ERROR
+        - WARNING
+        - INFO
+      description: Severity level of the validation issue

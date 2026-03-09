@@ -5,14 +5,13 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import uk.gov.justice.laa.dstew.payments.claims.model.Claim;
 import uk.gov.justice.laa.dstew.payments.claims.model.ValidationIssue;
 import uk.gov.justice.laa.dstew.payments.claims.validation.error.ClaimValidationError;
-import uk.gov.justice.laa.dstew.payments.claims.validation.validator.ClaimValidator;
 import uk.gov.justice.laa.dstew.payments.claims.validation.validator.ValidationContext;
 
 /**
@@ -27,16 +26,15 @@ public class UniqueFileNumberValidator implements ClaimValidator {
   private static final DateTimeFormatter UFN_DATE_FORMAT = DateTimeFormatter.ofPattern("ddMMyy");
 
   @Override
-  public List<ValidationIssue> validate(Map<String, Object> claim, ValidationContext context) {
+  public List<ValidationIssue> validate(Claim claim, ValidationContext context) {
     List<ValidationIssue> issues = new ArrayList<>();
 
-    Object ufnValue = claim.get("uniqueFileNumber");
-    if (ufnValue == null) {
+    String ufn = claim.getUniqueFileNumber();
+    if (ufn == null || ufn.isBlank()) {
       // UFN may not be mandatory for all claim types - let MandatoryFieldValidator handle that
       return issues;
     }
 
-    String ufn = ufnValue.toString();
     log.debug("Validating UFN: {}", ufn);
 
     Matcher matcher = UFN_PATTERN.matcher(ufn);
@@ -72,4 +70,3 @@ public class UniqueFileNumberValidator implements ClaimValidator {
     return "UNIQUE_FILE_NUMBER";
   }
 }
-

@@ -1,10 +1,8 @@
 package uk.gov.justice.laa.dstew.payments.claims.validation.validator.rules;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -13,6 +11,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.justice.laa.dstew.payments.claims.model.Claim;
 import uk.gov.justice.laa.dstew.payments.claims.model.ValidationIssue;
 import uk.gov.justice.laa.dstew.payments.claims.validation.client.FeeSchemeClient;
 import uk.gov.justice.laa.dstew.payments.claims.validation.client.FeeSchemeClient.FeeDetailsResponse;
@@ -29,12 +28,11 @@ class CategoryOfLawValidatorTest {
 
   @Test
   void validate_returnsNoErrors_whenFeeCodeValidAndProviderAuthorized() {
-    Map<String, Object> claim = new HashMap<>();
-    claim.put("feeCode", "ABC123");
+    Claim claim = new Claim();
+    claim.setFeeCode("ABC123");
+    claim.setOfficeAccountNumber("1A234B");
 
-    ValidationContext context = ValidationContext.builder()
-        .officeAccountNumber("1A234B")
-        .build();
+    ValidationContext context = ValidationContext.builder().build();
 
     FeeDetailsResponse feeDetails = new FeeDetailsResponse(
         "ABC123", "STANDARD", "LEGAL_HELP", "Description", Map.of());
@@ -51,8 +49,8 @@ class CategoryOfLawValidatorTest {
 
   @Test
   void validate_returnsError_whenFeeCodeNotFound() {
-    Map<String, Object> claim = new HashMap<>();
-    claim.put("feeCode", "INVALID");
+    Claim claim = new Claim();
+    claim.setFeeCode("INVALID");
 
     ValidationContext context = ValidationContext.builder().build();
 
@@ -67,12 +65,11 @@ class CategoryOfLawValidatorTest {
 
   @Test
   void validate_returnsError_whenProviderNotAuthorized() {
-    Map<String, Object> claim = new HashMap<>();
-    claim.put("feeCode", "ABC123");
+    Claim claim = new Claim();
+    claim.setFeeCode("ABC123");
+    claim.setOfficeAccountNumber("1A234B");
 
-    ValidationContext context = ValidationContext.builder()
-        .officeAccountNumber("1A234B")
-        .build();
+    ValidationContext context = ValidationContext.builder().build();
 
     FeeDetailsResponse feeDetails = new FeeDetailsResponse(
         "ABC123", "STANDARD", "CRIME", "Description", Map.of());
@@ -91,7 +88,7 @@ class CategoryOfLawValidatorTest {
 
   @Test
   void validate_returnsNoErrors_whenNoFeeCode() {
-    Map<String, Object> claim = new HashMap<>();
+    Claim claim = new Claim();
     ValidationContext context = ValidationContext.builder().build();
 
     List<ValidationIssue> issues = validator.validate(claim, context);
@@ -101,8 +98,8 @@ class CategoryOfLawValidatorTest {
 
   @Test
   void validate_returnsTechnicalError_whenServiceFails() {
-    Map<String, Object> claim = new HashMap<>();
-    claim.put("feeCode", "ABC123");
+    Claim claim = new Claim();
+    claim.setFeeCode("ABC123");
 
     ValidationContext context = ValidationContext.builder().build();
 
@@ -132,4 +129,3 @@ class CategoryOfLawValidatorTest {
     assertThat(validator.getValidatorCode()).isEqualTo("CATEGORY_OF_LAW");
   }
 }
-

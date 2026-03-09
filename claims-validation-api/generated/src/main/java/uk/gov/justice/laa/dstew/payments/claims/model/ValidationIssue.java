@@ -10,6 +10,7 @@ import java.util.Arrays;
 import java.util.List;
 import org.springframework.lang.Nullable;
 import uk.gov.justice.laa.dstew.payments.claims.model.ValidationIssuePathInner;
+import uk.gov.justice.laa.dstew.payments.claims.model.ValidationSeverity;
 import org.openapitools.jackson.nullable.JsonNullable;
 import java.io.Serializable;
 import java.time.OffsetDateTime;
@@ -25,7 +26,7 @@ import jakarta.annotation.Generated;
  * ValidationIssue
  */
 
-@Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2026-03-09T17:50:01.801544Z[Europe/London]", comments = "Generator version: 7.18.0")
+@Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2026-03-09T20:52:56.993544Z[Europe/London]", comments = "Generator version: 7.18.0")
 public class ValidationIssue implements Serializable {
 
   private static final long serialVersionUID = 1L;
@@ -37,44 +38,7 @@ public class ValidationIssue implements Serializable {
   @Valid
   private List<ValidationIssuePathInner> path = new ArrayList<>();
 
-  /**
-   * Severity level of the issue
-   */
-  public enum SeverityEnum {
-    ERROR("ERROR"),
-    
-    WARNING("WARNING"),
-    
-    INFO("INFO");
-
-    private final String value;
-
-    SeverityEnum(String value) {
-      this.value = value;
-    }
-
-    @JsonValue
-    public String getValue() {
-      return value;
-    }
-
-    @Override
-    public String toString() {
-      return String.valueOf(value);
-    }
-
-    @JsonCreator
-    public static SeverityEnum fromValue(String value) {
-      for (SeverityEnum b : SeverityEnum.values()) {
-        if (b.value.equals(value)) {
-          return b;
-        }
-      }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
-    }
-  }
-
-  private SeverityEnum severity;
+  private ValidationSeverity severity;
 
   public ValidationIssue() {
     super();
@@ -83,7 +47,7 @@ public class ValidationIssue implements Serializable {
   /**
    * Constructor with only required parameters
    */
-  public ValidationIssue(String code, String message, SeverityEnum severity) {
+  public ValidationIssue(String code, String message, ValidationSeverity severity) {
     this.code = code;
     this.message = message;
     this.severity = severity;
@@ -157,23 +121,23 @@ public class ValidationIssue implements Serializable {
     this.path = path;
   }
 
-  public ValidationIssue severity(SeverityEnum severity) {
+  public ValidationIssue severity(ValidationSeverity severity) {
     this.severity = severity;
     return this;
   }
 
   /**
-   * Severity level of the issue
+   * Get severity
    * @return severity
    */
-  @NotNull 
-  @Schema(name = "severity", description = "Severity level of the issue", requiredMode = Schema.RequiredMode.REQUIRED)
+  @NotNull @Valid 
+  @Schema(name = "severity", requiredMode = Schema.RequiredMode.REQUIRED)
   @JsonProperty("severity")
-  public SeverityEnum getSeverity() {
+  public ValidationSeverity getSeverity() {
     return severity;
   }
 
-  public void setSeverity(SeverityEnum severity) {
+  public void setSeverity(ValidationSeverity severity) {
     this.severity = severity;
   }
 
@@ -255,7 +219,7 @@ public class ValidationIssue implements Serializable {
       return this;
     }
     
-    public ValidationIssue.Builder severity(SeverityEnum severity) {
+    public ValidationIssue.Builder severity(ValidationSeverity severity) {
       this.instance.severity(severity);
       return this;
     }

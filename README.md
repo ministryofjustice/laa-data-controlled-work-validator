@@ -50,14 +50,14 @@ Validates a claim and returns validation issues.
 ```json
 {
   "claim": {
+    "areaOfLaw": "LEGAL_HELP",
+    "officeAccountNumber": "1A234B",
     "feeCode": "ABC123",
     "uniqueFileNumber": "010120/001",
     "caseStartDate": "2020-01-15",
     "caseConcludedDate": "2020-06-15"
   },
   "scope": "fee",
-  "areaOfLaw": "LEGAL_HELP",
-  "officeAccountNumber": "1A234B",
   "relatedClaims": []
 }
 ```
