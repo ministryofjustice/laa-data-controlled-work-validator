@@ -1,0 +1,26 @@
+server:
+  port: 8081 # change to desired port number
+
+spring:
+  application:
+    name: LAA Claims Validation Service
+
+management:
+  server:
+    port: 8181 # change to desired port number
+  # specify actuator endpoints to enable
+  endpoints:
+    web:
+      exposure:
+        include: health
+
+# External validation service configuration
+external:
+  validation:
+    base-url: http://localhost:8080
+    connect-timeout-ms: 5000
+    read-timeout-ms: 10000
+
+sentry:
+  dsn: # configure dsn url here
+  environment: # configure environment name here

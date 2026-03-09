@@ -1,0 +1,96 @@
+openapi: "3.0.0"
+info:
+  version: 1.0.0
+  title: Claims Validation API
+  description: Stateless validation service for LAA Data Claims
+paths:
+  /v1/validation/claim:
+    post:
+      tags:
+        - validation
+      summary: Validate a claim
+      operationId: validateClaim
+      requestBody:
+        description: Claim validation request
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClaimValidationRequest'
+      responses:
+        '200':
+          description: 'Validation completed'
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationResult"
+        '400':
+          description: 'Bad request'
+        '401':
+          description: 'Unauthorized'
+        '403':
+          description: 'Forbidden'
+        '500':
+          description: 'Internal server error'
+
+components:
+  schemas:
+    ClaimValidationRequest:
+      type: object
+      required:
+        - claim
+      properties:
+        claim:
+          $ref: '#/components/schemas/Claim'
+        scope:
+          type: string
+          description: Optional validation scope (e.g., "fee")
+          example: "fee"
+
+    Claim:
+      type: object
+      description: Claim object (structure TBC based on claim-fields.schema.json)
+      additionalProperties: true
+
+    ValidationResult:
+      type: object
+      required:
+        - isValid
+        - issues
+      properties:
+        isValid:
+          type: boolean
+          description: Whether the claim passed all validation rules
+        issues:
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationIssue'
+
+    ValidationIssue:
+      type: object
+      required:
+        - code
+        - message
+        - severity
+      properties:
+        code:
+          type: string
+          description: Unique code identifying the validation issue
+          example: "FEE.MISSING_JUSTIFICATION"
+        message:
+          type: string
+          description: Human-readable description of the issue
+          example: "Enhancement fee requires a justification."
+        path:
+          type: array
+          items:
+            oneOf:
+              - type: string
+              - type: integer
+          description: JSON path to the field causing the issue
+          example: ["fees", 0, "justification"]
+        severity:
+          type: string
+          enum: [ERROR, WARNING, INFO]
+          description: Severity level of the issue
+

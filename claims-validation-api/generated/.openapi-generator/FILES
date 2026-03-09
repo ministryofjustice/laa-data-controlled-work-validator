@@ -1,0 +1,9 @@
+.openapi-generator-ignore
+README.md
+pom.xml
+src/main/java/uk/gov/justice/laa/dstew/payments/claims/api/ApiUtil.java
+src/main/java/uk/gov/justice/laa/dstew/payments/claims/api/ValidationApi.java
+src/main/java/uk/gov/justice/laa/dstew/payments/claims/model/ClaimValidationRequest.java
+src/main/java/uk/gov/justice/laa/dstew/payments/claims/model/ValidationIssue.java
+src/main/java/uk/gov/justice/laa/dstew/payments/claims/model/ValidationIssuePathInner.java
+src/main/java/uk/gov/justice/laa/dstew/payments/claims/model/ValidationResult.java

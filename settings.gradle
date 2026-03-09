@@ -13,7 +13,7 @@ pluginManagement {
     }
 
     plugins {
-        id 'uk.gov.laa.springboot.laa-spring-boot-gradle-plugin' version '2.0.7'
+        id 'uk.gov.laa.springboot.laa-spring-boot-gradle-plugin' version '2.1.0'
         id 'org.openapi.generator' version '7.18.0'
         id 'io.freefair.lombok' version '9.1.0'
     }
@@ -21,6 +21,4 @@ pluginManagement {
 
 rootProject.name = 'laa-spring-boot-microservice-template'
 
-include 'spring-boot-microservice-api'
-include 'spring-boot-microservice-service'
-
+include 'claims-validation-service', 'claims-validation-api'
