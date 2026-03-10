@@ -13,8 +13,8 @@ import uk.gov.justice.laa.dstew.payments.claims.model.ValidationIssue;
 import uk.gov.justice.laa.dstew.payments.claims.model.ValidationSeverity;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.ValidationContext;
 
-/** Unit tests for {@link JsonSchemaClaimValidator}. */
-class JsonSchemaClaimValidatorTest {
+/** Unit tests for {@link ClaimSchemaValidator}. */
+class ClaimSchemaValidatorTest {
 
   private static final String UFN_CUSTOM_MESSAGE =
       "Unique File Number (UFN) must be in the format DDMMYY/NNN with a date in the past";
@@ -25,12 +25,12 @@ class JsonSchemaClaimValidatorTest {
   private static final String ACCESS_POINT_CUSTOM_MESSAGE =
       "Access Point Code must be in the format AP##### (AP followed by 5 digits)";
 
-  private JsonSchemaClaimValidator validator;
+  private ClaimSchemaValidator validator;
   private ValidationContext context;
 
   @BeforeEach
   void setUp() {
-    validator = new JsonSchemaClaimValidator();
+    validator = new ClaimSchemaValidator();
     validator.init();
     context = ValidationContext.builder().build();
   }
@@ -161,13 +161,13 @@ class JsonSchemaClaimValidatorTest {
   }
 
   @Test
-  void priority_returnsZero() {
-    assertThat(validator.priority()).isZero();
+  void priority_returnsOne() {
+    assertThat(validator.priority()).isEqualTo(1);
   }
 
   @Test
-  void getValidatorCode_returnsJsonSchema() {
-    assertThat(validator.getValidatorCode()).isEqualTo("JSON_SCHEMA");
+  void getValidatorCode_returnsClaimSchema() {
+    assertThat(validator.getValidatorCode()).isEqualTo("CLAIM_SCHEMA");
   }
 
   @Test

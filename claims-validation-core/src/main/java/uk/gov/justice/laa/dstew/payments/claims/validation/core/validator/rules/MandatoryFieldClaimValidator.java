@@ -15,7 +15,7 @@ import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.Valida
  */
 @Component
 @Slf4j
-public class MandatoryFieldValidator implements ClaimValidator {
+public class MandatoryFieldClaimValidator implements ClaimValidator {
 
   @Override
   public List<ValidationIssue> validate(Claim claim, ValidationContext context) {

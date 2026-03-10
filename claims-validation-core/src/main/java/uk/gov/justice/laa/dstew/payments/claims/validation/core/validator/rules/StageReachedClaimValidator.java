@@ -17,7 +17,7 @@ import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.Valida
  */
 @Component
 @Slf4j
-public class StageReachedValidator implements ClaimValidator {
+public class StageReachedClaimValidator implements ClaimValidator {
 
   private static final Pattern LEGAL_HELP_PATTERN = Pattern.compile("^[a-zA-Z0-9]{2}$");
   private static final Pattern CRIME_LOWER_PATTERN =
@@ -59,7 +59,7 @@ public class StageReachedValidator implements ClaimValidator {
 
   @Override
   public int priority() {
-    return 50;
+    return 100; // Standard field validation priority
   }
 
   @Override

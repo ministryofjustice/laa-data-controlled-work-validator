@@ -16,7 +16,7 @@ import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.Valida
  */
 @Component
 @Slf4j
-public class ScheduleReferenceValidator implements ClaimValidator {
+public class ScheduleReferenceClaimValidator implements ClaimValidator {
 
   // Schedule reference format: typically alphanumeric
   private static final Pattern SCHEDULE_REF_PATTERN = Pattern.compile("^[A-Z0-9]{1,20}$");
@@ -43,7 +43,7 @@ public class ScheduleReferenceValidator implements ClaimValidator {
 
   @Override
   public int priority() {
-    return 65;
+    return 100; // Standard field validation priority
   }
 
   @Override

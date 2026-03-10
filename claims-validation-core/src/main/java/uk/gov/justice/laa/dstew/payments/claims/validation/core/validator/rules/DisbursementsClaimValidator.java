@@ -17,7 +17,7 @@ import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.Valida
  */
 @Component
 @Slf4j
-public class DisbursementsValidator implements ClaimValidator {
+public class DisbursementsClaimValidator implements ClaimValidator {
 
   private static final BigDecimal MAX_VAT_LEGAL_HELP = new BigDecimal("99999.99");
   private static final BigDecimal MAX_VAT_CRIME_LOWER = new BigDecimal("999999.99");
@@ -59,7 +59,7 @@ public class DisbursementsValidator implements ClaimValidator {
 
   @Override
   public int priority() {
-    return 40;
+    return 100; // Standard field validation priority
   }
 
   @Override

@@ -18,11 +18,11 @@ import uk.gov.justice.laa.dstew.payments.claims.validation.core.client.FeeScheme
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.ValidationContext;
 
 @ExtendWith(MockitoExtension.class)
-class CategoryOfLawValidatorTest {
+class EffectiveCategoryOfLawClaimValidatorTest {
 
   @Mock private FeeSchemeClient mockFeeSchemeClient;
 
-  @InjectMocks private CategoryOfLawValidator validator;
+  @InjectMocks private EffectiveCategoryOfLawClaimValidator validator;
 
   @Test
   void validate_returnsNoErrors_whenFeeCodeValidAndProviderAuthorized() {

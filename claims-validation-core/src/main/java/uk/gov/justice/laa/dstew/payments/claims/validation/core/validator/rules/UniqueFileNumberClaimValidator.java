@@ -20,7 +20,7 @@ import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.Valida
  */
 @Component
 @Slf4j
-public class UniqueFileNumberValidator implements ClaimValidator {
+public class UniqueFileNumberClaimValidator implements ClaimValidator {
 
   private static final Pattern UFN_PATTERN = Pattern.compile("^(\\d{6})/(\\d{3})$");
   private static final DateTimeFormatter UFN_DATE_FORMAT = DateTimeFormatter.ofPattern("ddMMyy");
@@ -62,7 +62,7 @@ public class UniqueFileNumberValidator implements ClaimValidator {
 
   @Override
   public int priority() {
-    return 20; // Run after mandatory field checks
+    return 100; // Standard field validation priority
   }
 
   @Override

@@ -17,7 +17,7 @@ import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.Valida
  */
 @Component
 @Slf4j
-public class MatterTypeValidator implements ClaimValidator {
+public class MatterTypeClaimValidator implements ClaimValidator {
 
   // TODO: These should be loaded from reference data or configuration
   private static final Set<String> VALID_LEGAL_HELP_MATTER_TYPES =
@@ -66,7 +66,7 @@ public class MatterTypeValidator implements ClaimValidator {
 
   @Override
   public int priority() {
-    return 55;
+    return 100; // Standard field validation priority
   }
 
   @Override

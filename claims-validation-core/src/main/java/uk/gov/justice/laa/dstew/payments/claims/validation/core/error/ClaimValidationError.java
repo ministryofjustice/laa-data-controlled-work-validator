@@ -98,6 +98,14 @@ public enum ClaimValidationError {
   // Stage reached errors
   INVALID_STAGE_REACHED("Invalid stage reached value", null, "STAGE", ValidationSeverity.ERROR),
 
+  // Disbursement errors
+  DISBURSEMENT_TOO_EARLY(
+      "Disbursement claims can only be submitted at least "
+          + "3 calendar months after the Case Start Date",
+      null,
+      "DISBURSEMENT",
+      ValidationSeverity.ERROR),
+
   // Matter type errors
   INVALID_MATTER_TYPE_CODE(
       "Invalid matter type code: %s", null, "MATTER_TYPE", ValidationSeverity.ERROR),

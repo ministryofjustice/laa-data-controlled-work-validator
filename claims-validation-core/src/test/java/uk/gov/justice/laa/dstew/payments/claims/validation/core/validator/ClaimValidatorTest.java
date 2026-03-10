@@ -8,14 +8,15 @@ import uk.gov.justice.laa.dstew.payments.claims.model.AreaOfLaw;
 import uk.gov.justice.laa.dstew.payments.claims.model.Claim;
 import uk.gov.justice.laa.dstew.payments.claims.model.ValidationIssue;
 import uk.gov.justice.laa.dstew.payments.claims.model.ValidationSeverity;
-import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.rules.MandatoryFieldValidator;
-import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.rules.UniqueFileNumberValidator;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.rules.MandatoryFieldClaimValidator;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.rules.UniqueFileNumberClaimValidator;
 
 class ClaimValidatorTest {
 
-  private final MandatoryFieldValidator mandatoryFieldValidator = new MandatoryFieldValidator();
-  private final UniqueFileNumberValidator uniqueFileNumberValidator =
-      new UniqueFileNumberValidator();
+  private final MandatoryFieldClaimValidator mandatoryFieldClaimValidator =
+      new MandatoryFieldClaimValidator();
+  private final UniqueFileNumberClaimValidator uniqueFileNumberClaimValidator =
+      new UniqueFileNumberClaimValidator();
 
   @Test
   void mandatoryFieldValidator_returnsErrorWhenFeeCodeMissing() {
@@ -23,7 +24,7 @@ class ClaimValidatorTest {
     // Missing areaOfLaw, officeAccountNumber, and feeCode
     ValidationContext context = ValidationContext.builder().scope("fee").build();
 
-    List<ValidationIssue> issues = mandatoryFieldValidator.validate(claim, context);
+    List<ValidationIssue> issues = mandatoryFieldClaimValidator.validate(claim, context);
 
     assertThat(issues).hasSize(3);
     assertThat(issues.getFirst().getCode()).isEqualTo("MISSING_MANDATORY_FIELD");
@@ -38,7 +39,7 @@ class ClaimValidatorTest {
     claim.setOfficeAccountNumber("1A234B");
     ValidationContext context = ValidationContext.builder().scope("fee").build();
 
-    List<ValidationIssue> issues = mandatoryFieldValidator.validate(claim, context);
+    List<ValidationIssue> issues = mandatoryFieldClaimValidator.validate(claim, context);
 
     assertThat(issues).isEmpty();
   }
@@ -49,7 +50,7 @@ class ClaimValidatorTest {
     claim.setUniqueFileNumber("010120/001");
     ValidationContext context = ValidationContext.builder().build();
 
-    List<ValidationIssue> issues = uniqueFileNumberValidator.validate(claim, context);
+    List<ValidationIssue> issues = uniqueFileNumberClaimValidator.validate(claim, context);
 
     assertThat(issues).isEmpty();
   }
@@ -60,7 +61,7 @@ class ClaimValidatorTest {
     claim.setUniqueFileNumber("invalid-format");
     ValidationContext context = ValidationContext.builder().build();
 
-    List<ValidationIssue> issues = uniqueFileNumberValidator.validate(claim, context);
+    List<ValidationIssue> issues = uniqueFileNumberClaimValidator.validate(claim, context);
 
     assertThat(issues).hasSize(1);
     assertThat(issues.getFirst().getCode()).isEqualTo("INVALID_UNIQUE_FILE_NUMBER_FORMAT");
@@ -73,7 +74,7 @@ class ClaimValidatorTest {
     claim.setUniqueFileNumber("010199/001");
     ValidationContext context = ValidationContext.builder().build();
 
-    List<ValidationIssue> issues = uniqueFileNumberValidator.validate(claim, context);
+    List<ValidationIssue> issues = uniqueFileNumberClaimValidator.validate(claim, context);
 
     // Date 01/01/99 is interpreted as 2099 which is in the future
     assertThat(issues).hasSize(1);
@@ -85,21 +86,15 @@ class ClaimValidatorTest {
     Claim claim = new Claim();
     ValidationContext context = ValidationContext.builder().build();
 
-    List<ValidationIssue> issues = uniqueFileNumberValidator.validate(claim, context);
+    List<ValidationIssue> issues = uniqueFileNumberClaimValidator.validate(claim, context);
 
     // UFN is optional - MandatoryFieldValidator handles required check
     assertThat(issues).isEmpty();
   }
 
   @Test
-  void validators_haveDifferentPriorities() {
-    assertThat(mandatoryFieldValidator.priority()).isEqualTo(10);
-    assertThat(uniqueFileNumberValidator.priority()).isEqualTo(20);
-  }
-
-  @Test
   void validators_haveUniqueValidatorCodes() {
-    assertThat(mandatoryFieldValidator.getValidatorCode()).isEqualTo("MANDATORY_FIELD");
-    assertThat(uniqueFileNumberValidator.getValidatorCode()).isEqualTo("UNIQUE_FILE_NUMBER");
+    assertThat(mandatoryFieldClaimValidator.getValidatorCode()).isEqualTo("MANDATORY_FIELD");
+    assertThat(uniqueFileNumberClaimValidator.getValidatorCode()).isEqualTo("UNIQUE_FILE_NUMBER");
   }
 }

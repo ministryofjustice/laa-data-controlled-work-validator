@@ -21,7 +21,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
  * Processing status of the claim
  */
 
-@Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2026-03-10T19:17:34.176544Z[Europe/London]", comments = "Generator version: 7.18.0")
+@Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2026-03-10T20:09:16.396906Z[Europe/London]", comments = "Generator version: 7.18.0")
 public enum ClaimStatus implements Serializable {
   
   READY_TO_PROCESS("READY_TO_PROCESS"),

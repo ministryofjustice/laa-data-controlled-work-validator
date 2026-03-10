@@ -13,7 +13,7 @@ import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.Valida
 /** Validator for outcome code. Validates that the outcome code is valid for the area of law. */
 @Component
 @Slf4j
-public class OutcomeCodeValidator implements ClaimValidator {
+public class OutcomeCodeClaimValidator implements ClaimValidator {
 
   // TODO: These should be loaded from reference data or configuration
   private static final Set<String> VALID_OUTCOME_CODES =
@@ -69,7 +69,7 @@ public class OutcomeCodeValidator implements ClaimValidator {
 
   @Override
   public int priority() {
-    return 60;
+    return 100; // Standard field validation priority
   }
 
   @Override

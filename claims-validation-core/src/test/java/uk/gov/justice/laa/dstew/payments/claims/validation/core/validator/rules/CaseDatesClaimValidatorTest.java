@@ -9,9 +9,9 @@ import uk.gov.justice.laa.dstew.payments.claims.model.Claim;
 import uk.gov.justice.laa.dstew.payments.claims.model.ValidationIssue;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.ValidationContext;
 
-class CaseDatesValidatorTest {
+class CaseDatesClaimValidatorTest {
 
-  private final CaseDatesValidator validator = new CaseDatesValidator();
+  private final CaseDatesClaimValidator validator = new CaseDatesClaimValidator();
 
   @Test
   void validate_returnsNoErrors_whenAllDatesValid() {
@@ -98,7 +98,7 @@ class CaseDatesValidatorTest {
   }
 
   @Test
-  void priority_returns30() {
-    assertThat(validator.priority()).isEqualTo(30);
+  void priority_returns100() {
+    assertThat(validator.priority()).isEqualTo(100);
   }
 }

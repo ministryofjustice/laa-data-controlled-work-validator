@@ -17,7 +17,7 @@ import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.Valida
  */
 @Component
 @Slf4j
-public class ClientDateOfBirthValidator implements ClaimValidator {
+public class ClientDateOfBirthClaimValidator implements ClaimValidator {
 
   private static final LocalDate MIN_BIRTH_DATE = LocalDate.of(1900, 1, 1);
 
@@ -41,7 +41,7 @@ public class ClientDateOfBirthValidator implements ClaimValidator {
 
   @Override
   public int priority() {
-    return 35; // Run after case dates
+    return 100; // Standard field validation priority
   }
 
   @Override

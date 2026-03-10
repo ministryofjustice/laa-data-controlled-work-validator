@@ -82,19 +82,23 @@ Validates a claim and returns validation issues.
 
 ## Validators
 
+Validators run in priority order (lower numbers first):
+
 | Validator | Priority | Description |
 |-----------|----------|-------------|
-| `MandatoryFieldValidator` | 10 | Checks required fields are present |
-| `UniqueFileNumberValidator` | 20 | Validates UFN format (DDMMYY/NNN) |
-| `CaseDatesValidator` | 30 | Validates case dates |
-| `ClientDateOfBirthValidator` | 35 | Validates client DOB |
-| `DisbursementsValidator` | 40 | Validates VAT amounts |
-| `StageReachedValidator` | 50 | Validates stage reached code |
-| `MatterTypeValidator` | 55 | Validates matter type |
-| `OutcomeCodeValidator` | 60 | Validates outcome code |
-| `ScheduleReferenceValidator` | 65 | Validates schedule reference |
-| `CategoryOfLawValidator` | 70 | Validates fee code via external API |
-| `DuplicateClaimValidator` | 80 | Checks for duplicate claims |
+| `ClaimSchemaValidator` | 1 | JSON schema validation (patterns, types, required fields) |
+| `MandatoryFieldClaimValidator` | 10 | Checks required fields are present |
+| `DisbursementClaimStartDateValidator` | 10 | Validates disbursements are submitted 3+ months after case start |
+| `UniqueFileNumberClaimValidator` | 100 | Validates UFN format (DDMMYY/NNN) |
+| `CaseDatesClaimValidator` | 100 | Validates case dates |
+| `ClientDateOfBirthClaimValidator` | 100 | Validates client DOB |
+| `DisbursementsClaimValidator` | 100 | Validates VAT amounts |
+| `StageReachedClaimValidator` | 100 | Validates stage reached code |
+| `MatterTypeClaimValidator` | 100 | Validates matter type |
+| `OutcomeCodeClaimValidator` | 100 | Validates outcome code |
+| `ScheduleReferenceClaimValidator` | 100 | Validates schedule reference |
+| `EffectiveCategoryOfLawClaimValidator` | 1000 | Validates fee code via external API |
+| `DuplicateClaimValidator` | 10000 | Checks for duplicate claims |
 
 ## Configuration
 

@@ -20,7 +20,7 @@ import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.Valida
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class CategoryOfLawValidator implements ClaimValidator {
+public class EffectiveCategoryOfLawClaimValidator implements ClaimValidator {
 
   private final FeeSchemeClient feeSchemeClient;
 
@@ -71,7 +71,7 @@ public class CategoryOfLawValidator implements ClaimValidator {
 
   @Override
   public int priority() {
-    return 70; // Run after basic field validations
+    return 1000; // Complex business rule - run after basic field validations
   }
 
   @Override

@@ -40,7 +40,7 @@ import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.Valida
  */
 @Component
 @Slf4j
-public class JsonSchemaClaimValidator implements ClaimValidator {
+public class ClaimSchemaValidator implements ClaimValidator {
 
   private static final String SCHEMA_PATH = "/schemas/claim-fields.schema.json";
   private static final String ERROR_CODE = "SCHEMA_VALIDATION_ERROR";
@@ -56,7 +56,7 @@ public class JsonSchemaClaimValidator implements ClaimValidator {
   private JsonNode schemaNode;
 
   /** Constructor - creates its own ObjectMapper for JSON serialization. */
-  public JsonSchemaClaimValidator() {
+  public ClaimSchemaValidator() {
     this.objectMapper = new ObjectMapper();
     this.objectMapper.findAndRegisterModules();
 
@@ -168,6 +168,16 @@ public class JsonSchemaClaimValidator implements ClaimValidator {
     return issues.stream().distinct().toList();
   }
 
+  @Override
+  public int priority() {
+    return 1; // Run first - schema validation should happen before all other validators
+  }
+
+  @Override
+  public String getValidatorCode() {
+    return "CLAIM_SCHEMA";
+  }
+
   /**
    * Builds a warning issue for fields in Claim class not defined in schema.
    *
@@ -265,17 +275,6 @@ public class JsonSchemaClaimValidator implements ClaimValidator {
       return message.substring(startQuote + 1, endQuote);
     }
     return UNKNOWN;
-  }
-
-  @Override
-  public int priority() {
-    // Run first - schema validation should happen before business logic
-    return 0;
-  }
-
-  @Override
-  public String getValidatorCode() {
-    return "JSON_SCHEMA";
   }
 
   /**

@@ -19,7 +19,7 @@ import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.Valida
  */
 @Component
 @Slf4j
-public class CaseDatesValidator implements ClaimValidator {
+public class CaseDatesClaimValidator implements ClaimValidator {
 
   private static final LocalDate OLDEST_DATE_ALLOWED = LocalDate.of(1995, 1, 1);
   private static final LocalDate EARLIEST_CASE_CONCLUDED_DATE = LocalDate.of(2013, 4, 1);
@@ -63,7 +63,7 @@ public class CaseDatesValidator implements ClaimValidator {
 
   @Override
   public int priority() {
-    return 30; // Run after mandatory and UFN validation
+    return 100; // Standard field validation priority
   }
 
   @Override
