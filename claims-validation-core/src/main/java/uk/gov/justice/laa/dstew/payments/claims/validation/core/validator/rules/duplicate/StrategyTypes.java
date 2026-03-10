@@ -1,8 +1,7 @@
 package uk.gov.justice.laa.dstew.payments.claims.validation.service.validator.rules.duplicate;
 
-import lombok.NoArgsConstructor;
-
 import java.util.List;
+import lombok.NoArgsConstructor;
 
 /**
  * Strategy types for duplicate claim validation.

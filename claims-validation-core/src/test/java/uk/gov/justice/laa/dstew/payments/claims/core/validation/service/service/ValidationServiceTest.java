@@ -1,7 +1,6 @@
 package uk.gov.justice.laa.dstew.payments.claims.validation.service.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 import java.util.Collections;
@@ -23,11 +22,9 @@ import uk.gov.justice.laa.dstew.payments.claims.validation.service.validator.rul
 @ExtendWith(MockitoExtension.class)
 class ValidationServiceTest {
 
-  @Mock
-  private List<ClaimValidator> mockValidators;
+  @Mock private List<ClaimValidator> mockValidators;
 
-  @InjectMocks
-  private ValidationService validationService;
+  @InjectMocks private ValidationService validationService;
 
   private Claim createTestClaim() {
     Claim claim = new Claim();
@@ -56,20 +53,19 @@ class ValidationServiceTest {
     request.setClaim(createTestClaim());
     request.setScope("fee");
 
-    ClaimValidator mockValidator = new ClaimValidator() {
-      @Override
-      public List<ValidationIssue> validate(Claim claim, ValidationContext ctx) {
-        return List.of(new ValidationIssue(
-            "TEST_ERROR",
-            "Test error message",
-            ValidationSeverity.ERROR));
-      }
+    ClaimValidator mockValidator =
+        new ClaimValidator() {
+          @Override
+          public List<ValidationIssue> validate(Claim claim, ValidationContext ctx) {
+            return List.of(
+                new ValidationIssue("TEST_ERROR", "Test error message", ValidationSeverity.ERROR));
+          }
 
-      @Override
-      public String getValidatorCode() {
-        return "TEST";
-      }
-    };
+          @Override
+          public String getValidatorCode() {
+            return "TEST";
+          }
+        };
 
     when(mockValidators.stream()).thenReturn(List.of(mockValidator).stream());
 
@@ -85,20 +81,20 @@ class ValidationServiceTest {
     ClaimValidationRequest request = new ClaimValidationRequest();
     request.setClaim(createTestClaim());
 
-    ClaimValidator mockValidator = new ClaimValidator() {
-      @Override
-      public List<ValidationIssue> validate(Claim claim, ValidationContext ctx) {
-        return List.of(new ValidationIssue(
-            "TEST_WARNING",
-            "Test warning message",
-            ValidationSeverity.WARNING));
-      }
+    ClaimValidator mockValidator =
+        new ClaimValidator() {
+          @Override
+          public List<ValidationIssue> validate(Claim claim, ValidationContext ctx) {
+            return List.of(
+                new ValidationIssue(
+                    "TEST_WARNING", "Test warning message", ValidationSeverity.WARNING));
+          }
 
-      @Override
-      public String getValidatorCode() {
-        return "TEST";
-      }
-    };
+          @Override
+          public String getValidatorCode() {
+            return "TEST";
+          }
+        };
 
     when(mockValidators.stream()).thenReturn(List.of(mockValidator).stream());
 
@@ -106,7 +102,6 @@ class ValidationServiceTest {
 
     assertThat(result.getIsValid()).isTrue();
     assertThat(result.getIssues()).hasSize(1);
-    assertThat(result.getIssues().getFirst().getSeverity())
-        .isEqualTo(ValidationSeverity.WARNING);
+    assertThat(result.getIssues().getFirst().getSeverity()).isEqualTo(ValidationSeverity.WARNING);
   }
 }

@@ -11,8 +11,8 @@ import uk.gov.justice.laa.dstew.payments.claims.validation.core.error.ClaimValid
 import uk.gov.justice.laa.dstew.payments.claims.validation.service.validator.ValidationContext;
 
 /**
- * Validator for schedule reference.
- * Validates that the schedule reference matches the expected format.
+ * Validator for schedule reference. Validates that the schedule reference matches the expected
+ * format.
  */
 @Component
 @Slf4j

@@ -10,8 +10,8 @@ import uk.gov.justice.laa.dstew.payments.claims.validation.core.error.ClaimValid
 import uk.gov.justice.laa.dstew.payments.claims.validation.service.validator.ValidationContext;
 
 /**
- * Validator for checking mandatory fields are present in the claim.
- * This runs early in the validation chain (priority 10).
+ * Validator for checking mandatory fields are present in the claim. This runs early in the
+ * validation chain (priority 10).
  */
 @Component
 @Slf4j
@@ -29,8 +29,8 @@ public class MandatoryFieldValidator implements ClaimValidator {
     }
 
     if (!hasValue(claim.getOfficeAccountNumber())) {
-      issues.add(ClaimValidationError.MISSING_MANDATORY_FIELD
-          .toValidationIssue("officeAccountNumber"));
+      issues.add(
+          ClaimValidationError.MISSING_MANDATORY_FIELD.toValidationIssue("officeAccountNumber"));
     }
 
     // Check fee-required fields when scope includes fees
@@ -60,9 +60,7 @@ public class MandatoryFieldValidator implements ClaimValidator {
     return "MANDATORY_FIELD";
   }
 
-  /**
-   * Checks if a string value is non-null and non-blank.
-   */
+  /** Checks if a string value is non-null and non-blank. */
   private boolean hasValue(String value) {
     return value != null && !value.isBlank();
   }

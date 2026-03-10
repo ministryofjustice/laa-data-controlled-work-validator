@@ -9,8 +9,8 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 /**
- * Client for calling the Fee Scheme Platform API.
- * Retrieves fee details and category of law information for claims.
+ * Client for calling the Fee Scheme Platform API. Retrieves fee details and category of law
+ * information for claims.
  */
 @Component
 @Slf4j
@@ -36,12 +36,13 @@ public class FeeSchemeClient {
     log.debug("Fetching fee details for fee code: {}", feeCode);
 
     try {
-      FeeDetailsResponse response = feeSchemeWebClient
-          .get()
-          .uri("/api/v1/fees/{feeCode}", feeCode)
-          .retrieve()
-          .bodyToMono(FeeDetailsResponse.class)
-          .block();
+      FeeDetailsResponse response =
+          feeSchemeWebClient
+              .get()
+              .uri("/api/v1/fees/{feeCode}", feeCode)
+              .retrieve()
+              .bodyToMono(FeeDetailsResponse.class)
+              .block();
 
       return Optional.ofNullable(response);
 
@@ -68,17 +69,20 @@ public class FeeSchemeClient {
       return false;
     }
 
-    log.debug("Checking provider {} authorization for category: {}",
-        officeAccountNumber, categoryOfLaw);
+    log.debug(
+        "Checking provider {} authorization for category: {}", officeAccountNumber, categoryOfLaw);
 
     try {
-      Boolean authorized = feeSchemeWebClient
-          .get()
-          .uri("/api/v1/providers/{office}/categories/{category}/authorized",
-              officeAccountNumber, categoryOfLaw)
-          .retrieve()
-          .bodyToMono(Boolean.class)
-          .block();
+      Boolean authorized =
+          feeSchemeWebClient
+              .get()
+              .uri(
+                  "/api/v1/providers/{office}/categories/{category}/authorized",
+                  officeAccountNumber,
+                  categoryOfLaw)
+              .retrieve()
+              .bodyToMono(Boolean.class)
+              .block();
 
       return Boolean.TRUE.equals(authorized);
 
@@ -91,20 +95,15 @@ public class FeeSchemeClient {
     }
   }
 
-  /**
-   * Response object for fee details.
-   */
+  /** Response object for fee details. */
   public record FeeDetailsResponse(
       String feeCode,
       String feeType,
       String categoryOfLaw,
       String description,
-      Map<String, Object> additionalProperties
-  ) {}
+      Map<String, Object> additionalProperties) {}
 
-  /**
-   * Exception thrown when fee scheme API calls fail.
-   */
+  /** Exception thrown when fee scheme API calls fail. */
   public static class FeeSchemeClientException extends RuntimeException {
     public FeeSchemeClientException(String message, Throwable cause) {
       super(message, cause);

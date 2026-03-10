@@ -10,8 +10,8 @@ import uk.gov.justice.laa.dstew.payments.claims.model.ValidationIssue;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.error.ClaimValidationError;
 
 /**
- * Utility class for date validation operations.
- * Provides common date validation methods used by multiple validators.
+ * Utility class for date validation operations. Provides common date validation methods used by
+ * multiple validators.
  */
 @Slf4j
 public final class DateValidationUtils {
@@ -87,17 +87,20 @@ public final class DateValidationUtils {
     return issues;
   }
 
-  /**
-   * Gets the appropriate date validation error for a field.
-   */
+  /** Gets the appropriate date validation error for a field. */
   private static ValidationIssue getDateError(String fieldName, String reason) {
     return switch (fieldName) {
-      case "Case Start Date" -> ClaimValidationError.INVALID_CASE_START_DATE.toValidationIssue(reason);
-      case "Case Concluded Date" -> ClaimValidationError.INVALID_CASE_CONCLUDED_DATE.toValidationIssue(reason);
+      case "Case Start Date" ->
+          ClaimValidationError.INVALID_CASE_START_DATE.toValidationIssue(reason);
+      case "Case Concluded Date" ->
+          ClaimValidationError.INVALID_CASE_CONCLUDED_DATE.toValidationIssue(reason);
       case "Transfer Date" -> ClaimValidationError.INVALID_TRANSFER_DATE.toValidationIssue(reason);
-      case "Representation Order Date" -> ClaimValidationError.INVALID_REPRESENTATION_ORDER_DATE.toValidationIssue(reason);
-      case "Client Date of Birth", "Client 2 Date of Birth" -> ClaimValidationError.INVALID_CLIENT_DATE_OF_BIRTH.toValidationIssue(reason);
-      default -> ClaimValidationError.INVALID_DATE_FORMAT.toValidationIssue(fieldName + " " + reason);
+      case "Representation Order Date" ->
+          ClaimValidationError.INVALID_REPRESENTATION_ORDER_DATE.toValidationIssue(reason);
+      case "Client Date of Birth", "Client 2 Date of Birth" ->
+          ClaimValidationError.INVALID_CLIENT_DATE_OF_BIRTH.toValidationIssue(reason);
+      default ->
+          ClaimValidationError.INVALID_DATE_FORMAT.toValidationIssue(fieldName + " " + reason);
     };
   }
 }

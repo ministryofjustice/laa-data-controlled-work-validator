@@ -24,11 +24,9 @@ import uk.gov.justice.laa.dstew.payments.claims.validation.service.service.Valid
 @WebMvcTest(ValidationController.class)
 class ValidationControllerTest {
 
-  @Autowired
-  private MockMvc mockMvc;
+  @Autowired private MockMvc mockMvc;
 
-  @MockitoBean
-  private ValidationService mockValidationService;
+  @MockitoBean private ValidationService mockValidationService;
 
   @Test
   void validateClaim_returnsOkStatusAndValidResult() throws Exception {
@@ -39,10 +37,13 @@ class ValidationControllerTest {
     when(mockValidationService.validateClaim(any(ClaimValidationRequest.class)))
         .thenReturn(validResult);
 
-    mockMvc.perform(post("/v1/validation/claim")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content("{\"claim\": {\"areaOfLaw\": \"LEGAL_HELP\", \"officeAccountNumber\": \"1A234B\"}, \"scope\": \"fee\"}")
-            .accept(MediaType.APPLICATION_JSON))
+    mockMvc
+        .perform(
+            post("/v1/validation/claim")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    "{\"claim\": {\"areaOfLaw\": \"LEGAL_HELP\", \"officeAccountNumber\": \"1A234B\"}, \"scope\": \"fee\"}")
+                .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
         .andExpect(jsonPath("$.isValid").value(true))
@@ -51,10 +52,11 @@ class ValidationControllerTest {
 
   @Test
   void validateClaim_returnsOkStatusWithIssues() throws Exception {
-    ValidationIssue issue = new ValidationIssue(
-        "FEE.MISSING_JUSTIFICATION",
-        "Enhancement fee requires a justification.",
-        ValidationSeverity.ERROR);
+    ValidationIssue issue =
+        new ValidationIssue(
+            "FEE.MISSING_JUSTIFICATION",
+            "Enhancement fee requires a justification.",
+            ValidationSeverity.ERROR);
 
     ValidationResult invalidResult = new ValidationResult();
     invalidResult.setIsValid(false);
@@ -63,10 +65,13 @@ class ValidationControllerTest {
     when(mockValidationService.validateClaim(any(ClaimValidationRequest.class)))
         .thenReturn(invalidResult);
 
-    mockMvc.perform(post("/v1/validation/claim")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content("{\"claim\": {\"areaOfLaw\": \"LEGAL_HELP\", \"officeAccountNumber\": \"1A234B\", \"fees\": [{\"type\": \"enhancement\"}]}}")
-            .accept(MediaType.APPLICATION_JSON))
+    mockMvc
+        .perform(
+            post("/v1/validation/claim")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    "{\"claim\": {\"areaOfLaw\": \"LEGAL_HELP\", \"officeAccountNumber\": \"1A234B\", \"fees\": [{\"type\": \"enhancement\"}]}}")
+                .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
         .andExpect(jsonPath("$.isValid").value(false))
@@ -76,10 +81,12 @@ class ValidationControllerTest {
 
   @Test
   void validateClaim_returnsBadRequestForInvalidInput() throws Exception {
-    mockMvc.perform(post("/v1/validation/claim")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content("{}")
-            .accept(MediaType.APPLICATION_JSON))
+    mockMvc
+        .perform(
+            post("/v1/validation/claim")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{}")
+                .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isBadRequest());
   }
 }

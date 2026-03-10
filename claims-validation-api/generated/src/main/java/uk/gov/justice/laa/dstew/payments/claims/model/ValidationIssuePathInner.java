@@ -17,6 +17,6 @@ import java.util.*;
 import jakarta.annotation.Generated;
 
 
-@Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2026-03-10T11:41:32.316203Z[Europe/London]", comments = "Generator version: 7.18.0")
+@Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2026-03-10T12:17:20.086625Z[Europe/London]", comments = "Generator version: 7.18.0")
 public interface ValidationIssuePathInner extends Serializable {
 }

@@ -11,9 +11,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import uk.gov.justice.laa.dstew.payments.claims.model.Claim;
 
-/**
- * Client for checking duplicate claims against the Data Claims API.
- */
+/** Client for checking duplicate claims against the Data Claims API. */
 @Component
 @Slf4j
 public class ClaimsApiClient {
@@ -25,8 +23,8 @@ public class ClaimsApiClient {
   }
 
   /**
-   * Retrieves claims from the Data Claims API that may be duplicates.
-   * Filters out claims from the current submission.
+   * Retrieves claims from the Data Claims API that may be duplicates. Filters out claims from the
+   * current submission.
    *
    * @param officeCode the office account number
    * @param feeCode the fee code
@@ -48,8 +46,11 @@ public class ClaimsApiClient {
       return Collections.emptyList();
     }
 
-    log.debug("Fetching claims for duplicate check - office: {}, UFN: {}, feeCode: {}",
-        officeCode, uniqueFileNumber, feeCode);
+    log.debug(
+        "Fetching claims for duplicate check - office: {}, UFN: {}, feeCode: {}",
+        officeCode,
+        uniqueFileNumber,
+        feeCode);
 
     try {
       // TODO: Implement actual API call to Data Claims API
@@ -59,7 +60,8 @@ public class ClaimsApiClient {
       // - uniqueFileNumber
       // - uniqueClientNumber (optional)
       // - uniqueCaseId (optional)
-      // - submissionStatus in [CREATED, VALIDATION_IN_PROGRESS, READY_FOR_VALIDATION, VALIDATION_SUCCEEDED]
+      // - submissionStatus in [CREATED, VALIDATION_IN_PROGRESS, READY_FOR_VALIDATION,
+      // VALIDATION_SUCCEEDED]
       // - claimStatus in [READY_TO_PROCESS, VALID]
       //
       // Example:
@@ -112,20 +114,24 @@ public class ClaimsApiClient {
       return Optional.empty();
     }
 
-    log.debug("Checking for duplicate claim with UFN: {}, office: {}",
-        uniqueFileNumber, officeAccountNumber);
+    log.debug(
+        "Checking for duplicate claim with UFN: {}, office: {}",
+        uniqueFileNumber,
+        officeAccountNumber);
 
     try {
-      DuplicateCheckRequest request = new DuplicateCheckRequest(
-          uniqueFileNumber, matterTypeCode, officeAccountNumber, excludeClaimId);
+      DuplicateCheckRequest request =
+          new DuplicateCheckRequest(
+              uniqueFileNumber, matterTypeCode, officeAccountNumber, excludeClaimId);
 
-      DuplicateClaimInfo response = dataClaimsWebClient
-          .post()
-          .uri("/api/v1/claims/duplicate-check")
-          .bodyValue(request)
-          .retrieve()
-          .bodyToMono(DuplicateClaimInfo.class)
-          .block();
+      DuplicateClaimInfo response =
+          dataClaimsWebClient
+              .post()
+              .uri("/api/v1/claims/duplicate-check")
+              .bodyValue(request)
+              .retrieve()
+              .bodyToMono(DuplicateClaimInfo.class)
+              .block();
 
       return Optional.ofNullable(response);
 
@@ -145,8 +151,7 @@ public class ClaimsApiClient {
    * @param currentClaimIndex the index of the current claim being validated
    * @return list of duplicate claim IDs found
    */
-  public List<String> checkForDuplicatesInSubmission(
-      List<Claim> claims, int currentClaimIndex) {
+  public List<String> checkForDuplicatesInSubmission(List<Claim> claims, int currentClaimIndex) {
 
     if (claims == null || claims.isEmpty() || currentClaimIndex < 0) {
       return List.of();
@@ -163,53 +168,41 @@ public class ClaimsApiClient {
     // Check for duplicates in earlier claims (to avoid double-reporting)
     return claims.stream()
         .limit(currentClaimIndex)
-        .filter(claim -> {
-          String ufn = claim.getUniqueFileNumber();
-          String matterType = claim.getMatterTypeCode();
-          return currentUfn.equals(ufn)
-              && (currentMatterType == null || currentMatterType.equals(matterType));
-        })
-        .map(claim -> {
-          UUID id = claim.getId();
-          return id != null ? id.toString() : null;
-        })
+        .filter(
+            claim -> {
+              String ufn = claim.getUniqueFileNumber();
+              String matterType = claim.getMatterTypeCode();
+              return currentUfn.equals(ufn)
+                  && (currentMatterType == null || currentMatterType.equals(matterType));
+            })
+        .map(
+            claim -> {
+              UUID id = claim.getId();
+              return id != null ? id.toString() : null;
+            })
         .filter(id -> id != null)
         .toList();
   }
 
-
-  /**
-   * Request object for duplicate check.
-   */
+  /** Request object for duplicate check. */
   public record DuplicateCheckRequest(
       String uniqueFileNumber,
       String matterTypeCode,
       String officeAccountNumber,
-      String excludeClaimId
-  ) {}
+      String excludeClaimId) {}
 
-  /**
-   * Information about a duplicate claim.
-   */
+  /** Information about a duplicate claim. */
   public record DuplicateClaimInfo(
-      String claimId,
-      String submissionId,
-      String uniqueFileNumber,
-      DuplicateType duplicateType
-  ) {}
+      String claimId, String submissionId, String uniqueFileNumber, DuplicateType duplicateType) {}
 
-  /**
-   * Type of duplicate found.
-   */
+  /** Type of duplicate found. */
   public enum DuplicateType {
     SAME_SUBMISSION,
     ANOTHER_SUBMISSION,
     PREVIOUS_SUBMISSION
   }
 
-  /**
-   * Exception thrown when duplicate check fails.
-   */
+  /** Exception thrown when duplicate check fails. */
   public static class DuplicateClaimClientException extends RuntimeException {
     public DuplicateClaimClientException(String message, Throwable cause) {
       super(message, cause);

@@ -10,9 +10,9 @@ import uk.gov.justice.laa.dstew.payments.claims.validation.core.client.ClaimsApi
 /**
  * Duplicate claims Validation Mediation Strategy.
  *
- * <p>This was originally implemented but removed as part of BC-423.
- * This class has been kept for auditing purposes of the previous implementation,
- * and for potentially implementing a different duplicate claim strategy in the future.
+ * <p>This was originally implemented but removed as part of BC-423. This class has been kept for
+ * auditing purposes of the previous implementation, and for potentially implementing a different
+ * duplicate claim strategy in the future.
  */
 @Deprecated(since = "0.0.122")
 // @Service - Unregistered as Spring Bean
@@ -26,10 +26,7 @@ public final class DuplicateClaimMediationValidationStrategy extends DuplicateCl
 
   @Override
   public List<ValidationIssue> validateDuplicateClaims(
-      Claim claim,
-      List<Claim> submissionClaims,
-      String officeCode,
-      String feeType) {
+      Claim claim, List<Claim> submissionClaims, String officeCode, String feeType) {
     log.debug(
         "Duplicate check for Legal Help Mediation claim {} not performed as it has been removed.",
         claim.getId());

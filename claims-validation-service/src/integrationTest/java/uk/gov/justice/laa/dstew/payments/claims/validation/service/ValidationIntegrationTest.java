@@ -24,28 +24,27 @@ import uk.gov.justice.laa.dstew.payments.claims.validation.service.client.FeeSch
 import uk.gov.justice.laa.dstew.payments.claims.validation.service.client.FeeSchemeClient.FeeDetailsResponse;
 
 /**
- * Integration test for the validation endpoint.
- * Tests the full validation flow with real validators but mocked external clients.
+ * Integration test for the validation endpoint. Tests the full validation flow with real validators
+ * but mocked external clients.
  */
 @SpringBootTest
 @AutoConfigureMockMvc
 class ValidationIntegrationTest {
 
-  @Autowired
-  private MockMvc mockMvc;
+  @Autowired private MockMvc mockMvc;
 
-  @MockitoBean
-  private FeeSchemeClient feeSchemeClient;
+  @MockitoBean private FeeSchemeClient feeSchemeClient;
 
-  @MockitoBean
-  private ClaimsApiClient claimsApiClient;
+  @MockitoBean private ClaimsApiClient claimsApiClient;
 
   @BeforeEach
   void setUp() {
     // Default mock behavior for external services
     when(feeSchemeClient.getFeeDetails(anyString()))
-        .thenReturn(Optional.of(new FeeDetailsResponse(
-            "ABC123", "STANDARD", "LEGAL_HELP", "Description", Map.of())));
+        .thenReturn(
+            Optional.of(
+                new FeeDetailsResponse(
+                    "ABC123", "STANDARD", "LEGAL_HELP", "Description", Map.of())));
     when(feeSchemeClient.isProviderAuthorizedForCategoryOfLaw(anyString(), anyString()))
         .thenReturn(true);
     when(claimsApiClient.checkForDuplicate(any(), any(), any(), any()))
@@ -54,7 +53,8 @@ class ValidationIntegrationTest {
 
   @Test
   void validateClaim_returnsValidResult_whenClaimIsValid() throws Exception {
-    String requestBody = """
+    String requestBody =
+        """
         {
           "claim": {
             "areaOfLaw": "LEGAL_HELP",
@@ -68,9 +68,11 @@ class ValidationIntegrationTest {
         }
         """;
 
-    mockMvc.perform(post("/v1/validation/claim")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(requestBody))
+    mockMvc
+        .perform(
+            post("/v1/validation/claim")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestBody))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.isValid").value(true))
         .andExpect(jsonPath("$.issues").isArray());
@@ -79,7 +81,8 @@ class ValidationIntegrationTest {
   @Test
   void validateClaim_returnsInvalidResult_whenMandatoryFieldMissing() throws Exception {
     // Missing feeCode but has areaOfLaw and officeAccountNumber
-    String requestBody = """
+    String requestBody =
+        """
         {
           "claim": {
             "areaOfLaw": "LEGAL_HELP",
@@ -90,9 +93,11 @@ class ValidationIntegrationTest {
         }
         """;
 
-    mockMvc.perform(post("/v1/validation/claim")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(requestBody))
+    mockMvc
+        .perform(
+            post("/v1/validation/claim")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestBody))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.isValid").value(false))
         .andExpect(jsonPath("$.issues").isArray())
@@ -101,7 +106,8 @@ class ValidationIntegrationTest {
 
   @Test
   void validateClaim_returnsInvalidResult_whenUfnFormatInvalid() throws Exception {
-    String requestBody = """
+    String requestBody =
+        """
         {
           "claim": {
             "areaOfLaw": "LEGAL_HELP",
@@ -112,9 +118,11 @@ class ValidationIntegrationTest {
         }
         """;
 
-    mockMvc.perform(post("/v1/validation/claim")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(requestBody))
+    mockMvc
+        .perform(
+            post("/v1/validation/claim")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestBody))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.isValid").value(false))
         .andExpect(jsonPath("$.issues[?(@.code == 'INVALID_UNIQUE_FILE_NUMBER_FORMAT')]").exists());
@@ -122,7 +130,8 @@ class ValidationIntegrationTest {
 
   @Test
   void validateClaim_returnsInvalidResult_whenDateInFuture() throws Exception {
-    String requestBody = """
+    String requestBody =
+        """
         {
           "claim": {
             "areaOfLaw": "LEGAL_HELP",
@@ -133,9 +142,11 @@ class ValidationIntegrationTest {
         }
         """;
 
-    mockMvc.perform(post("/v1/validation/claim")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(requestBody))
+    mockMvc
+        .perform(
+            post("/v1/validation/claim")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestBody))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.isValid").value(false))
         .andExpect(jsonPath("$.issues[?(@.code =~ /.*CASE_START_DATE.*/)]").exists());
@@ -143,7 +154,8 @@ class ValidationIntegrationTest {
 
   @Test
   void validateClaim_appliesScopeFilter_forDisbursementScope() throws Exception {
-    String requestBody = """
+    String requestBody =
+        """
         {
           "claim": {
             "areaOfLaw": "CRIME_LOWER",
@@ -155,12 +167,15 @@ class ValidationIntegrationTest {
         }
         """;
 
-    MvcResult result = mockMvc.perform(post("/v1/validation/claim")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(requestBody))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.isValid").value(true))
-        .andReturn();
+    MvcResult result =
+        mockMvc
+            .perform(
+                post("/v1/validation/claim")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(requestBody))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.isValid").value(true))
+            .andReturn();
 
     // VAT amount of 500k is valid for CRIME_LOWER (limit is 999,999.99)
     String response = result.getResponse().getContentAsString();
@@ -169,15 +184,18 @@ class ValidationIntegrationTest {
 
   @Test
   void validateClaim_returnsBadRequest_whenClaimMissing() throws Exception {
-    String requestBody = """
+    String requestBody =
+        """
         {
           "scope": "fee"
         }
         """;
 
-    mockMvc.perform(post("/v1/validation/claim")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(requestBody))
+    mockMvc
+        .perform(
+            post("/v1/validation/claim")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestBody))
         .andExpect(status().isBadRequest());
   }
 }

@@ -1,3 +1,33 @@
 subprojects {
     group = 'uk.gov.justice.laa.springboot.microservice'
+
+    repositories {
+        mavenCentral()
+    }
 }
+
+// Configure publishing for library modules only
+configure(subprojects.findAll { it.name in ['claims-validation-api', 'claims-validation-core'] }) {
+    apply plugin: 'maven-publish'
+
+    publishing {
+        repositories {
+            maven {
+                name = "GitHubPackages"
+                url = uri("https://maven.pkg.github.com/ministryofjustice/laa-data-claims-validation-api-poc")
+                credentials {
+                    username = System.getenv("GITHUB_ACTOR")
+                    password = System.getenv("GITHUB_TOKEN")
+                }
+            }
+        }
+    }
+}
+
+// Root-level task to run checkstyleStaged on all subprojects
+tasks.register("checkstyleStaged") {
+    group = "verification"
+    description = "Runs Checkstyle on staged files across all subprojects"
+    dependsOn subprojects.findAll { it.tasks.findByName('checkstyleStaged') }.collect { it.tasks.checkstyleStaged }
+}
+

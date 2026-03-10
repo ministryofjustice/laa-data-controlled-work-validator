@@ -3,9 +3,7 @@ package uk.gov.justice.laa.dstew.payments.claims.validation.service;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-/**
- * Entry point for the Claims Validation microservice application.
- */
+/** Entry point for the Claims Validation microservice application. */
 @SpringBootApplication
 public class ClaimsValidationApplication {
 

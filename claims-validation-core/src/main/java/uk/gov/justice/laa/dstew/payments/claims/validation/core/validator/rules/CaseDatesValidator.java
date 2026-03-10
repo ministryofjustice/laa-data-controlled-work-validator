@@ -14,8 +14,8 @@ import uk.gov.justice.laa.dstew.payments.claims.model.ValidationIssue;
 import uk.gov.justice.laa.dstew.payments.claims.validation.service.validator.ValidationContext;
 
 /**
- * Validator for case-related dates.
- * Validates case start date, case concluded date, transfer date, and representation order date.
+ * Validator for case-related dates. Validates case start date, case concluded date, transfer date,
+ * and representation order date.
  */
 @Component
 @Slf4j
@@ -32,21 +32,23 @@ public class CaseDatesValidator implements ClaimValidator {
     log.debug("Validating case dates");
 
     // Case Start Date - must be in the past and after 1995
-    issues.addAll(checkDateInPast("Case Start Date",
-           claim.getCaseStartDate(), OLDEST_DATE_ALLOWED));
+    issues.addAll(
+        checkDateInPast("Case Start Date", claim.getCaseStartDate(), OLDEST_DATE_ALLOWED));
 
     // Case Concluded Date - depends on area of law
     AreaOfLaw areaOfLaw = claim.getAreaOfLaw();
     LocalDate earliestConcludedDate = getEarliestCaseConcludedDate(areaOfLaw);
-    issues.addAll(checkDateNotInFutureAndWithinAllowedPeriod(
-        "Case Concluded Date", claim.getCaseConcludedDate(), earliestConcludedDate));
+    issues.addAll(
+        checkDateNotInFutureAndWithinAllowedPeriod(
+            "Case Concluded Date", claim.getCaseConcludedDate(), earliestConcludedDate));
 
     // Transfer Date - must be in the past and after 1995
     issues.addAll(checkDateInPast("Transfer Date", claim.getTransferDate(), OLDEST_DATE_ALLOWED));
 
     // Representation Order Date - must be in the past and after 2016
-    issues.addAll(checkDateInPast(
-        "Representation Order Date", claim.getRepresentationOrderDate(), MIN_REP_ORDER_DATE));
+    issues.addAll(
+        checkDateInPast(
+            "Representation Order Date", claim.getRepresentationOrderDate(), MIN_REP_ORDER_DATE));
 
     log.debug("Case dates validation completed, found {} issues", issues.size());
     return issues;

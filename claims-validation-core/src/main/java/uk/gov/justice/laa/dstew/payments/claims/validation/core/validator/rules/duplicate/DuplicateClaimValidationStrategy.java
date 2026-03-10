@@ -10,8 +10,8 @@ import uk.gov.justice.laa.dstew.payments.claims.model.Claim;
 import uk.gov.justice.laa.dstew.payments.claims.model.ValidationIssue;
 
 /**
- * Strategy interface for validating duplicate claims.
- * Implementations handle specific area-of-law duplicate checking logic.
+ * Strategy interface for validating duplicate claims. Implementations handle specific area-of-law
+ * duplicate checking logic.
  */
 public interface DuplicateClaimValidationStrategy {
 
@@ -27,10 +27,7 @@ public interface DuplicateClaimValidationStrategy {
    * @return list of validation issues found
    */
   default List<ValidationIssue> validateDuplicateClaims(
-      Claim claim,
-      List<Claim> submissionClaims,
-      String officeCode,
-      String feeType) {
+      Claim claim, List<Claim> submissionClaims, String officeCode, String feeType) {
     // Default implementation - override in concrete strategies
     return Collections.emptyList();
   }
@@ -42,9 +39,10 @@ public interface DuplicateClaimValidationStrategy {
    * @param duplicateClaims The list of duplicate claims.
    */
   default void logDuplicates(Claim claim, List<Claim> duplicateClaims) {
-    String csvDuplicateClaimIds = duplicateClaims.stream()
-        .map(c -> c.getId() != null ? c.getId().toString() : "unknown")
-        .collect(Collectors.joining(","));
+    String csvDuplicateClaimIds =
+        duplicateClaims.stream()
+            .map(c -> c.getId() != null ? c.getId().toString() : "unknown")
+            .collect(Collectors.joining(","));
     log.debug(
         "{} duplicate claims found matching claim {}. Duplicates: {}",
         duplicateClaims.size(),
@@ -58,9 +56,6 @@ public interface DuplicateClaimValidationStrategy {
    * @return List of compatible areas of law.
    */
   default List<AreaOfLaw> compatibleAreaOfLaws() {
-    return List.of(
-        AreaOfLaw.CRIME_LOWER,
-        AreaOfLaw.LEGAL_HELP,
-        AreaOfLaw.MEDIATION);
+    return List.of(AreaOfLaw.CRIME_LOWER, AreaOfLaw.LEGAL_HELP, AreaOfLaw.MEDIATION);
   }
 }

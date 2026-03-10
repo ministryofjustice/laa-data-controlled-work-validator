@@ -10,21 +10,42 @@ import uk.gov.justice.laa.dstew.payments.claims.model.ValidationIssue;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.error.ClaimValidationError;
 import uk.gov.justice.laa.dstew.payments.claims.validation.service.validator.ValidationContext;
 
-/**
- * Validator for outcome code.
- * Validates that the outcome code is valid for the area of law.
- */
+/** Validator for outcome code. Validates that the outcome code is valid for the area of law. */
 @Component
 @Slf4j
 public class OutcomeCodeValidator implements ClaimValidator {
 
   // TODO: These should be loaded from reference data or configuration
-  private static final Set<String> VALID_OUTCOME_CODES = Set.of(
-      "FA", "FB", "FC", "FD", "FE", "FF", "FG", "FH", "FI", "FJ",
-      "FK", "FL", "FM", "FN", "FO", "FP", "FQ", "FR", "FS", "FT",
-      "FU", "FV", "FW", "FX", "FY", "FZ",
-      "--" // No outcome
-  );
+  private static final Set<String> VALID_OUTCOME_CODES =
+      Set.of(
+          "FA",
+          "FB",
+          "FC",
+          "FD",
+          "FE",
+          "FF",
+          "FG",
+          "FH",
+          "FI",
+          "FJ",
+          "FK",
+          "FL",
+          "FM",
+          "FN",
+          "FO",
+          "FP",
+          "FQ",
+          "FR",
+          "FS",
+          "FT",
+          "FU",
+          "FV",
+          "FW",
+          "FX",
+          "FY",
+          "FZ",
+          "--" // No outcome
+          );
 
   @Override
   public List<ValidationIssue> validate(Claim claim, ValidationContext context) {

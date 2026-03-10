@@ -15,8 +15,8 @@ import uk.gov.justice.laa.dstew.payments.claims.validation.core.error.ClaimValid
 import uk.gov.justice.laa.dstew.payments.claims.validation.service.validator.ValidationContext;
 
 /**
- * Validator for checking the Unique File Number (UFN) format and date validity.
- * UFN must be in format DDMMYY/NNN where the date is in the past.
+ * Validator for checking the Unique File Number (UFN) format and date validity. UFN must be in
+ * format DDMMYY/NNN where the date is in the past.
  */
 @Component
 @Slf4j

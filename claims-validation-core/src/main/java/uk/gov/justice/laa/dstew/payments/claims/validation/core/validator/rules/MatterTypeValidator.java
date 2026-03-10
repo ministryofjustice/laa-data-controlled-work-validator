@@ -13,23 +13,20 @@ import uk.gov.justice.laa.dstew.payments.claims.validation.core.error.ClaimValid
 import uk.gov.justice.laa.dstew.payments.claims.validation.service.validator.ValidationContext;
 
 /**
- * Validator for matter type code.
- * Validates that the matter type code is valid for the area of law.
+ * Validator for matter type code. Validates that the matter type code is valid for the area of law.
  */
 @Component
 @Slf4j
 public class MatterTypeValidator implements ClaimValidator {
 
   // TODO: These should be loaded from reference data or configuration
-  private static final Set<String> VALID_LEGAL_HELP_MATTER_TYPES = Set.of(
-      "FAMA", "FAMB", "FAMC", "FAMD", "FAME", "FAMF", "FAMG", "FAMH",
-      "IMMA", "IMMB", "IMMC", "IMMD", "IMME", "IMMF", "IMMG", "IMMH",
-      "HOUS", "DEBT", "WELF", "EDUC", "PUBL", "MENT", "COMM", "CLIN"
-  );
+  private static final Set<String> VALID_LEGAL_HELP_MATTER_TYPES =
+      Set.of(
+          "FAMA", "FAMB", "FAMC", "FAMD", "FAME", "FAMF", "FAMG", "FAMH", "IMMA", "IMMB", "IMMC",
+          "IMMD", "IMME", "IMMF", "IMMG", "IMMH", "HOUS", "DEBT", "WELF", "EDUC", "PUBL", "MENT",
+          "COMM", "CLIN");
 
-  private static final Set<String> VALID_CRIME_LOWER_MATTER_TYPES = Set.of(
-      "CRIM"
-  );
+  private static final Set<String> VALID_CRIME_LOWER_MATTER_TYPES = Set.of("CRIM");
 
   @Override
   public List<ValidationIssue> validate(Claim claim, ValidationContext context) {
@@ -47,8 +44,9 @@ public class MatterTypeValidator implements ClaimValidator {
 
     Set<String> validTypes = getValidMatterTypes(areaOfLaw);
     if (validTypes != null && !validTypes.contains(matterType)) {
-      issues.add(ClaimValidationError.INVALID_MATTER_TYPE_CODE
-          .toValidationIssue(matterType + " for area of law: " + areaOfLaw));
+      issues.add(
+          ClaimValidationError.INVALID_MATTER_TYPE_CODE.toValidationIssue(
+              matterType + " for area of law: " + areaOfLaw));
     }
 
     return issues;

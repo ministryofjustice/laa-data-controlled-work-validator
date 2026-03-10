@@ -20,11 +20,9 @@ import uk.gov.justice.laa.dstew.payments.claims.validation.service.validator.Val
 @ExtendWith(MockitoExtension.class)
 class CategoryOfLawValidatorTest {
 
-  @Mock
-  private FeeSchemeClient mockFeeSchemeClient;
+  @Mock private FeeSchemeClient mockFeeSchemeClient;
 
-  @InjectMocks
-  private CategoryOfLawValidator validator;
+  @InjectMocks private CategoryOfLawValidator validator;
 
   @Test
   void validate_returnsNoErrors_whenFeeCodeValidAndProviderAuthorized() {
@@ -34,11 +32,10 @@ class CategoryOfLawValidatorTest {
 
     ValidationContext context = ValidationContext.builder().build();
 
-    FeeDetailsResponse feeDetails = new FeeDetailsResponse(
-        "ABC123", "STANDARD", "LEGAL_HELP", "Description", Map.of());
+    FeeDetailsResponse feeDetails =
+        new FeeDetailsResponse("ABC123", "STANDARD", "LEGAL_HELP", "Description", Map.of());
 
-    when(mockFeeSchemeClient.getFeeDetails("ABC123"))
-        .thenReturn(Optional.of(feeDetails));
+    when(mockFeeSchemeClient.getFeeDetails("ABC123")).thenReturn(Optional.of(feeDetails));
     when(mockFeeSchemeClient.isProviderAuthorizedForCategoryOfLaw("1A234B", "LEGAL_HELP"))
         .thenReturn(true);
 
@@ -54,8 +51,7 @@ class CategoryOfLawValidatorTest {
 
     ValidationContext context = ValidationContext.builder().build();
 
-    when(mockFeeSchemeClient.getFeeDetails("INVALID"))
-        .thenReturn(Optional.empty());
+    when(mockFeeSchemeClient.getFeeDetails("INVALID")).thenReturn(Optional.empty());
 
     List<ValidationIssue> issues = validator.validate(claim, context);
 
@@ -71,11 +67,10 @@ class CategoryOfLawValidatorTest {
 
     ValidationContext context = ValidationContext.builder().build();
 
-    FeeDetailsResponse feeDetails = new FeeDetailsResponse(
-        "ABC123", "STANDARD", "CRIME", "Description", Map.of());
+    FeeDetailsResponse feeDetails =
+        new FeeDetailsResponse("ABC123", "STANDARD", "CRIME", "Description", Map.of());
 
-    when(mockFeeSchemeClient.getFeeDetails("ABC123"))
-        .thenReturn(Optional.of(feeDetails));
+    when(mockFeeSchemeClient.getFeeDetails("ABC123")).thenReturn(Optional.of(feeDetails));
     when(mockFeeSchemeClient.isProviderAuthorizedForCategoryOfLaw("1A234B", "CRIME"))
         .thenReturn(false);
 

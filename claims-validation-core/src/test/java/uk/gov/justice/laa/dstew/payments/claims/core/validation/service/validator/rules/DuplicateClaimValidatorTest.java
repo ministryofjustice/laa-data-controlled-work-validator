@@ -23,8 +23,7 @@ import uk.gov.justice.laa.dstew.payments.claims.validation.service.validator.rul
 @ExtendWith(MockitoExtension.class)
 class DuplicateClaimValidatorTest {
 
-  @Mock
-  private DuplicateClaimValidationStrategy mockStrategy;
+  @Mock private DuplicateClaimValidationStrategy mockStrategy;
 
   private DuplicateClaimValidator validator;
 
@@ -63,10 +62,11 @@ class DuplicateClaimValidatorTest {
 
     ValidationContext context = ValidationContext.builder().build();
 
-    ValidationIssue duplicateIssue = new ValidationIssue(
-        "INVALID_CLAIM_HAS_DUPLICATE_IN_ANOTHER_SUBMISSION",
-        "Duplicate claim found",
-        ValidationSeverity.ERROR);
+    ValidationIssue duplicateIssue =
+        new ValidationIssue(
+            "INVALID_CLAIM_HAS_DUPLICATE_IN_ANOTHER_SUBMISSION",
+            "Duplicate claim found",
+            ValidationSeverity.ERROR);
 
     when(mockStrategy.validateDuplicateClaims(any(), any(), anyString(), any()))
         .thenReturn(List.of(duplicateIssue));

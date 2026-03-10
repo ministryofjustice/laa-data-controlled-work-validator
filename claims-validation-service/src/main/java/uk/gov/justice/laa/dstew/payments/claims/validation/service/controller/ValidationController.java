@@ -9,9 +9,7 @@ import uk.gov.justice.laa.dstew.payments.claims.model.ClaimValidationRequest;
 import uk.gov.justice.laa.dstew.payments.claims.model.ValidationResult;
 import uk.gov.justice.laa.dstew.payments.claims.validation.service.service.ValidationService;
 
-/**
- * Controller for handling claim validation requests.
- */
+/** Controller for handling claim validation requests. */
 @RestController
 @RequiredArgsConstructor
 @Slf4j
@@ -25,10 +23,11 @@ public class ValidationController implements ValidationApi {
 
     ValidationResult result = validationService.validateClaim(request);
 
-    log.info("Validation completed. isValid: {}, issues count: {}",
-        result.getIsValid(), result.getIssues().size());
+    log.info(
+        "Validation completed. isValid: {}, issues count: {}",
+        result.getIsValid(),
+        result.getIssues().size());
 
     return ResponseEntity.ok(result);
   }
 }
-

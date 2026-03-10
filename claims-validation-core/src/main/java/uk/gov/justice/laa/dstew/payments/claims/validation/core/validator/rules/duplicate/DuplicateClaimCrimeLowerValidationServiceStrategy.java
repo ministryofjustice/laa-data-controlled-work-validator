@@ -10,25 +10,19 @@ import uk.gov.justice.laa.dstew.payments.claims.model.ValidationIssue;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.client.ClaimsApiClient;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.error.ClaimValidationError;
 
-/**
- * Service responsible for validating whether a Crime Lower claim is a duplicate.
- */
+/** Service responsible for validating whether a Crime Lower claim is a duplicate. */
 @Slf4j
 @Service
 public final class DuplicateClaimCrimeLowerValidationServiceStrategy
     extends DuplicateClaimValidation implements CrimeLowerDuplicateClaimValidationStrategy {
 
-  public DuplicateClaimCrimeLowerValidationServiceStrategy(
-      ClaimsApiClient claimsApiClient) {
+  public DuplicateClaimCrimeLowerValidationServiceStrategy(ClaimsApiClient claimsApiClient) {
     super(claimsApiClient);
   }
 
   @Override
   public List<ValidationIssue> validateDuplicateClaims(
-      Claim claim,
-      List<Claim> submissionClaims,
-      String officeCode,
-      String feeType) {
+      Claim claim, List<Claim> submissionClaims, String officeCode, String feeType) {
 
     List<ValidationIssue> issues = new ArrayList<>();
 
@@ -48,28 +42,32 @@ public final class DuplicateClaimCrimeLowerValidationServiceStrategy
     String uniqueFileNumber = claim.getUniqueFileNumber();
 
     // Check for duplicates within current submission
-    List<Claim> submissionDuplicateClaims = getDuplicateClaimsInCurrentSubmission(
-        claimsToCompare,
-        claimToCompare ->
-            Objects.equals(feeCode, claimToCompare.getFeeCode())
-                && Objects.equals(uniqueFileNumber, claimToCompare.getUniqueFileNumber()));
+    List<Claim> submissionDuplicateClaims =
+        getDuplicateClaimsInCurrentSubmission(
+            claimsToCompare,
+            claimToCompare ->
+                Objects.equals(feeCode, claimToCompare.getFeeCode())
+                    && Objects.equals(uniqueFileNumber, claimToCompare.getUniqueFileNumber()));
 
     // Check for duplicates in previous submissions
-    List<Claim> officeDuplicateClaims = getDuplicateClaimsInPreviousSubmission(
-        officeCode, feeCode, uniqueFileNumber, null, null, submissionClaims);
+    List<Claim> officeDuplicateClaims =
+        getDuplicateClaimsInPreviousSubmission(
+            officeCode, feeCode, uniqueFileNumber, null, null, submissionClaims);
 
     if (!submissionDuplicateClaims.isEmpty()) {
       log.debug("Duplicate claims found in submission");
       logDuplicates(claim, submissionDuplicateClaims);
-      issues.add(ClaimValidationError.INVALID_CLAIM_HAS_DUPLICATE_IN_EXISTING_SUBMISSION
-          .toValidationIssue());
+      issues.add(
+          ClaimValidationError.INVALID_CLAIM_HAS_DUPLICATE_IN_EXISTING_SUBMISSION
+              .toValidationIssue());
     }
 
     if (!officeDuplicateClaims.isEmpty()) {
       log.debug("Duplicate claims found in another submission for this office");
       logDuplicates(claim, officeDuplicateClaims);
-      issues.add(ClaimValidationError.INVALID_CLAIM_HAS_DUPLICATE_IN_ANOTHER_SUBMISSION
-          .toValidationIssue());
+      issues.add(
+          ClaimValidationError.INVALID_CLAIM_HAS_DUPLICATE_IN_ANOTHER_SUBMISSION
+              .toValidationIssue());
     }
 
     log.debug("Duplicate validation completed for claim {}", claim.getId());

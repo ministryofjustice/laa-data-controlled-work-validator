@@ -6,12 +6,11 @@ import uk.gov.justice.laa.dstew.payments.claims.model.ValidationIssue;
 import uk.gov.justice.laa.dstew.payments.claims.validation.service.validator.ValidationContext;
 
 /**
- * Interface for validation rules that can be applied to claims.
- * Implementations should define specific business rules and return
- * any validation issues found.
+ * Interface for validation rules that can be applied to claims. Implementations should define
+ * specific business rules and return any validation issues found.
  *
- * <p>This is a stateless interface - validators receive all required
- * data as parameters and return results without side effects.</p>
+ * <p>This is a stateless interface - validators receive all required data as parameters and return
+ * results without side effects.
  */
 public interface ClaimValidator {
 
@@ -25,8 +24,7 @@ public interface ClaimValidator {
   List<ValidationIssue> validate(Claim claim, ValidationContext context);
 
   /**
-   * Returns the priority of this validator.
-   * Lower values run first. Schema validation should be 0,
+   * Returns the priority of this validator. Lower values run first. Schema validation should be 0,
    * basic field validation 10-50, complex business rules 100+.
    *
    * @return the priority value

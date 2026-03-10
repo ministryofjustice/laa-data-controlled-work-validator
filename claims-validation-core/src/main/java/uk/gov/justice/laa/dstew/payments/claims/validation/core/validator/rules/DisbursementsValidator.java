@@ -12,8 +12,8 @@ import uk.gov.justice.laa.dstew.payments.claims.validation.core.error.ClaimValid
 import uk.gov.justice.laa.dstew.payments.claims.validation.service.validator.ValidationContext;
 
 /**
- * Validator for disbursement-related fields.
- * Validates that disbursement VAT amounts are within acceptable limits.
+ * Validator for disbursement-related fields. Validates that disbursement VAT amounts are within
+ * acceptable limits.
  */
 @Component
 @Slf4j

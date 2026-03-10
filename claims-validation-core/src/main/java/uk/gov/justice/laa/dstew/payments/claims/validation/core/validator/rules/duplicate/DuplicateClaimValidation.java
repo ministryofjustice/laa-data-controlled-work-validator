@@ -7,9 +7,8 @@ import uk.gov.justice.laa.dstew.payments.claims.model.ClaimStatus;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.client.ClaimsApiClient;
 
 /**
- * Base class for duplicate claim validation.
- * Provides common methods for checking duplicates in current submission
- * and previous submissions via the DuplicateClaimClient.
+ * Base class for duplicate claim validation. Provides common methods for checking duplicates in
+ * current submission and previous submissions via the DuplicateClaimClient.
  */
 public abstract class DuplicateClaimValidation {
 
@@ -50,14 +49,13 @@ public abstract class DuplicateClaimValidation {
    * @return the list of duplicate claims, as determined by the given predicate
    */
   protected List<Claim> getDuplicateClaimsInCurrentSubmission(
-      List<Claim> otherClaims,
-      Predicate<Claim> duplicatePredicate) {
+      List<Claim> otherClaims, Predicate<Claim> duplicatePredicate) {
     return otherClaims.stream().filter(duplicatePredicate).toList();
   }
 
   /**
-   * Search for duplicates in all other claims made by this office.
-   * Uses the DuplicateClaimClient to query for potential duplicates.
+   * Search for duplicates in all other claims made by this office. Uses the DuplicateClaimClient to
+   * query for potential duplicates.
    *
    * @param officeCode the unique identifier for the office
    * @param feeCode the fee code
@@ -79,11 +77,6 @@ public abstract class DuplicateClaimValidation {
     // It should call the Data Claims API with these parameters and return matching claims
     // For now, return empty list as placeholder
     return claimsApiClient.getClaims(
-        officeCode,
-        feeCode,
-        uniqueFileNumber,
-        uniqueClientNumber,
-        uniqueCaseId,
-        submissionClaims);
+        officeCode, feeCode, uniqueFileNumber, uniqueClientNumber, uniqueCaseId, submissionClaims);
   }
 }

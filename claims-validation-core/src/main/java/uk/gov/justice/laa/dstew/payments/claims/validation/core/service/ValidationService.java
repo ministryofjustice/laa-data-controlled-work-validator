@@ -17,9 +17,8 @@ import uk.gov.justice.laa.dstew.payments.claims.validation.service.validator.Val
 import uk.gov.justice.laa.dstew.payments.claims.validation.service.validator.rules.ClaimValidator;
 
 /**
- * Service for orchestrating claim validation.
- * This is a stateless service that receives claim data, runs all applicable
- * validators, and returns the validation results.
+ * Service for orchestrating claim validation. This is a stateless service that receives claim data,
+ * runs all applicable validators, and returns the validation results.
  */
 @Service
 @RequiredArgsConstructor
@@ -50,17 +49,20 @@ public class ValidationService {
     validators.stream()
         .filter(v -> v.appliesTo(scope))
         .sorted(Comparator.comparingInt(ClaimValidator::priority))
-        .forEach(validator -> {
-          log.debug("Running validator: {}", validator.getValidatorCode());
-          List<ValidationIssue> validatorIssues = validator.validate(claim, context);
-          issues.addAll(validatorIssues);
-          log.debug("Validator {} found {} issues",
-              validator.getValidatorCode(), validatorIssues.size());
-        });
+        .forEach(
+            validator -> {
+              log.debug("Running validator: {}", validator.getValidatorCode());
+              List<ValidationIssue> validatorIssues = validator.validate(claim, context);
+              issues.addAll(validatorIssues);
+              log.debug(
+                  "Validator {} found {} issues",
+                  validator.getValidatorCode(),
+                  validatorIssues.size());
+            });
 
     // Determine if claim is valid (no ERROR severity issues)
-    boolean isValid = issues.stream()
-        .noneMatch(issue -> ValidationSeverity.ERROR.equals(issue.getSeverity()));
+    boolean isValid =
+        issues.stream().noneMatch(issue -> ValidationSeverity.ERROR.equals(issue.getSeverity()));
 
     log.info("Validation completed. isValid: {}, total issues: {}", isValid, issues.size());
 
@@ -77,9 +79,8 @@ public class ValidationService {
    * @return the validation context
    */
   private ValidationContext buildValidationContext(ClaimValidationRequest request) {
-    List<Claim> relatedClaims = request.getRelatedClaims() != null
-        ? request.getRelatedClaims()
-        : List.of();
+    List<Claim> relatedClaims =
+        request.getRelatedClaims() != null ? request.getRelatedClaims() : List.of();
 
     return ValidationContext.builder()
         .scope(request.getScope())

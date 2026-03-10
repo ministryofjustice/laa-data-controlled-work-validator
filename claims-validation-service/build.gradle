@@ -1,5 +1,6 @@
 plugins {
-    id 'io.freefair.lombok' version '9.1.0'
+    id 'io.freefair.lombok'
+    id 'com.diffplug.spotless'
     id 'uk.gov.laa.springboot.laa-spring-boot-gradle-plugin'
     id 'io.sentry.jvm.gradle' version '6.1.0'
 }
@@ -30,13 +31,9 @@ dependencies {
     implementation project(':claims-validation-core')
 
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
-    implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-webmvc'
-    implementation 'org.springframework.boot:spring-boot-starter-webflux'
 
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.1'
-
-    implementation 'org.apache.commons:commons-lang3:3.20.0'
 
     implementation 'org.mapstruct:mapstruct:1.6.3'
     annotationProcessor 'org.mapstruct:mapstruct-processor:1.6.3'
@@ -62,3 +59,28 @@ dependencies {
 
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
 }
+
+spotless {
+    java {
+        target 'src/*/java/**/*.java'
+        importOrder()
+        removeUnusedImports()
+        cleanthat()
+        googleJavaFormat()
+    }
+}
+
+tasks.register("checkstyleStaged", Checkstyle) {
+    group = "verification"
+    description = "Runs Checkstyle on staged files only"
+
+    def filesToCheck = project.findProperty("checkstyleFiles")
+    if (filesToCheck != null) {
+        source = files(filesToCheck.split(","))
+    } else {
+        source = sourceSets.main.allJava
+    }
+
+    classpath = sourceSets.main.compileClasspath
+}
+

@@ -1,12 +1,9 @@
 plugins {
     id 'java-library'
     id 'maven-publish'
-    id 'io.freefair.lombok' version '9.1.0'
+    id 'io.freefair.lombok'
+    id 'com.diffplug.spotless'
     id 'uk.gov.laa.springboot.laa-spring-boot-gradle-plugin'
-}
-
-repositories {
-    mavenCentral()
 }
 
 java {
@@ -37,16 +34,6 @@ publishing {
             artifactId = 'claims-validation-core'
         }
     }
-    repositories {
-        maven {
-            name = "GitHubPackages"
-            url = uri("https://maven.pkg.github.com/ministryofjustice/laa-data-claims-validation-api-poc")
-            credentials {
-                username = System.getenv("GITHUB_ACTOR")
-                password = System.getenv("GITHUB_TOKEN")
-            }
-        }
-    }
 }
 
 // disable for library module
@@ -60,6 +47,30 @@ tasks.named('bootRun') {
 
 tasks.named('jar') {
     enabled = true
+}
+
+spotless {
+    java {
+        target 'src/*/java/**/*.java'
+        importOrder()
+        removeUnusedImports()
+        cleanthat()
+        googleJavaFormat()
+    }
+}
+
+tasks.register("checkstyleStaged", Checkstyle) {
+    group = "verification"
+    description = "Runs Checkstyle on staged files only"
+
+    def filesToCheck = project.findProperty("checkstyleFiles")
+    if (filesToCheck != null) {
+        source = files(filesToCheck.split(","))
+    } else {
+        source = sourceSets.main.allJava
+    }
+
+    classpath = sourceSets.main.compileClasspath
 }
 
 

@@ -3,9 +3,7 @@ package uk.gov.justice.laa.dstew.payments.claims.validation.service.validator.ru
 import java.util.List;
 import uk.gov.justice.laa.dstew.payments.claims.model.AreaOfLaw;
 
-/**
- * Strategy for validating duplicate claims for Legal Help area of law.
- */
+/** Strategy for validating duplicate claims for Legal Help area of law. */
 public interface LegalHelpDuplicateClaimValidationStrategy
     extends DuplicateClaimValidationStrategy {
 

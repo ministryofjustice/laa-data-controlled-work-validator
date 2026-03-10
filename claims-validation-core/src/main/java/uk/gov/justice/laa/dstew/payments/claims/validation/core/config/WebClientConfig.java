@@ -9,9 +9,7 @@ import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.netty.http.client.HttpClient;
 
-/**
- * Configuration for WebClient used for outbound REST calls to external validation services.
- */
+/** Configuration for WebClient used for outbound REST calls to external validation services. */
 @Configuration
 public class WebClientConfig {
 
@@ -61,9 +59,10 @@ public class WebClientConfig {
   }
 
   private WebClient createWebClient(String baseUrl) {
-    HttpClient httpClient = HttpClient.create()
-        .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, connectTimeoutMs)
-        .responseTimeout(Duration.ofMillis(readTimeoutMs));
+    HttpClient httpClient =
+        HttpClient.create()
+            .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, connectTimeoutMs)
+            .responseTimeout(Duration.ofMillis(readTimeoutMs));
 
     return WebClient.builder()
         .baseUrl(baseUrl)
@@ -71,4 +70,3 @@ public class WebClientConfig {
         .build();
   }
 }
-

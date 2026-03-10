@@ -15,8 +15,8 @@ import uk.gov.justice.laa.dstew.payments.claims.validation.core.client.ClaimsApi
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.error.ClaimValidationError;
 
 /**
- * Duplicate-claim validation strategy for Legal Help disbursement claims.
- * Implements Rule B - Case Concluded Date boundary check.
+ * Duplicate-claim validation strategy for Legal Help disbursement claims. Implements Rule B - Case
+ * Concluded Date boundary check.
  */
 @Slf4j
 @Component
@@ -26,17 +26,13 @@ public class DuplicateClaimLegalHelpDisbursementValidationStrategy extends Dupli
   private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
   private static final int MAXIMUM_MONTHS_DIFFERENCE = 3;
 
-  public DuplicateClaimLegalHelpDisbursementValidationStrategy(
-      ClaimsApiClient claimsApiClient) {
+  public DuplicateClaimLegalHelpDisbursementValidationStrategy(ClaimsApiClient claimsApiClient) {
     super(claimsApiClient);
   }
 
   @Override
   public List<ValidationIssue> validateDuplicateClaims(
-      Claim incomingClaim,
-      List<Claim> submissionClaims,
-      String officeCode,
-      String feeType) {
+      Claim incomingClaim, List<Claim> submissionClaims, String officeCode, String feeType) {
 
     List<ValidationIssue> issues = new ArrayList<>();
 
@@ -63,8 +59,9 @@ public class DuplicateClaimLegalHelpDisbursementValidationStrategy extends Dupli
 
     if (duplicateClaim != null && isDuplicateClaim(incomingClaim, duplicateClaim)) {
       logDuplicates(incomingClaim, List.of(duplicateClaim));
-      issues.add(ClaimValidationError.INVALID_CLAIM_HAS_DUPLICATE_IN_ANOTHER_SUBMISSION
-          .toValidationIssue());
+      issues.add(
+          ClaimValidationError.INVALID_CLAIM_HAS_DUPLICATE_IN_ANOTHER_SUBMISSION
+              .toValidationIssue());
     }
 
     return issues;
@@ -88,16 +85,12 @@ public class DuplicateClaimLegalHelpDisbursementValidationStrategy extends Dupli
         .toList();
   }
 
-  /**
-   * Selects the anchor claim - the claim whose Case Concluded Date is closest to incomingDate.
-   */
+  /** Selects the anchor claim - the claim whose Case Concluded Date is closest to incomingDate. */
   protected Claim selectComparativeClaim(List<Claim> claims, LocalDate incomingDate) {
     return claims.stream().min(claimComparator(incomingDate)).orElse(null);
   }
 
-  /**
-   * Applies Rule B Case Concluded Date boundary check.
-   */
+  /** Applies Rule B Case Concluded Date boundary check. */
   protected boolean isDuplicateClaim(Claim incomingClaim, Claim duplicateClaim) {
     YearMonth incomingSubmissionPeriod = parseSubmissionPeriod(incomingClaim.getSubmissionPeriod());
     LocalDate incomingConcludedDate = parseConcludedDate(incomingClaim);
@@ -122,9 +115,7 @@ public class DuplicateClaimLegalHelpDisbursementValidationStrategy extends Dupli
     return earlierConcludedDate.isAfter(cutoff);
   }
 
-  /**
-   * Determines the cutoff period - 3 months before the later submission period.
-   */
+  /** Determines the cutoff period - 3 months before the later submission period. */
   protected YearMonth getCutoffPeriod(
       YearMonth incomingSubmissionPeriod, YearMonth anchorSubmissionPeriod) {
     YearMonth anchorPeriod =
@@ -134,16 +125,12 @@ public class DuplicateClaimLegalHelpDisbursementValidationStrategy extends Dupli
     return anchorPeriod.minusMonths(MAXIMUM_MONTHS_DIFFERENCE);
   }
 
-  /**
-   * Calculates the cutoff date - 20th of the month following the cutoff period.
-   */
+  /** Calculates the cutoff date - 20th of the month following the cutoff period. */
   protected LocalDate submissionPeriodCutoffDate(YearMonth cutoffPeriod) {
     return cutoffPeriod.plusMonths(1).atDay(20);
   }
 
-  /**
-   * Creates a comparator for selecting the anchor claim.
-   */
+  /** Creates a comparator for selecting the anchor claim. */
   private static Comparator<Claim> claimComparator(LocalDate incomingDate) {
     Comparator<Claim> byDayDistance =
         Comparator.comparing(
@@ -163,9 +150,7 @@ public class DuplicateClaimLegalHelpDisbursementValidationStrategy extends Dupli
     return byDayDistance.thenComparing(byLaterSubmissionPeriod);
   }
 
-  /**
-   * Parses the case concluded date from a claim.
-   */
+  /** Parses the case concluded date from a claim. */
   protected static LocalDate parseConcludedDate(Claim claim) {
     String concludedCaseDate = claim.getCaseConcludedDate();
     if (concludedCaseDate == null || concludedCaseDate.isBlank()) {
@@ -180,9 +165,7 @@ public class DuplicateClaimLegalHelpDisbursementValidationStrategy extends Dupli
     }
   }
 
-  /**
-   * Parses submission period string to YearMonth.
-   */
+  /** Parses submission period string to YearMonth. */
   protected static YearMonth parseSubmissionPeriod(String submissionPeriod) {
     if (submissionPeriod == null || submissionPeriod.isBlank()) {
       return null;

@@ -12,16 +12,17 @@ import uk.gov.justice.laa.dstew.payments.claims.validation.core.error.ClaimValid
 import uk.gov.justice.laa.dstew.payments.claims.validation.service.validator.ValidationContext;
 
 /**
- * Validator for stage reached code.
- * Validates that the stage reached code matches the expected pattern for the area of law.
+ * Validator for stage reached code. Validates that the stage reached code matches the expected
+ * pattern for the area of law.
  */
 @Component
 @Slf4j
 public class StageReachedValidator implements ClaimValidator {
 
   private static final Pattern LEGAL_HELP_PATTERN = Pattern.compile("^[a-zA-Z0-9]{2}$");
-  private static final Pattern CRIME_LOWER_PATTERN = Pattern.compile(
-      "^(INV[A-M]|PRI[A-E]|PRO[C-FH-LP-TUVW]|APP[ABC]|AS|MSPLAS|YOU[EFKLXY]|VOID)$");
+  private static final Pattern CRIME_LOWER_PATTERN =
+      Pattern.compile(
+          "^(INV[A-M]|PRI[A-E]|PRO[C-FH-LP-TUVW]|APP[ABC]|AS|MSPLAS|YOU[EFKLXY]|VOID)$");
 
   @Override
   public List<ValidationIssue> validate(Claim claim, ValidationContext context) {

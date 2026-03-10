@@ -12,8 +12,8 @@ import uk.gov.justice.laa.dstew.payments.claims.model.ValidationIssue;
 import uk.gov.justice.laa.dstew.payments.claims.validation.service.validator.ValidationContext;
 
 /**
- * Validator for client date of birth fields.
- * Validates that client DOB is in the past and after 1900.
+ * Validator for client date of birth fields. Validates that client DOB is in the past and after
+ * 1900.
  */
 @Component
 @Slf4j
@@ -28,12 +28,12 @@ public class ClientDateOfBirthValidator implements ClaimValidator {
     log.debug("Validating client dates of birth");
 
     // Client 1 Date of Birth
-    issues.addAll(checkDateInPast("Client Date of Birth",
-            claim.getClientDateOfBirth(), MIN_BIRTH_DATE));
+    issues.addAll(
+        checkDateInPast("Client Date of Birth", claim.getClientDateOfBirth(), MIN_BIRTH_DATE));
 
     // Client 2 Date of Birth (if present)
-    issues.addAll(checkDateInPast("Client 2 Date of Birth",
-            claim.getClient2DateOfBirth(), MIN_BIRTH_DATE));
+    issues.addAll(
+        checkDateInPast("Client 2 Date of Birth", claim.getClient2DateOfBirth(), MIN_BIRTH_DATE));
 
     log.debug("Client DOB validation completed, found {} issues", issues.size());
     return issues;

@@ -14,9 +14,8 @@ import uk.gov.justice.laa.dstew.payments.claims.validation.core.error.ClaimValid
 import uk.gov.justice.laa.dstew.payments.claims.validation.service.validator.ValidationContext;
 
 /**
- * Validator for category of law based on fee code.
- * Checks that the fee code is valid and the provider is authorized
- * for the associated category of law.
+ * Validator for category of law based on fee code. Checks that the fee code is valid and the
+ * provider is authorized for the associated category of law.
  */
 @Component
 @RequiredArgsConstructor
@@ -41,8 +40,8 @@ public class CategoryOfLawValidator implements ClaimValidator {
       Optional<FeeDetailsResponse> feeDetails = feeSchemeClient.getFeeDetails(feeCode);
 
       if (feeDetails.isEmpty()) {
-        issues.add(ClaimValidationError.INVALID_CATEGORY_OF_LAW_AND_FEE_CODE
-            .toValidationIssue(feeCode));
+        issues.add(
+            ClaimValidationError.INVALID_CATEGORY_OF_LAW_AND_FEE_CODE.toValidationIssue(feeCode));
         return issues;
       }
 
@@ -51,19 +50,20 @@ public class CategoryOfLawValidator implements ClaimValidator {
       String officeAccountNumber = claim.getOfficeAccountNumber();
 
       if (officeAccountNumber != null && categoryOfLaw != null) {
-        boolean authorized = feeSchemeClient.isProviderAuthorizedForCategoryOfLaw(
-            officeAccountNumber, categoryOfLaw);
+        boolean authorized =
+            feeSchemeClient.isProviderAuthorizedForCategoryOfLaw(
+                officeAccountNumber, categoryOfLaw);
 
         if (!authorized) {
-          issues.add(ClaimValidationError.INVALID_CATEGORY_OF_LAW_NOT_AUTHORISED_FOR_PROVIDER
-              .toValidationIssue());
+          issues.add(
+              ClaimValidationError.INVALID_CATEGORY_OF_LAW_NOT_AUTHORISED_FOR_PROVIDER
+                  .toValidationIssue());
         }
       }
 
     } catch (FeeSchemeClient.FeeSchemeClientException e) {
       log.error("Fee scheme service error for fee code: {}", feeCode, e);
-      issues.add(ClaimValidationError.TECHNICAL_ERROR_FEE_CALCULATION_SERVICE
-          .toValidationIssue());
+      issues.add(ClaimValidationError.TECHNICAL_ERROR_FEE_CALCULATION_SERVICE.toValidationIssue());
     }
 
     return issues;

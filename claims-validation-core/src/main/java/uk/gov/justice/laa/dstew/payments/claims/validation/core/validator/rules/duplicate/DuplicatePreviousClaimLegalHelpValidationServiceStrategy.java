@@ -10,25 +10,19 @@ import uk.gov.justice.laa.dstew.payments.claims.model.ValidationIssue;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.client.ClaimsApiClient;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.error.ClaimValidationError;
 
-/**
- * Validation service for Legal Help duplicate claims within the current submission.
- */
+/** Validation service for Legal Help duplicate claims within the current submission. */
 @Slf4j
 @Service
 public final class DuplicatePreviousClaimLegalHelpValidationServiceStrategy
     extends DuplicateClaimValidation implements LegalHelpDuplicateClaimValidationStrategy {
 
-  public DuplicatePreviousClaimLegalHelpValidationServiceStrategy(
-      ClaimsApiClient claimsApiClient) {
+  public DuplicatePreviousClaimLegalHelpValidationServiceStrategy(ClaimsApiClient claimsApiClient) {
     super(claimsApiClient);
   }
 
   @Override
   public List<ValidationIssue> validateDuplicateClaims(
-      Claim currentClaim,
-      List<Claim> submissionClaims,
-      String officeCode,
-      String feeType) {
+      Claim currentClaim, List<Claim> submissionClaims, String officeCode, String feeType) {
 
     List<ValidationIssue> issues = new ArrayList<>();
 
@@ -41,16 +35,15 @@ public final class DuplicatePreviousClaimLegalHelpValidationServiceStrategy
             candidate ->
                 Objects.equals(candidate.getFeeCode(), currentClaim.getFeeCode())
                     && Objects.equals(
-                        candidate.getUniqueFileNumber(),
-                        currentClaim.getUniqueFileNumber())
+                        candidate.getUniqueFileNumber(), currentClaim.getUniqueFileNumber())
                     && Objects.equals(
-                        candidate.getUniqueClientNumber(),
-                        currentClaim.getUniqueClientNumber()));
+                        candidate.getUniqueClientNumber(), currentClaim.getUniqueClientNumber()));
 
     if (!duplicateClaimsInThisSubmission.isEmpty()) {
       logDuplicates(currentClaim, duplicateClaimsInThisSubmission);
-      issues.add(ClaimValidationError.INVALID_CLAIM_HAS_DUPLICATE_IN_EXISTING_SUBMISSION
-          .toValidationIssue());
+      issues.add(
+          ClaimValidationError.INVALID_CLAIM_HAS_DUPLICATE_IN_EXISTING_SUBMISSION
+              .toValidationIssue());
     }
 
     return issues;

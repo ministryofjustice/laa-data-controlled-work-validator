@@ -6,8 +6,8 @@ import uk.gov.justice.laa.dstew.payments.claims.model.ValidationIssue;
 import uk.gov.justice.laa.dstew.payments.claims.model.ValidationSeverity;
 
 /**
- * Enumeration of all claim validation errors.
- * Each error contains a display message, optional technical message, source, and severity.
+ * Enumeration of all claim validation errors. Each error contains a display message, optional
+ * technical message, source, and severity.
  */
 @Getter
 @RequiredArgsConstructor
@@ -21,36 +21,15 @@ public enum ClaimValidationError {
       ValidationSeverity.ERROR),
 
   // Date validation errors
-  INVALID_CASE_START_DATE(
-      "Case start date is invalid: %s",
-      null,
-      "DATE",
-      ValidationSeverity.ERROR),
+  INVALID_CASE_START_DATE("Case start date is invalid: %s", null, "DATE", ValidationSeverity.ERROR),
   INVALID_CASE_CONCLUDED_DATE(
-      "Case concluded date is invalid: %s",
-      null,
-      "DATE",
-      ValidationSeverity.ERROR),
-  INVALID_TRANSFER_DATE(
-      "Transfer date is invalid: %s",
-      null,
-      "DATE",
-      ValidationSeverity.ERROR),
+      "Case concluded date is invalid: %s", null, "DATE", ValidationSeverity.ERROR),
+  INVALID_TRANSFER_DATE("Transfer date is invalid: %s", null, "DATE", ValidationSeverity.ERROR),
   INVALID_REPRESENTATION_ORDER_DATE(
-      "Representation order date is invalid: %s",
-      null,
-      "DATE",
-      ValidationSeverity.ERROR),
+      "Representation order date is invalid: %s", null, "DATE", ValidationSeverity.ERROR),
   INVALID_CLIENT_DATE_OF_BIRTH(
-      "Client date of birth is invalid: %s",
-      null,
-      "DATE",
-      ValidationSeverity.ERROR),
-  INVALID_DATE_FORMAT(
-      "%s has an invalid date format",
-      null,
-      "DATE",
-      ValidationSeverity.ERROR),
+      "Client date of birth is invalid: %s", null, "DATE", ValidationSeverity.ERROR),
+  INVALID_DATE_FORMAT("%s has an invalid date format", null, "DATE", ValidationSeverity.ERROR),
 
   // Unique File Number (UFN) errors
   INVALID_UNIQUE_FILE_NUMBER_FORMAT(
@@ -66,17 +45,12 @@ public enum ClaimValidationError {
 
   // Mandatory field errors
   MISSING_MANDATORY_FIELD(
-      "Required field '%s' is missing",
-      null,
-      "MANDATORY",
-      ValidationSeverity.ERROR),
+      "Required field '%s' is missing", null, "MANDATORY", ValidationSeverity.ERROR),
 
   // Category of law / fee code errors
   INVALID_CATEGORY_OF_LAW_AND_FEE_CODE(
       "A category of law could not be found for the provided fee code: %s",
-      null,
-      "FEE",
-      ValidationSeverity.ERROR),
+      null, "FEE", ValidationSeverity.ERROR),
   INVALID_CATEGORY_OF_LAW_NOT_AUTHORISED_FOR_PROVIDER(
       "The provider is not contracted for the category of law associated with the fee code",
       null,
@@ -113,51 +87,28 @@ public enum ClaimValidationError {
       ValidationSeverity.ERROR),
 
   // Stage reached errors
-  INVALID_STAGE_REACHED(
-      "Invalid stage reached value",
-      null,
-      "STAGE",
-      ValidationSeverity.ERROR),
+  INVALID_STAGE_REACHED("Invalid stage reached value", null, "STAGE", ValidationSeverity.ERROR),
 
   // Matter type errors
   INVALID_MATTER_TYPE_CODE(
-      "Invalid matter type code: %s",
-      null,
-      "MATTER_TYPE",
-      ValidationSeverity.ERROR),
+      "Invalid matter type code: %s", null, "MATTER_TYPE", ValidationSeverity.ERROR),
 
   // Outcome code errors
-  INVALID_OUTCOME_CODE(
-      "Invalid outcome code: %s",
-      null,
-      "OUTCOME",
-      ValidationSeverity.ERROR),
+  INVALID_OUTCOME_CODE("Invalid outcome code: %s", null, "OUTCOME", ValidationSeverity.ERROR),
 
   // Disbursement errors
   INVALID_DISBURSEMENT_VAT_AMOUNT(
-      "Disbursement VAT amount is invalid",
-      null,
-      "DISBURSEMENT",
-      ValidationSeverity.ERROR),
+      "Disbursement VAT amount is invalid", null, "DISBURSEMENT", ValidationSeverity.ERROR),
   INVALID_DISBURSEMENT_START_DATE(
-      "Disbursement claim start date is invalid",
-      null,
-      "DISBURSEMENT",
-      ValidationSeverity.ERROR),
+      "Disbursement claim start date is invalid", null, "DISBURSEMENT", ValidationSeverity.ERROR),
 
   // Schedule reference errors
   INVALID_SCHEDULE_REFERENCE(
-      "Invalid schedule reference",
-      null,
-      "SCHEDULE",
-      ValidationSeverity.ERROR),
+      "Invalid schedule reference", null, "SCHEDULE", ValidationSeverity.ERROR),
 
   // Warning level issues
   CLAIM_DATA_INCOMPLETE(
-      "Some optional claim data is missing",
-      null,
-      "DATA",
-      ValidationSeverity.WARNING);
+      "Some optional claim data is missing", null, "DATA", ValidationSeverity.WARNING);
 
   private final String displayMessage;
   private final String technicalMessage;
@@ -171,10 +122,7 @@ public enum ClaimValidationError {
    * @return a ValidationIssue representing this error
    */
   public ValidationIssue toValidationIssue(Object... params) {
-    return new ValidationIssue(
-        this.name(),
-        String.format(displayMessage, params),
-        severity);
+    return new ValidationIssue(this.name(), String.format(displayMessage, params), severity);
   }
 
   /**
@@ -184,14 +132,10 @@ public enum ClaimValidationError {
    * @param params optional parameters to format into the display message
    * @return a ValidationIssue representing this error with path
    */
-  public ValidationIssue toValidationIssueWithPath(
-      java.util.List<Object> path, Object... params) {
-    ValidationIssue issue = new ValidationIssue(
-        this.name(),
-        String.format(displayMessage, params),
-        severity);
+  public ValidationIssue toValidationIssueWithPath(java.util.List<Object> path, Object... params) {
+    ValidationIssue issue =
+        new ValidationIssue(this.name(), String.format(displayMessage, params), severity);
     // TODO: Handle path conversion to ValidationIssuePathInner list
     return issue;
   }
 }
-

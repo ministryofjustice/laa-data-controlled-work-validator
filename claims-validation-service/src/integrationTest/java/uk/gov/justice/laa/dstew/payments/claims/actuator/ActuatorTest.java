@@ -14,21 +14,21 @@ import org.springframework.test.context.TestPropertySource;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureTestRestTemplate
-@TestPropertySource(properties = {
-    "management.endpoints.web.exposure.include=health",
-})
+@TestPropertySource(
+    properties = {
+      "management.endpoints.web.exposure.include=health",
+    })
 class ActuatorTest {
 
-  @LocalManagementPort
-  private int managementPort;
+  @LocalManagementPort private int managementPort;
 
-  @Autowired
-  private TestRestTemplate restTemplate;
+  @Autowired private TestRestTemplate restTemplate;
 
   @Test
   void actuatorHealthEndpointShouldReturnUp() {
-    ResponseEntity<String> result = restTemplate.getForEntity(
-        "http://localhost:" + managementPort + "/actuator/health", String.class);
+    ResponseEntity<String> result =
+        restTemplate.getForEntity(
+            "http://localhost:" + managementPort + "/actuator/health", String.class);
 
     assertThat(result.getStatusCode()).isEqualTo(HttpStatus.OK);
     assertThat(result.getBody()).contains("\"status\":\"UP\"");

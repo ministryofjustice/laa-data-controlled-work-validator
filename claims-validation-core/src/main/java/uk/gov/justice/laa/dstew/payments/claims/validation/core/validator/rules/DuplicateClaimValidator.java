@@ -13,8 +13,8 @@ import uk.gov.justice.laa.dstew.payments.claims.validation.service.validator.Val
 import uk.gov.justice.laa.dstew.payments.claims.validation.service.validator.rules.duplicate.DuplicateClaimValidationStrategy;
 
 /**
- * Validator for checking duplicate claims.
- * Delegates to area-of-law specific strategies for duplicate checking logic.
+ * Validator for checking duplicate claims. Delegates to area-of-law specific strategies for
+ * duplicate checking logic.
  */
 @Component
 @RequiredArgsConstructor
@@ -54,8 +54,8 @@ public class DuplicateClaimValidator implements ClaimValidator {
     // Run each compatible strategy and collect validation issues
     for (DuplicateClaimValidationStrategy strategy : compatibleStrategies) {
       log.debug("Running strategy: {}", strategy.getClass().getSimpleName());
-      List<ValidationIssue> strategyIssues = strategy.validateDuplicateClaims(
-          claim, submissionClaims, officeCode, feeType);
+      List<ValidationIssue> strategyIssues =
+          strategy.validateDuplicateClaims(claim, submissionClaims, officeCode, feeType);
       issues.addAll(strategyIssues);
     }
 

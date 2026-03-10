@@ -11,25 +11,21 @@ import uk.gov.justice.laa.dstew.payments.claims.validation.core.client.ClaimsApi
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.error.ClaimValidationError;
 
 /**
- * Validation service for Legal Help duplicate claims.
- * Checks for duplicates in previous submissions.
+ * Validation service for Legal Help duplicate claims. Checks for duplicates in previous
+ * submissions.
  */
 @Slf4j
 @Service
 public final class DuplicateClaimLegalHelpValidationServiceStrategy extends DuplicateClaimValidation
     implements LegalHelpDuplicateClaimValidationStrategy {
 
-  public DuplicateClaimLegalHelpValidationServiceStrategy(
-      ClaimsApiClient claimsApiClient) {
+  public DuplicateClaimLegalHelpValidationServiceStrategy(ClaimsApiClient claimsApiClient) {
     super(claimsApiClient);
   }
 
   @Override
   public List<ValidationIssue> validateDuplicateClaims(
-      Claim currentClaim,
-      List<Claim> submissionClaims,
-      String officeCode,
-      String feeType) {
+      Claim currentClaim, List<Claim> submissionClaims, String officeCode, String feeType) {
 
     List<ValidationIssue> issues = new ArrayList<>();
 
@@ -51,8 +47,9 @@ public final class DuplicateClaimLegalHelpValidationServiceStrategy extends Dupl
 
     if (!duplicateClaimsInPreviousSubmission.isEmpty()) {
       logDuplicates(currentClaim, duplicateClaimsInPreviousSubmission);
-      issues.add(ClaimValidationError.INVALID_CLAIM_HAS_DUPLICATE_IN_ANOTHER_SUBMISSION
-          .toValidationIssue());
+      issues.add(
+          ClaimValidationError.INVALID_CLAIM_HAS_DUPLICATE_IN_ANOTHER_SUBMISSION
+              .toValidationIssue());
     }
 
     return issues;
