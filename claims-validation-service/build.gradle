@@ -27,6 +27,7 @@ jacocoTestCoverageVerification {
 
 dependencies {
     implementation project(':claims-validation-api')
+    implementation project(':claims-validation-core')
 
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
