@@ -39,6 +39,12 @@ public class ValidationService {
 
     log.info("Starting validation for claim with scope: {}", scope);
 
+    // Handle missing claim - return validation error, not 400
+    if (claim == null) {
+      log.warn("Validation request received with null claim");
+      return buildMissingClaimResult();
+    }
+
     // Build validation context
     ValidationContext context = buildValidationContext(request);
 
@@ -86,5 +92,21 @@ public class ValidationService {
         .scope(request.getScope())
         .relatedClaims(relatedClaims)
         .build();
+  }
+
+  /**
+   * Builds a validation result for when no claim is provided.
+   *
+   * @return validation result with MISSING_CLAIM error
+   */
+  private ValidationResult buildMissingClaimResult() {
+    ValidationIssue issue =
+        new ValidationIssue(
+            "MISSING_CLAIM", "No claim data provided for validation", ValidationSeverity.ERROR);
+
+    ValidationResult result = new ValidationResult();
+    result.setIsValid(false);
+    result.setIssues(List.of(issue));
+    return result;
   }
 }

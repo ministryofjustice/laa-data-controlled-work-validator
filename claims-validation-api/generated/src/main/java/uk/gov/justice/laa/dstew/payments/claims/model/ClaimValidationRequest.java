@@ -24,30 +24,19 @@ import jakarta.annotation.Generated;
  * ClaimValidationRequest
  */
 
-@Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2026-03-10T13:28:50.707211Z[Europe/London]", comments = "Generator version: 7.18.0")
+@Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2026-03-10T16:12:34.732357Z[Europe/London]", comments = "Generator version: 7.18.0")
 public class ClaimValidationRequest implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
-  private Claim claim;
+  private @Nullable Claim claim;
 
   private @Nullable String scope;
 
   @Valid
   private List<@Valid Claim> relatedClaims = new ArrayList<>();
 
-  public ClaimValidationRequest() {
-    super();
-  }
-
-  /**
-   * Constructor with only required parameters
-   */
-  public ClaimValidationRequest(Claim claim) {
-    this.claim = claim;
-  }
-
-  public ClaimValidationRequest claim(Claim claim) {
+  public ClaimValidationRequest claim(@Nullable Claim claim) {
     this.claim = claim;
     return this;
   }
@@ -56,14 +45,14 @@ public class ClaimValidationRequest implements Serializable {
    * Get claim
    * @return claim
    */
-  @NotNull @Valid 
-  @Schema(name = "claim", requiredMode = Schema.RequiredMode.REQUIRED)
+  @Valid 
+  @Schema(name = "claim", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
   @JsonProperty("claim")
-  public Claim getClaim() {
+  public @Nullable Claim getClaim() {
     return claim;
   }
 
-  public void setClaim(Claim claim) {
+  public void setClaim(@Nullable Claim claim) {
     this.claim = claim;
   }
 

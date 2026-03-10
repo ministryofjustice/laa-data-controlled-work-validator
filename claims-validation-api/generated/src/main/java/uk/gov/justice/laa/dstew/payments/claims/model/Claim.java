@@ -26,14 +26,14 @@ import jakarta.annotation.Generated;
  */
 
 @Schema(name = "Claim", description = "Claim data for validation")
-@Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2026-03-10T13:28:50.707211Z[Europe/London]", comments = "Generator version: 7.18.0")
+@Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2026-03-10T16:12:34.732357Z[Europe/London]", comments = "Generator version: 7.18.0")
 public class Claim implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
-  private AreaOfLaw areaOfLaw;
+  private @Nullable AreaOfLaw areaOfLaw;
 
-  private String officeAccountNumber;
+  private @Nullable String officeAccountNumber;
 
   private @Nullable UUID id;
 
@@ -247,19 +247,7 @@ public class Claim implements Serializable {
 
   private @Nullable Integer version;
 
-  public Claim() {
-    super();
-  }
-
-  /**
-   * Constructor with only required parameters
-   */
-  public Claim(AreaOfLaw areaOfLaw, String officeAccountNumber) {
-    this.areaOfLaw = areaOfLaw;
-    this.officeAccountNumber = officeAccountNumber;
-  }
-
-  public Claim areaOfLaw(AreaOfLaw areaOfLaw) {
+  public Claim areaOfLaw(@Nullable AreaOfLaw areaOfLaw) {
     this.areaOfLaw = areaOfLaw;
     return this;
   }
@@ -268,18 +256,18 @@ public class Claim implements Serializable {
    * Get areaOfLaw
    * @return areaOfLaw
    */
-  @NotNull @Valid 
-  @Schema(name = "areaOfLaw", requiredMode = Schema.RequiredMode.REQUIRED)
+  @Valid 
+  @Schema(name = "areaOfLaw", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
   @JsonProperty("areaOfLaw")
-  public AreaOfLaw getAreaOfLaw() {
+  public @Nullable AreaOfLaw getAreaOfLaw() {
     return areaOfLaw;
   }
 
-  public void setAreaOfLaw(AreaOfLaw areaOfLaw) {
+  public void setAreaOfLaw(@Nullable AreaOfLaw areaOfLaw) {
     this.areaOfLaw = areaOfLaw;
   }
 
-  public Claim officeAccountNumber(String officeAccountNumber) {
+  public Claim officeAccountNumber(@Nullable String officeAccountNumber) {
     this.officeAccountNumber = officeAccountNumber;
     return this;
   }
@@ -288,14 +276,14 @@ public class Claim implements Serializable {
    * The unique account number assigned to the provider office by the LAA
    * @return officeAccountNumber
    */
-  @NotNull 
-  @Schema(name = "officeAccountNumber", example = "1A234B", description = "The unique account number assigned to the provider office by the LAA", requiredMode = Schema.RequiredMode.REQUIRED)
+  
+  @Schema(name = "officeAccountNumber", example = "1A234B", description = "The unique account number assigned to the provider office by the LAA", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
   @JsonProperty("officeAccountNumber")
-  public String getOfficeAccountNumber() {
+  public @Nullable String getOfficeAccountNumber() {
     return officeAccountNumber;
   }
 
-  public void setOfficeAccountNumber(String officeAccountNumber) {
+  public void setOfficeAccountNumber(@Nullable String officeAccountNumber) {
     this.officeAccountNumber = officeAccountNumber;
   }
 

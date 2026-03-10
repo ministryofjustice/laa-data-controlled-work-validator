@@ -80,13 +80,28 @@ class ValidationControllerTest {
   }
 
   @Test
-  void validateClaim_returnsBadRequestForInvalidInput() throws Exception {
+  void validateClaim_returnsValidationErrorForMissingClaim() throws Exception {
+    // Set up mock to return MISSING_CLAIM error when claim is null
+    ValidationResult missingClaimResult = new ValidationResult();
+    missingClaimResult.setIsValid(false);
+    missingClaimResult.setIssues(
+        List.of(
+            new ValidationIssue(
+                "MISSING_CLAIM",
+                "No claim data provided for validation",
+                ValidationSeverity.ERROR)));
+
+    when(mockValidationService.validateClaim(any(ClaimValidationRequest.class)))
+        .thenReturn(missingClaimResult);
+
     mockMvc
         .perform(
             post("/v1/validation/claim")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{}")
                 .accept(MediaType.APPLICATION_JSON))
-        .andExpect(status().isBadRequest());
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.isValid").value(false))
+        .andExpect(jsonPath("$.issues[0].code").value("MISSING_CLAIM"));
   }
 }

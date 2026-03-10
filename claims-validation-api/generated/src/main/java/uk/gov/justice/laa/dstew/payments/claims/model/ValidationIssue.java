@@ -26,7 +26,7 @@ import jakarta.annotation.Generated;
  * ValidationIssue
  */
 
-@Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2026-03-10T13:28:50.707211Z[Europe/London]", comments = "Generator version: 7.18.0")
+@Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2026-03-10T16:12:34.732357Z[Europe/London]", comments = "Generator version: 7.18.0")
 public class ValidationIssue implements Serializable {
 
   private static final long serialVersionUID = 1L;
@@ -34,6 +34,8 @@ public class ValidationIssue implements Serializable {
   private String code;
 
   private String message;
+
+  private @Nullable String technicalMessage;
 
   @Valid
   private List<ValidationIssuePathInner> path = new ArrayList<>();
@@ -91,6 +93,26 @@ public class ValidationIssue implements Serializable {
 
   public void setMessage(String message) {
     this.message = message;
+  }
+
+  public ValidationIssue technicalMessage(@Nullable String technicalMessage) {
+    this.technicalMessage = technicalMessage;
+    return this;
+  }
+
+  /**
+   * Detailed technical description for debugging (may include field paths, expected values, etc.)
+   * @return technicalMessage
+   */
+  
+  @Schema(name = "technicalMessage", example = "Invalid value 'XYZ' for field 'claim.areaOfLaw'. Expected one of: [LEGAL_HELP, CRIME_LOWER, MEDIATION]", description = "Detailed technical description for debugging (may include field paths, expected values, etc.)", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("technicalMessage")
+  public @Nullable String getTechnicalMessage() {
+    return technicalMessage;
+  }
+
+  public void setTechnicalMessage(@Nullable String technicalMessage) {
+    this.technicalMessage = technicalMessage;
   }
 
   public ValidationIssue path(List<ValidationIssuePathInner> path) {
@@ -152,13 +174,14 @@ public class ValidationIssue implements Serializable {
     ValidationIssue validationIssue = (ValidationIssue) o;
     return Objects.equals(this.code, validationIssue.code) &&
         Objects.equals(this.message, validationIssue.message) &&
+        Objects.equals(this.technicalMessage, validationIssue.technicalMessage) &&
         Objects.equals(this.path, validationIssue.path) &&
         Objects.equals(this.severity, validationIssue.severity);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(code, message, path, severity);
+    return Objects.hash(code, message, technicalMessage, path, severity);
   }
 
   @Override
@@ -167,6 +190,7 @@ public class ValidationIssue implements Serializable {
     sb.append("class ValidationIssue {\n");
     sb.append("    code: ").append(toIndentedString(code)).append("\n");
     sb.append("    message: ").append(toIndentedString(message)).append("\n");
+    sb.append("    technicalMessage: ").append(toIndentedString(technicalMessage)).append("\n");
     sb.append("    path: ").append(toIndentedString(path)).append("\n");
     sb.append("    severity: ").append(toIndentedString(severity)).append("\n");
     sb.append("}");
@@ -199,6 +223,7 @@ public class ValidationIssue implements Serializable {
     protected Builder copyOf(ValidationIssue value) { 
       this.instance.setCode(value.code);
       this.instance.setMessage(value.message);
+      this.instance.setTechnicalMessage(value.technicalMessage);
       this.instance.setPath(value.path);
       this.instance.setSeverity(value.severity);
       return this;
@@ -211,6 +236,11 @@ public class ValidationIssue implements Serializable {
     
     public ValidationIssue.Builder message(String message) {
       this.instance.message(message);
+      return this;
+    }
+    
+    public ValidationIssue.Builder technicalMessage(String technicalMessage) {
+      this.instance.technicalMessage(technicalMessage);
       return this;
     }
     

@@ -37,8 +37,6 @@ components:
   schemas:
     ClaimValidationRequest:
       type: object
-      required:
-        - claim
       properties:
         claim:
           $ref: '#/components/schemas/Claim'
@@ -55,11 +53,8 @@ components:
     Claim:
       type: object
       description: Claim data for validation
-      required:
-        - areaOfLaw
-        - officeAccountNumber
       properties:
-        # Required fields
+        # Core fields
         areaOfLaw:
           $ref: '#/components/schemas/AreaOfLaw'
         officeAccountNumber:
@@ -445,6 +440,10 @@ components:
           type: string
           description: Human-readable description of the issue
           example: "Enhancement fee requires a justification."
+        technicalMessage:
+          type: string
+          description: Detailed technical description for debugging (may include field paths, expected values, etc.)
+          example: "Invalid value 'XYZ' for field 'claim.areaOfLaw'. Expected one of: [LEGAL_HELP, CRIME_LOWER, MEDIATION]"
         path:
           type: array
           items:

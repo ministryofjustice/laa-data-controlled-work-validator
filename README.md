@@ -16,19 +16,22 @@ Stateless validation microservice for LAA Data Claims. This service validates cl
 
 ```
 laa-data-claims-validation-api-poc/
-├── claims-validation-api/          # OpenAPI spec and generated models
+├── claims-validation-api/          # OpenAPI spec and generated models (deployed as package)
 │   ├── open-api-specification.yml
 │   └── generated/                  # Auto-generated API interfaces and models
-├── claims-validation-service/      # Main service implementation
-│   └── src/main/java/.../validation/
-│       ├── controller/             # REST controller
+├── claims-validation-core/         # Core validation logic (deployed as package)
+│   └── src/main/java/.../validation/core/
 │       ├── service/                # Validation orchestration
 │       ├── validator/              # Validator interface and implementations
 │       │   ├── rules/              # Individual validation rules
+│       │   │   └── duplicate/      # Duplicate claim validation strategies
 │       │   └── util/               # Validation utilities
 │       ├── client/                 # External service clients
-│       ├── config/                 # WebClient and app configuration
+│       ├── config/                 # WebClient configuration
 │       └── error/                  # Validation error enums
+├── claims-validation-service/      # REST application (pulls in core and api)
+│   └── src/main/java/.../validation/service/
+│       └── controller/             # REST controller
 ```
 
 ## Version Info
