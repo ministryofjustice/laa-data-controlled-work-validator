@@ -1,8 +1,9 @@
-package uk.gov.justice.laa.dstew.payments.claims.validation.service.validator.rules;
+package uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.rules;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 
 import java.util.Collections;
@@ -17,8 +18,8 @@ import uk.gov.justice.laa.dstew.payments.claims.model.AreaOfLaw;
 import uk.gov.justice.laa.dstew.payments.claims.model.Claim;
 import uk.gov.justice.laa.dstew.payments.claims.model.ValidationIssue;
 import uk.gov.justice.laa.dstew.payments.claims.model.ValidationSeverity;
-import uk.gov.justice.laa.dstew.payments.claims.validation.service.validator.ValidationContext;
-import uk.gov.justice.laa.dstew.payments.claims.validation.service.validator.rules.duplicate.DuplicateClaimValidationStrategy;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.ValidationContext;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.rules.duplicate.DuplicateClaimValidationStrategy;
 
 @ExtendWith(MockitoExtension.class)
 class DuplicateClaimValidatorTest {
@@ -30,7 +31,8 @@ class DuplicateClaimValidatorTest {
   @BeforeEach
   void setUp() {
     // Set up strategy to be compatible with LEGAL_HELP
-    when(mockStrategy.compatibleAreaOfLaws()).thenReturn(List.of(AreaOfLaw.LEGAL_HELP));
+    // Using lenient() as not all tests use this stubbing
+    lenient().when(mockStrategy.compatibleAreaOfLaws()).thenReturn(List.of(AreaOfLaw.LEGAL_HELP));
     validator = new DuplicateClaimValidator(List.of(mockStrategy));
   }
 

@@ -1,8 +1,66 @@
+plugins {
+    id 'com.diffplug.spotless' apply false
+}
+
 subprojects {
     group = 'uk.gov.justice.laa.springboot.microservice'
 
     repositories {
         mavenCentral()
+    }
+
+    // Apply to subprojects that have java plugin
+    plugins.withType(JavaPlugin) {
+        test {
+            useJUnitPlatform()
+        }
+
+        // Suppress Javadoc warnings for Lombok-generated code
+        tasks.withType(Javadoc) {
+            options.addStringOption('Xdoclint:none', '-quiet')
+        }
+
+        // Suppress deprecation warnings - these come from OpenAPI generated code
+        // which uses deprecated Spring APIs. The generator will update these when needed.
+        tasks.withType(JavaCompile) {
+            options.compilerArgs << '-Xlint:-deprecation'
+        }
+    }
+
+    // Apply testlogger only if available (comes from laa-spring-boot-gradle-plugin)
+    pluginManager.withPlugin('com.adarshr.test-logger') {
+        testlogger {
+            theme 'mocha'
+        }
+    }
+}
+
+// Configure spotless and checkstyleStaged for core and service modules
+configure(subprojects.findAll { it.name in ['claims-validation-core', 'claims-validation-service'] }) {
+    apply plugin: 'com.diffplug.spotless'
+
+    spotless {
+        java {
+            target 'src/*/java/**/*.java'
+            importOrder()
+            removeUnusedImports()
+            cleanthat()
+            googleJavaFormat()
+        }
+    }
+
+    tasks.register("checkstyleStaged", Checkstyle) {
+        group = "verification"
+        description = "Runs Checkstyle on staged files only"
+
+        def filesToCheck = project.findProperty("checkstyleFiles")
+        if (filesToCheck != null) {
+            source = files(filesToCheck.split(","))
+        } else {
+            source = sourceSets.main.allJava
+        }
+
+        classpath = sourceSets.main.compileClasspath
     }
 }
 

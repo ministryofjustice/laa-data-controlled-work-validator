@@ -1,4 +1,4 @@
-package uk.gov.justice.laa.dstew.payments.claims.validation.service.validator.rules;
+package uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.rules;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -9,7 +9,7 @@ import uk.gov.justice.laa.dstew.payments.claims.model.AreaOfLaw;
 import uk.gov.justice.laa.dstew.payments.claims.model.Claim;
 import uk.gov.justice.laa.dstew.payments.claims.model.ValidationIssue;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.error.ClaimValidationError;
-import uk.gov.justice.laa.dstew.payments.claims.validation.service.validator.ValidationContext;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.ValidationContext;
 
 /**
  * Validator for disbursement-related fields. Validates that disbursement VAT amounts are within

@@ -1,4 +1,4 @@
-package uk.gov.justice.laa.dstew.payments.claims.validation.service.validator.rules;
+package uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.rules;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,8 +9,8 @@ import org.springframework.stereotype.Component;
 import uk.gov.justice.laa.dstew.payments.claims.model.AreaOfLaw;
 import uk.gov.justice.laa.dstew.payments.claims.model.Claim;
 import uk.gov.justice.laa.dstew.payments.claims.model.ValidationIssue;
-import uk.gov.justice.laa.dstew.payments.claims.validation.service.validator.ValidationContext;
-import uk.gov.justice.laa.dstew.payments.claims.validation.service.validator.rules.duplicate.DuplicateClaimValidationStrategy;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.ValidationContext;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.rules.duplicate.DuplicateClaimValidationStrategy;
 
 /**
  * Validator for checking duplicate claims. Delegates to area-of-law specific strategies for

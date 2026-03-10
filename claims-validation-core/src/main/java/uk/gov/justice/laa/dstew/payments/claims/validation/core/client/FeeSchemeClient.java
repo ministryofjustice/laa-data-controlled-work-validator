@@ -95,7 +95,15 @@ public class FeeSchemeClient {
     }
   }
 
-  /** Response object for fee details. */
+  /**
+   * Response object for fee details.
+   *
+   * @param feeCode the fee code
+   * @param feeType the type of fee
+   * @param categoryOfLaw the category of law
+   * @param description the fee description
+   * @param additionalProperties any additional properties
+   */
   public record FeeDetailsResponse(
       String feeCode,
       String feeType,

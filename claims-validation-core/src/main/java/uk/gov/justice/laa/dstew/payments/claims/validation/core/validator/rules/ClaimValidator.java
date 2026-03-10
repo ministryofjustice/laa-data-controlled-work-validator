@@ -1,9 +1,9 @@
-package uk.gov.justice.laa.dstew.payments.claims.validation.service.validator.rules;
+package uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.rules;
 
 import java.util.List;
 import uk.gov.justice.laa.dstew.payments.claims.model.Claim;
 import uk.gov.justice.laa.dstew.payments.claims.model.ValidationIssue;
-import uk.gov.justice.laa.dstew.payments.claims.validation.service.validator.ValidationContext;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.ValidationContext;
 
 /**
  * Interface for validation rules that can be applied to claims. Implementations should define

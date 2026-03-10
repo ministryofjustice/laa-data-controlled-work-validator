@@ -1,4 +1,4 @@
-package uk.gov.justice.laa.dstew.payments.claims.validation.service.validator;
+package uk.gov.justice.laa.dstew.payments.claims.validation.core.validator;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -8,8 +8,8 @@ import uk.gov.justice.laa.dstew.payments.claims.model.AreaOfLaw;
 import uk.gov.justice.laa.dstew.payments.claims.model.Claim;
 import uk.gov.justice.laa.dstew.payments.claims.model.ValidationIssue;
 import uk.gov.justice.laa.dstew.payments.claims.model.ValidationSeverity;
-import uk.gov.justice.laa.dstew.payments.claims.validation.service.validator.rules.MandatoryFieldValidator;
-import uk.gov.justice.laa.dstew.payments.claims.validation.service.validator.rules.UniqueFileNumberValidator;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.rules.MandatoryFieldValidator;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.rules.UniqueFileNumberValidator;
 
 class ClaimValidatorTest {
 

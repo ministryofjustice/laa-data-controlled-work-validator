@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RestController;
 import uk.gov.justice.laa.dstew.payments.claims.api.ValidationApi;
 import uk.gov.justice.laa.dstew.payments.claims.model.ClaimValidationRequest;
 import uk.gov.justice.laa.dstew.payments.claims.model.ValidationResult;
-import uk.gov.justice.laa.dstew.payments.claims.validation.service.service.ValidationService;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.service.ValidationService;
 
 /** Controller for handling claim validation requests. */
 @RestController

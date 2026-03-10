@@ -1,4 +1,4 @@
-package uk.gov.justice.laa.dstew.payments.claims.validation.service.validator.rules;
+package uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.rules;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 import uk.gov.justice.laa.dstew.payments.claims.model.Claim;
 import uk.gov.justice.laa.dstew.payments.claims.model.ValidationIssue;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.error.ClaimValidationError;
-import uk.gov.justice.laa.dstew.payments.claims.validation.service.validator.ValidationContext;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.ValidationContext;
 
 /**
  * Validator for checking the Unique File Number (UFN) format and date validity. UFN must be in

@@ -1,4 +1,4 @@
-package uk.gov.justice.laa.dstew.payments.claims.validation.service.validator.util;
+package uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.util;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;

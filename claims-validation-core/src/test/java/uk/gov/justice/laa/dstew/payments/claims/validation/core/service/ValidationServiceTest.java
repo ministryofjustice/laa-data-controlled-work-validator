@@ -1,4 +1,4 @@
-package uk.gov.justice.laa.dstew.payments.claims.validation.service.service;
+package uk.gov.justice.laa.dstew.payments.claims.validation.core.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
@@ -16,8 +16,8 @@ import uk.gov.justice.laa.dstew.payments.claims.model.ClaimValidationRequest;
 import uk.gov.justice.laa.dstew.payments.claims.model.ValidationIssue;
 import uk.gov.justice.laa.dstew.payments.claims.model.ValidationResult;
 import uk.gov.justice.laa.dstew.payments.claims.model.ValidationSeverity;
-import uk.gov.justice.laa.dstew.payments.claims.validation.service.validator.ValidationContext;
-import uk.gov.justice.laa.dstew.payments.claims.validation.service.validator.rules.ClaimValidator;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.ValidationContext;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.rules.ClaimValidator;
 
 @ExtendWith(MockitoExtension.class)
 class ValidationServiceTest {

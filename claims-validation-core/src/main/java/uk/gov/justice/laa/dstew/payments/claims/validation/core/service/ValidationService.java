@@ -1,4 +1,4 @@
-package uk.gov.justice.laa.dstew.payments.claims.validation.service.service;
+package uk.gov.justice.laa.dstew.payments.claims.validation.core.service;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -13,8 +13,8 @@ import uk.gov.justice.laa.dstew.payments.claims.model.ClaimValidationRequest;
 import uk.gov.justice.laa.dstew.payments.claims.model.ValidationIssue;
 import uk.gov.justice.laa.dstew.payments.claims.model.ValidationResult;
 import uk.gov.justice.laa.dstew.payments.claims.model.ValidationSeverity;
-import uk.gov.justice.laa.dstew.payments.claims.validation.service.validator.ValidationContext;
-import uk.gov.justice.laa.dstew.payments.claims.validation.service.validator.rules.ClaimValidator;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.ValidationContext;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.rules.ClaimValidator;
 
 /**
  * Service for orchestrating claim validation. This is a stateless service that receives claim data,

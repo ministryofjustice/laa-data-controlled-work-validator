@@ -15,9 +15,9 @@ publishing {
 }
 
 dependencies {
-    implementation 'org.springframework.boot:spring-boot-starter-webmvc'
-    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.1'
-    implementation 'org.openapitools:jackson-databind-nullable:0.2.8'
+    api 'org.springframework.boot:spring-boot-starter-webmvc'
+    api 'org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.1'
+    api 'org.openapitools:jackson-databind-nullable:0.2.8'
 }
 
 sourceSets.main.java.srcDirs += ['generated/src/main/java']

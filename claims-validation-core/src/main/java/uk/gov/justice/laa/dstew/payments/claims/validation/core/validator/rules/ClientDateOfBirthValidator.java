@@ -1,6 +1,6 @@
-package uk.gov.justice.laa.dstew.payments.claims.validation.service.validator.rules;
+package uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.rules;
 
-import static uk.gov.justice.laa.dstew.payments.claims.validation.service.validator.util.DateValidationUtils.checkDateInPast;
+import static uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.util.DateValidationUtils.checkDateInPast;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -9,7 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.gov.justice.laa.dstew.payments.claims.model.Claim;
 import uk.gov.justice.laa.dstew.payments.claims.model.ValidationIssue;
-import uk.gov.justice.laa.dstew.payments.claims.validation.service.validator.ValidationContext;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.ValidationContext;
 
 /**
  * Validator for client date of birth fields. Validates that client DOB is in the past and after

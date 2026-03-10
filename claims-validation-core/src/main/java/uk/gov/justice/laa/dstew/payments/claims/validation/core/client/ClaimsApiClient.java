@@ -184,14 +184,28 @@ public class ClaimsApiClient {
         .toList();
   }
 
-  /** Request object for duplicate check. */
+  /**
+   * Request object for duplicate check.
+   *
+   * @param uniqueFileNumber the unique file number
+   * @param matterTypeCode the matter type code
+   * @param officeAccountNumber the office account number
+   * @param excludeClaimId claim ID to exclude from check
+   */
   public record DuplicateCheckRequest(
       String uniqueFileNumber,
       String matterTypeCode,
       String officeAccountNumber,
       String excludeClaimId) {}
 
-  /** Information about a duplicate claim. */
+  /**
+   * Information about a duplicate claim.
+   *
+   * @param claimId the duplicate claim ID
+   * @param submissionId the submission ID containing the duplicate
+   * @param uniqueFileNumber the unique file number
+   * @param duplicateType the type of duplicate found
+   */
   public record DuplicateClaimInfo(
       String claimId, String submissionId, String uniqueFileNumber, DuplicateType duplicateType) {}
 

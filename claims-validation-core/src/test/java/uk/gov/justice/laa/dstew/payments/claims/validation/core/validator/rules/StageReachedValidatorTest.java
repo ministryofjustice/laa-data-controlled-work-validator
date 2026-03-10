@@ -1,24 +1,23 @@
-package uk.gov.justice.laa.dstew.payments.claims.validation.service.validator.rules;
+package uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.rules;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.math.BigDecimal;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import uk.gov.justice.laa.dstew.payments.claims.model.AreaOfLaw;
 import uk.gov.justice.laa.dstew.payments.claims.model.Claim;
 import uk.gov.justice.laa.dstew.payments.claims.model.ValidationIssue;
-import uk.gov.justice.laa.dstew.payments.claims.validation.service.validator.ValidationContext;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.ValidationContext;
 
-class DisbursementsValidatorTest {
+class StageReachedValidatorTest {
 
-  private final DisbursementsValidator validator = new DisbursementsValidator();
+  private final StageReachedValidator validator = new StageReachedValidator();
 
   @Test
-  void validate_returnsNoErrors_whenVatAmountWithinLimit() {
+  void validate_returnsNoErrors_whenValidLegalHelpCode() {
     Claim claim = new Claim();
     claim.setAreaOfLaw(AreaOfLaw.LEGAL_HELP);
-    claim.setDisbursementsVatAmount(new BigDecimal("1000.00"));
+    claim.setStageReachedCode("AB");
 
     ValidationContext context = ValidationContext.builder().build();
 
@@ -28,24 +27,24 @@ class DisbursementsValidatorTest {
   }
 
   @Test
-  void validate_returnsError_whenVatAmountExceedsLegalHelpLimit() {
+  void validate_returnsError_whenInvalidLegalHelpCode() {
     Claim claim = new Claim();
     claim.setAreaOfLaw(AreaOfLaw.LEGAL_HELP);
-    claim.setDisbursementsVatAmount(new BigDecimal("100000.00"));
+    claim.setStageReachedCode("TOOLONG");
 
     ValidationContext context = ValidationContext.builder().build();
 
     List<ValidationIssue> issues = validator.validate(claim, context);
 
     assertThat(issues).hasSize(1);
-    assertThat(issues.get(0).getCode()).isEqualTo("INVALID_DISBURSEMENT_VAT_AMOUNT");
+    assertThat(issues.get(0).getCode()).isEqualTo("INVALID_STAGE_REACHED");
   }
 
   @Test
-  void validate_allowsHigherLimit_forCrimeLower() {
+  void validate_returnsNoErrors_whenValidCrimeLowerCode() {
     Claim claim = new Claim();
     claim.setAreaOfLaw(AreaOfLaw.CRIME_LOWER);
-    claim.setDisbursementsVatAmount(new BigDecimal("500000.00"));
+    claim.setStageReachedCode("INVA");
 
     ValidationContext context = ValidationContext.builder().build();
 
@@ -55,21 +54,10 @@ class DisbursementsValidatorTest {
   }
 
   @Test
-  void validate_returnsError_whenCrimeLowerLimitExceeded() {
+  void validate_returnsNoErrors_whenNoStageReached() {
     Claim claim = new Claim();
-    claim.setAreaOfLaw(AreaOfLaw.CRIME_LOWER);
-    claim.setDisbursementsVatAmount(new BigDecimal("1000000.00"));
+    claim.setAreaOfLaw(AreaOfLaw.LEGAL_HELP);
 
-    ValidationContext context = ValidationContext.builder().build();
-
-    List<ValidationIssue> issues = validator.validate(claim, context);
-
-    assertThat(issues).hasSize(1);
-  }
-
-  @Test
-  void validate_returnsNoErrors_whenNoVatAmount() {
-    Claim claim = new Claim();
     ValidationContext context = ValidationContext.builder().build();
 
     List<ValidationIssue> issues = validator.validate(claim, context);
@@ -78,19 +66,20 @@ class DisbursementsValidatorTest {
   }
 
   @Test
-  void appliesTo_returnsTrueForDisbursementScope() {
-    assertThat(validator.appliesTo("disbursement")).isTrue();
-    assertThat(validator.appliesTo("all")).isTrue();
-    assertThat(validator.appliesTo(null)).isTrue();
+  void validate_returnsNoErrors_whenNoAreaOfLaw() {
+    Claim claim = new Claim();
+    claim.setStageReachedCode("XX");
+
+    ValidationContext context = ValidationContext.builder().build();
+
+    List<ValidationIssue> issues = validator.validate(claim, context);
+
+    // No validation without area of law
+    assertThat(issues).isEmpty();
   }
 
   @Test
-  void appliesTo_returnsFalseForFeeScope() {
-    assertThat(validator.appliesTo("fee")).isFalse();
-  }
-
-  @Test
-  void getValidatorCode_returnsDisbursements() {
-    assertThat(validator.getValidatorCode()).isEqualTo("DISBURSEMENTS");
+  void getValidatorCode_returnsStageReached() {
+    assertThat(validator.getValidatorCode()).isEqualTo("STAGE_REACHED");
   }
 }

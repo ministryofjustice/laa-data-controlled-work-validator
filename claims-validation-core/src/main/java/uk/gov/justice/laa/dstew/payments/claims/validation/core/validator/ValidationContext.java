@@ -1,4 +1,4 @@
-package uk.gov.justice.laa.dstew.payments.claims.validation.service.validator;
+package uk.gov.justice.laa.dstew.payments.claims.validation.core.validator;
 
 import java.util.List;
 import lombok.Builder;

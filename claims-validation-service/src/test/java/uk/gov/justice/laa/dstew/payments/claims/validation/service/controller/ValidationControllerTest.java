@@ -19,7 +19,7 @@ import uk.gov.justice.laa.dstew.payments.claims.model.ClaimValidationRequest;
 import uk.gov.justice.laa.dstew.payments.claims.model.ValidationIssue;
 import uk.gov.justice.laa.dstew.payments.claims.model.ValidationResult;
 import uk.gov.justice.laa.dstew.payments.claims.model.ValidationSeverity;
-import uk.gov.justice.laa.dstew.payments.claims.validation.service.service.ValidationService;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.service.ValidationService;
 
 @WebMvcTest(ValidationController.class)
 class ValidationControllerTest {
