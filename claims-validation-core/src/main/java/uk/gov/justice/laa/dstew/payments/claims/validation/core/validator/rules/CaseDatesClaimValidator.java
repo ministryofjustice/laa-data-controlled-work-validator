@@ -22,8 +22,9 @@ import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.Valida
 public class CaseDatesClaimValidator implements ClaimValidator {
 
   private static final LocalDate OLDEST_DATE_ALLOWED = LocalDate.of(1995, 1, 1);
-  private static final LocalDate EARLIEST_CASE_CONCLUDED_DATE = LocalDate.of(2013, 4, 1);
+  private static final LocalDate EARLIEST_CASE_CONCLUDED_DATE_ALLOWED = LocalDate.of(2013, 4, 1);
   private static final LocalDate MIN_REP_ORDER_DATE = LocalDate.of(2016, 4, 1);
+  private static final String CASE_CONCLUDED_DATE_FIELD_NAME = "Case Concluded Date";
 
   @Override
   public List<ValidationIssue> validate(Claim claim, ValidationContext context) {
@@ -31,16 +32,24 @@ public class CaseDatesClaimValidator implements ClaimValidator {
 
     log.debug("Validating case dates");
 
-    // Case Start Date - must be in the past and after 1995
-    issues.addAll(
-        checkDateInPast("Case Start Date", claim.getCaseStartDate(), OLDEST_DATE_ALLOWED));
-
-    // Case Concluded Date - depends on area of law
     AreaOfLaw areaOfLaw = claim.getAreaOfLaw();
-    LocalDate earliestConcludedDate = getEarliestCaseConcludedDate(areaOfLaw);
+
+    // Case Start Date - must be in the past and after 1995
+    String caseStartDate = claim.getCaseStartDate();
+    issues.addAll(checkDateInPast("Case Start Date", caseStartDate, OLDEST_DATE_ALLOWED));
+
+    // Case Concluded Date - depends on area of law and must be within submission period
+    LocalDate earliestDateAllowedForCaseConcludedDate =
+        AreaOfLaw.CRIME_LOWER.equals(areaOfLaw)
+            ? MIN_REP_ORDER_DATE
+            : EARLIEST_CASE_CONCLUDED_DATE_ALLOWED;
+
     issues.addAll(
         checkDateNotInFutureAndWithinAllowedPeriod(
-            "Case Concluded Date", claim.getCaseConcludedDate(), earliestConcludedDate));
+            claim,
+            CASE_CONCLUDED_DATE_FIELD_NAME,
+            claim.getCaseConcludedDate(),
+            earliestDateAllowedForCaseConcludedDate));
 
     // Transfer Date - must be in the past and after 1995
     issues.addAll(checkDateInPast("Transfer Date", claim.getTransferDate(), OLDEST_DATE_ALLOWED));
@@ -52,13 +61,6 @@ public class CaseDatesClaimValidator implements ClaimValidator {
 
     log.debug("Case dates validation completed, found {} issues", issues.size());
     return issues;
-  }
-
-  private LocalDate getEarliestCaseConcludedDate(AreaOfLaw areaOfLaw) {
-    if (areaOfLaw == AreaOfLaw.CRIME_LOWER) {
-      return MIN_REP_ORDER_DATE;
-    }
-    return EARLIEST_CASE_CONCLUDED_DATE;
   }
 
   @Override

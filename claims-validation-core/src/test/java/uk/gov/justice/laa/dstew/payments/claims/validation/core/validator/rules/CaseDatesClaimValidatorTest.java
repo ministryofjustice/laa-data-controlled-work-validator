@@ -65,7 +65,7 @@ class CaseDatesClaimValidatorTest {
     List<ValidationIssue> issues = validator.validate(claim, context);
 
     assertThat(issues).hasSize(1);
-    assertThat(issues.get(0).getCode()).contains("FORMAT");
+    assertThat(issues.get(0).getCode()).isEqualTo("INVALID_CASE_START_DATE");
   }
 
   @Test
@@ -83,6 +83,8 @@ class CaseDatesClaimValidatorTest {
     Claim claim = new Claim();
     claim.setAreaOfLaw(AreaOfLaw.CRIME_LOWER);
     claim.setCaseConcludedDate("2014-01-15"); // Before 2016 min for crime lower
+    claim.setSubmissionPeriod(
+        "JAN-2026"); // Required for checkDateNotInFutureAndWithinAllowedPeriod
 
     ValidationContext context = ValidationContext.builder().build();
 

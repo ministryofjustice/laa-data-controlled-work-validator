@@ -35,7 +35,7 @@ public class DuplicateClaimValidator implements ClaimValidator {
 
     String officeCode = claim.getOfficeAccountNumber();
     List<Claim> submissionClaims = context.getRelatedClaims();
-    String feeType = claim.getFeeCode(); // TODO: Confirm if this should be fee calculation type
+    String feeType = context.getFeeCalculationType();
 
     log.debug("Running duplicate claim validation for area of law: {}", areaOfLaw);
 

@@ -22,6 +22,9 @@ public class WebClientConfig {
   @Value("${external.data-claims.base-url:http://localhost:8082}")
   private String dataClaimsBaseUrl;
 
+  @Value("${external.provider-details.base-url:http://localhost:8083}")
+  private String providerDetailsBaseUrl;
+
   @Value("${external.validation.connect-timeout-ms:5000}")
   private int connectTimeoutMs;
 
@@ -56,6 +59,16 @@ public class WebClientConfig {
   @Bean
   public WebClient dataClaimsWebClient() {
     return createWebClient(dataClaimsBaseUrl);
+  }
+
+  /**
+   * Creates a WebClient for Provider Details API calls.
+   *
+   * @return the configured WebClient
+   */
+  @Bean
+  public WebClient providerDetailsWebClient() {
+    return createWebClient(providerDetailsBaseUrl);
   }
 
   private WebClient createWebClient(String baseUrl) {

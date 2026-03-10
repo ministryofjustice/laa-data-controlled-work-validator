@@ -22,6 +22,9 @@ public class ValidationContext {
   /** The type of fee being claimed (e.g., "FEE", "DISBURSEMENT"). */
   private final String feeType;
 
+  /** The fee calculation type (e.g., "HOURLY", "FIXED", "DISB_ONLY"). */
+  private final String feeCalculationType;
+
   /** Other claims in the same submission (for duplicate checking). */
   @Builder.Default private final List<Claim> relatedClaims = List.of();
 }
