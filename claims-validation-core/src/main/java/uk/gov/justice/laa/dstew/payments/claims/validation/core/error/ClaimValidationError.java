@@ -20,6 +20,15 @@ public enum ClaimValidationError {
       "SCHEMA",
       ValidationSeverity.ERROR),
 
+  SCHEMA_VALIDATION_ERROR(
+      "Field '%s' has an invalid value", "%s", "SCHEMA", ValidationSeverity.ERROR),
+
+  SCHEMA_CONFIG_WARNING(
+      "Schema configuration warning: field(s) not defined in schema",
+      "Update claim-fields.schema.json to add validation rules for these fields",
+      "SCHEMA",
+      ValidationSeverity.WARNING),
+
   // Date validation errors
   INVALID_CASE_START_DATE("Case start date is invalid: %s", null, "DATE", ValidationSeverity.ERROR),
   INVALID_CASE_CONCLUDED_DATE(
