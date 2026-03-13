@@ -42,7 +42,7 @@ class ValidationControllerTest {
             post("/v1/validation/claim")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
-                    "{\"claim\": {\"areaOfLaw\": \"LEGAL_HELP\", \"officeAccountNumber\": \"1A234B\"}, \"scope\": \"fee\"}")
+                    "{\"claim\": {\"areaOfLaw\": \"LEGAL HELP\", \"officeAccountNumber\": \"1A234B\"}, \"scope\": \"fee\"}")
                 .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -70,7 +70,7 @@ class ValidationControllerTest {
             post("/v1/validation/claim")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
-                    "{\"claim\": {\"areaOfLaw\": \"LEGAL_HELP\", \"officeAccountNumber\": \"1A234B\", \"fees\": [{\"type\": \"enhancement\"}]}}")
+                    "{\"claim\": {\"areaOfLaw\": \"LEGAL HELP\", \"officeAccountNumber\": \"1A234B\", \"fees\": [{\"type\": \"enhancement\"}]}}")
                 .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))

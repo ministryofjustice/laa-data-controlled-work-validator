@@ -57,7 +57,7 @@ class ValidationIntegrationTest {
         """
         {
           "claim": {
-            "areaOfLaw": "LEGAL_HELP",
+            "areaOfLaw": "LEGAL HELP",
             "officeAccountNumber": "1A234B",
             "feeCode": "ABC123",
             "uniqueFileNumber": "010120/001",
@@ -85,7 +85,7 @@ class ValidationIntegrationTest {
         """
         {
           "claim": {
-            "areaOfLaw": "LEGAL_HELP",
+            "areaOfLaw": "LEGAL HELP",
             "officeAccountNumber": "1A234B",
             "caseStartDate": "2020-01-15"
           },
@@ -110,7 +110,7 @@ class ValidationIntegrationTest {
         """
         {
           "claim": {
-            "areaOfLaw": "LEGAL_HELP",
+            "areaOfLaw": "LEGAL HELP",
             "officeAccountNumber": "1A234B",
             "feeCode": "ABC123",
             "uniqueFileNumber": "invalid-format"
@@ -134,7 +134,7 @@ class ValidationIntegrationTest {
         """
         {
           "claim": {
-            "areaOfLaw": "LEGAL_HELP",
+            "areaOfLaw": "LEGAL HELP",
             "officeAccountNumber": "1A234B",
             "feeCode": "ABC123",
             "caseStartDate": "2030-01-15"
@@ -158,7 +158,7 @@ class ValidationIntegrationTest {
         """
         {
           "claim": {
-            "areaOfLaw": "CRIME_LOWER",
+            "areaOfLaw": "CRIME LOWER",
             "officeAccountNumber": "1A234B",
             "feeCode": "ABC123",
             "disbursementsVatAmount": 500000.00

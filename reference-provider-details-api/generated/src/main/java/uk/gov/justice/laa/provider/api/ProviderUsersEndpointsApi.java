@@ -37,7 +37,7 @@ import java.util.Map;
 import java.util.Optional;
 import jakarta.annotation.Generated;
 
-@Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2026-03-13T18:11:19.822784Z[Europe/London]", comments = "Generator version: 7.14.0")
+@Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2026-03-13T21:51:32.806274Z[Europe/London]", comments = "Generator version: 7.14.0")
 @Validated
 @Tag(name = "Provider Users Endpoints", description = "These are UTILITY ENDPOINTS for getting provider user information when only have a user-login but you don't have a provider firm id. This allows you to find firm with which provider user is associated and using that you can find more details related to provider firm.")
 public interface ProviderUsersEndpointsApi {

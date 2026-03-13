@@ -2,6 +2,21 @@ opencollection: 1.0.0
 
 info:
   name: laa-claims-validation
+config:
+  protobuf:
+    protoFiles:
+      - type: file
+        path: ../../claims-validation-grpc/src/main/proto/claim_validation.proto
+  proxy:
+    inherit: true
+    config:
+      protocol: http
+      hostname: ""
+      port: ""
+      auth:
+        username: ""
+        password: ""
+      bypassProxy: ""
 bundled: false
 extensions:
   bruno:

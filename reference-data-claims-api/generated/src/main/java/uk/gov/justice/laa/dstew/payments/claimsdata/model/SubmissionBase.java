@@ -29,7 +29,7 @@ import jakarta.annotation.Generated;
 
 @Schema(name = "submission_base", description = "submission details")
 @JsonTypeName("submission_base")
-@Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2026-03-13T18:11:17.854857Z[Europe/London]", comments = "Generator version: 7.14.0")
+@Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2026-03-13T21:51:30.932283Z[Europe/London]", comments = "Generator version: 7.14.0")
 public class SubmissionBase implements Serializable {
 
   private static final long serialVersionUID = 1L;

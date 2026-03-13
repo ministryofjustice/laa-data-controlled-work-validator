@@ -5,14 +5,14 @@ info:
 
 http:
   method: POST
-  url: http://localhost:8081/v1/validation/claim
+  url: http://localhost:8084/v1/validation/claim
   body:
     type: json
     data: |+
       {
         "claim": {
           "areaOfLaw": "LEGAL_HELP",
-          "officeAccountNumber": "1A234B",
+          "officeAccountNumber": "0P322F",
           "uniqueFileNumber": "010125/001",
           "caseStartDate": "2025-01-15",
           "caseConcludedDate": "2025-06-15",
@@ -23,7 +23,7 @@ http:
           "matterTypeCode": "FAMA",
           "stageReachedCode": "AB",
           "outcomeCode": "FA",
-          "feeCode": "FEE001",
+          "feeCode": "FPB030",
           "scheduleReference": "SCHED001",
           "netProfitCostsAmount": 500.00,
           "disbursementsVatAmount": 100.00,

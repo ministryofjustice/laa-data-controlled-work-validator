@@ -397,6 +397,10 @@ components:
     AreaOfLaw:
       type: string
       enum:
+        - CRIME LOWER
+        - LEGAL HELP
+        - MEDIATION
+      x-enum-varnames:
         - CRIME_LOWER
         - LEGAL_HELP
         - MEDIATION
@@ -443,7 +447,7 @@ components:
         technicalMessage:
           type: string
           description: Detailed technical description for debugging (may include field paths, expected values, etc.)
-          example: "Invalid value 'XYZ' for field 'claim.areaOfLaw'. Expected one of: [LEGAL_HELP, CRIME_LOWER, MEDIATION]"
+          example: "Invalid value 'XYZ' for field 'claim.areaOfLaw'. Expected one of: [LEGAL HELP, CRIME LOWER, MEDIATION]"
         path:
           type: array
           items:

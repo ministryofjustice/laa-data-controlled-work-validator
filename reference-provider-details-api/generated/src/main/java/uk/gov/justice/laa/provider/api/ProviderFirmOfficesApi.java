@@ -39,7 +39,7 @@ import java.util.Map;
 import java.util.Optional;
 import jakarta.annotation.Generated;
 
-@Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2026-03-13T18:11:19.822784Z[Europe/London]", comments = "Generator version: 7.14.0")
+@Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2026-03-13T21:51:32.806274Z[Europe/London]", comments = "Generator version: 7.14.0")
 @Validated
 @Tag(name = "Provider Firm Offices", description = "These are UTILITY ENDPOINTS for getting office information when only have office code but you don't have a provider firm id. This allows you to find firm with which office is associated and using that you can find more details related to provider firm.")
 public interface ProviderFirmOfficesApi {

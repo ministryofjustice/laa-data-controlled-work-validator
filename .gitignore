@@ -6,10 +6,6 @@ build/
 !**/src/test/**/build/
 .DS_Store
 
-# Environment files (keep secrets out of git)
-.env
-.env.local
-
 spring-boot-microservice-api/generated
 
 ### IntelliJ IDEA ###

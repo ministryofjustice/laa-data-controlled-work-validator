@@ -21,12 +21,12 @@ import com.fasterxml.jackson.annotation.JsonValue;
  * Area of law for the claim
  */
 
-@Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2026-03-13T18:11:17.249745Z[Europe/London]", comments = "Generator version: 7.18.0")
+@Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2026-03-13T21:51:30.435742Z[Europe/London]", comments = "Generator version: 7.18.0")
 public enum AreaOfLaw implements Serializable {
   
-  CRIME_LOWER("CRIME_LOWER"),
+  CRIME_LOWER("CRIME LOWER"),
   
-  LEGAL_HELP("LEGAL_HELP"),
+  LEGAL_HELP("LEGAL HELP"),
   
   MEDIATION("MEDIATION");
 

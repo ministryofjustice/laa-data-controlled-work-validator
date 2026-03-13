@@ -5,11 +5,11 @@
   "properties": {
     "areaOfLaw": {
       "type": "string",
-      "enum": ["LEGAL_HELP", "CRIME_LOWER", "MEDIATION"],
+      "enum": ["LEGAL HELP", "CRIME LOWER", "MEDIATION"],
       "validationErrorMessages": [
         {
           "key": "ALL",
-          "value": "Area of Law must be one of LEGAL_HELP, CRIME_LOWER, or MEDIATION"
+          "value": "Area of Law must be one of LEGAL HELP, CRIME LOWER, or MEDIATION"
         }
       ]
     },

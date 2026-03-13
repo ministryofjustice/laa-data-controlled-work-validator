@@ -94,6 +94,12 @@ public class EffectiveCategoryOfLawClaimValidator implements ClaimValidator {
       return Collections.emptyList();
     }
 
+    log.debug(
+        "Calling Provider Details API: officeCode={}, areaOfLaw={}, effectiveDate={}",
+        officeCode,
+        areaOfLaw.getValue(),
+        effectiveDate);
+
     return providerDetailsClient
         .getProviderFirmSchedules(officeCode, areaOfLaw.getValue(), effectiveDate)
         .blockOptional()

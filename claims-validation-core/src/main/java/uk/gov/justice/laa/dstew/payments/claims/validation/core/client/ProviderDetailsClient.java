@@ -61,9 +61,10 @@ public interface ProviderDetailsClient {
    */
   @GetExchange("/{officeCode}/schedules")
   Mono<ProviderFirmOfficeContractAndScheduleDto> getProviderFirmSchedules(
-      final @PathVariable String officeCode,
-      final @RequestParam(required = false) String areaOfLaw,
-      final @RequestParam(required = false) @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate
-              effectiveDate,
-      final @RequestParam(defaultValue = "false") Boolean requireOpenStatus);
+      final @PathVariable("officeCode") String officeCode,
+      final @RequestParam(value = "areaOfLaw", required = false) String areaOfLaw,
+      final @RequestParam(value = "effectiveDate", required = false) @DateTimeFormat(
+              pattern = "dd-MM-yyyy") LocalDate effectiveDate,
+      final @RequestParam(value = "requireOpenStatus", defaultValue = "false") Boolean
+              requireOpenStatus);
 }
