@@ -1,96 +1,69 @@
 package uk.gov.justice.laa.dstew.payments.claims.validation.core.client;
 
 import java.time.LocalDate;
-import java.util.Collections;
-import java.util.List;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.stereotype.Component;
-import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.reactive.function.client.WebClientResponseException;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.service.annotation.GetExchange;
+import org.springframework.web.service.annotation.HttpExchange;
+import reactor.core.publisher.Mono;
+import uk.gov.justice.laa.provider.model.ProviderFirmOfficeContractAndScheduleDto;
 
 /**
- * Client for calling the Provider Details API. Retrieves provider contract and schedule information
- * for validation.
+ * REST client interface for fetching provider office details and schedules. This interface
+ * communicates with the Provider Details API.
+ *
+ * @author Jamie Briggs
  */
-@Component
-@Slf4j
-public class ProviderDetailsClient {
+@HttpExchange(value = "/api/v1/provider-offices", accept = MediaType.APPLICATION_JSON_VALUE)
+public interface ProviderDetailsClient {
 
-  private final WebClient providerDetailsWebClient;
-
-  public ProviderDetailsClient(
-      @Qualifier("providerDetailsWebClient") WebClient providerDetailsWebClient) {
-    this.providerDetailsWebClient = providerDetailsWebClient;
+  /**
+   * Get all provider office schedule details based on the provider office code. Passes false for
+   * requireOpenStatus. Can return the following HTTP statuses:
+   *
+   * <ul>
+   *   <li>200 - Success
+   *   <li>204 - No content (Happens when a firm has no schedules).
+   *   <li>409 - Conflict - Ex Cache being Loaded.
+   *   <li>500 - Internal Server Error.
+   * </ul>
+   *
+   * @param officeCode The firm office code
+   * @param areaOfLaw The area of law code
+   * @param effectiveDate The contract effective date for testing on lower environments. Should not
+   *     be used for production environments.
+   * @return The provider firm summary
+   */
+  default Mono<ProviderFirmOfficeContractAndScheduleDto> getProviderFirmSchedules(
+      final String officeCode, final String areaOfLaw, final LocalDate effectiveDate) {
+    return getProviderFirmSchedules(officeCode, areaOfLaw, effectiveDate, false);
   }
 
   /**
-   * Retrieves the effective categories of law for a provider based on office code, area of law, and
-   * effective date.
+   * Get all provider office schedule details based on the provider office code. Can return the
+   * following HTTP statuses:
    *
-   * @param officeCode the unique code identifying the office
-   * @param areaOfLaw the area of law for which schedules are requested
-   * @param effectiveDate the date from which the schedule should be effective
-   * @return list of category of law codes the provider is authorized for
+   * <ul>
+   *   <li>200 - Success
+   *   <li>204 - No content (Happens when a firm has no schedules).
+   *   <li>409 - Conflict - Ex Cache being Loaded.
+   *   <li>500 - Internal Server Error.
+   * </ul>
+   *
+   * @param officeCode The firm office code
+   * @param areaOfLaw The area of law code
+   * @param effectiveDate The contract effective date for testing on lower environments. Should not
+   *     be used for production environments.
+   * @param requireOpenStatus If true, only returns schedules with open status, defaults to false.
+   * @return The provider firm summary
    */
-  public List<String> getEffectiveCategoriesOfLaw(
-      String officeCode, String areaOfLaw, LocalDate effectiveDate) {
-
-    if (officeCode == null || areaOfLaw == null || effectiveDate == null) {
-      return Collections.emptyList();
-    }
-
-    log.debug(
-        "Fetching effective categories for office: {}, areaOfLaw: {}, effectiveDate: {}",
-        officeCode,
-        areaOfLaw,
-        effectiveDate);
-
-    try {
-      ProviderSchedulesResponse response =
-          providerDetailsWebClient
-              .get()
-              .uri(
-                  "/api/v1/providers/{office}/schedules?areaOfLaw={area}&effectiveDate={date}",
-                  officeCode,
-                  areaOfLaw,
-                  effectiveDate)
-              .retrieve()
-              .bodyToMono(ProviderSchedulesResponse.class)
-              .block();
-
-      if (response == null || response.schedules() == null) {
-        return Collections.emptyList();
-      }
-
-      return response.schedules().stream()
-          .flatMap(schedule -> schedule.scheduleLines().stream())
-          .map(ScheduleLine::categoryOfLaw)
-          .distinct()
-          .toList();
-
-    } catch (WebClientResponseException.NotFound e) {
-      log.debug("Provider schedules not found for office: {}", officeCode);
-      return Collections.emptyList();
-    } catch (Exception e) {
-      log.error("Error fetching provider schedules for office: {}", officeCode, e);
-      throw new ProviderDetailsClientException("Failed to fetch provider schedules", e);
-    }
-  }
-
-  /** Response object for provider schedules. */
-  public record ProviderSchedulesResponse(List<ScheduleDetails> schedules) {}
-
-  /** Schedule details containing schedule lines. */
-  public record ScheduleDetails(List<ScheduleLine> scheduleLines) {}
-
-  /** Individual schedule line with category of law. */
-  public record ScheduleLine(String categoryOfLaw) {}
-
-  /** Exception thrown when provider details API calls fail. */
-  public static class ProviderDetailsClientException extends RuntimeException {
-    public ProviderDetailsClientException(String message, Throwable cause) {
-      super(message, cause);
-    }
-  }
+  @GetExchange("/{officeCode}/schedules")
+  Mono<ProviderFirmOfficeContractAndScheduleDto> getProviderFirmSchedules(
+      final @PathVariable String officeCode,
+      final @RequestParam(required = false) String areaOfLaw,
+      final @RequestParam(required = false) @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate
+              effectiveDate,
+      final @RequestParam(defaultValue = "false") Boolean requireOpenStatus);
 }

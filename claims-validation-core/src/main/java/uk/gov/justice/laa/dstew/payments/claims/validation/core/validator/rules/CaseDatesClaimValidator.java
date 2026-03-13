@@ -1,7 +1,7 @@
 package uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.rules;
 
-import static uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.util.DateValidationUtils.checkDateInPast;
-import static uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.util.DateValidationUtils.checkDateNotInFutureAndWithinAllowedPeriod;
+import static uk.gov.justice.laa.dstew.payments.claims.validation.core.util.DateValidationUtils.checkDateInPast;
+import static uk.gov.justice.laa.dstew.payments.claims.validation.core.util.DateValidationUtils.checkDateNotInFutureAndWithinAllowedPeriod;
 
 import java.time.LocalDate;
 import java.util.ArrayList;

@@ -23,3 +23,4 @@ pluginManagement {
 rootProject.name = 'laa-claims-validation-api'
 
 include 'claims-validation-service', 'claims-validation-api', 'claims-validation-core'
+include 'reference-provider-details-api', 'reference-fee-scheme-platform-api', 'reference-data-claims-api'

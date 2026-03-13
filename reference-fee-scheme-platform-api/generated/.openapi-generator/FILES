@@ -1,0 +1,14 @@
+.openapi-generator-ignore
+README.md
+pom.xml
+src/main/java/uk/gov/justice/laa/fee/scheme/api/ApiUtil.java
+src/main/java/uk/gov/justice/laa/fee/scheme/api/FeeCalculationApi.java
+src/main/java/uk/gov/justice/laa/fee/scheme/api/FeeDetailsApi.java
+src/main/java/uk/gov/justice/laa/fee/scheme/model/BoltOnFeeDetails.java
+src/main/java/uk/gov/justice/laa/fee/scheme/model/BoltOnType.java
+src/main/java/uk/gov/justice/laa/fee/scheme/model/ErrorResponse.java
+src/main/java/uk/gov/justice/laa/fee/scheme/model/FeeCalculation.java
+src/main/java/uk/gov/justice/laa/fee/scheme/model/FeeCalculationRequest.java
+src/main/java/uk/gov/justice/laa/fee/scheme/model/FeeCalculationResponse.java
+src/main/java/uk/gov/justice/laa/fee/scheme/model/FeeDetailsResponse.java
+src/main/java/uk/gov/justice/laa/fee/scheme/model/ValidationMessagesInner.java

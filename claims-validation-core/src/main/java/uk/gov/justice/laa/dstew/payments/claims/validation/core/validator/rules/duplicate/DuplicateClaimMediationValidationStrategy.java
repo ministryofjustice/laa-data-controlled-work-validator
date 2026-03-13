@@ -5,7 +5,7 @@ import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import uk.gov.justice.laa.dstew.payments.claims.model.Claim;
 import uk.gov.justice.laa.dstew.payments.claims.model.ValidationIssue;
-import uk.gov.justice.laa.dstew.payments.claims.validation.core.client.ClaimsApiClient;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.client.DataClaimsClient;
 
 /**
  * Duplicate claims Validation Mediation Strategy.
@@ -20,8 +20,8 @@ import uk.gov.justice.laa.dstew.payments.claims.validation.core.client.ClaimsApi
 public final class DuplicateClaimMediationValidationStrategy extends DuplicateClaimValidation
     implements MediationDuplicateClaimValidationStrategy {
 
-  public DuplicateClaimMediationValidationStrategy(ClaimsApiClient claimsApiClient) {
-    super(claimsApiClient);
+  public DuplicateClaimMediationValidationStrategy(DataClaimsClient dataClaimsClient) {
+    super(dataClaimsClient);
   }
 
   @Override

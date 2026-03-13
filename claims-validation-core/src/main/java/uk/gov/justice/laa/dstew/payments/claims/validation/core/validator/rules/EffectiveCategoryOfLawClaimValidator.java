@@ -4,9 +4,9 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import uk.gov.justice.laa.dstew.payments.claims.model.AreaOfLaw;
@@ -14,10 +14,13 @@ import uk.gov.justice.laa.dstew.payments.claims.model.Claim;
 import uk.gov.justice.laa.dstew.payments.claims.model.ValidationIssue;
 import uk.gov.justice.laa.dstew.payments.claims.model.ValidationSeverity;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.client.FeeSchemeClient;
-import uk.gov.justice.laa.dstew.payments.claims.validation.core.client.FeeSchemeClient.FeeDetailsResponse;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.client.ProviderDetailsClient;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.util.ClaimEffectiveDateUtil;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.ValidationContext;
+import uk.gov.justice.laa.fee.scheme.model.FeeDetailsResponse;
+import uk.gov.justice.laa.provider.model.FirmOfficeContractAndScheduleDetails;
+import uk.gov.justice.laa.provider.model.FirmOfficeContractAndScheduleLine;
+import uk.gov.justice.laa.provider.model.ProviderFirmOfficeContractAndScheduleDto;
 
 /** Validates that a claim's effective category of law is valid. */
 @Component
@@ -90,8 +93,25 @@ public class EffectiveCategoryOfLawClaimValidator implements ClaimValidator {
     if (officeCode == null || areaOfLaw == null || effectiveDate == null) {
       return Collections.emptyList();
     }
-    return providerDetailsClient.getEffectiveCategoriesOfLaw(
-        officeCode, areaOfLaw.getValue(), effectiveDate);
+
+    return providerDetailsClient
+        .getProviderFirmSchedules(officeCode, areaOfLaw.getValue(), effectiveDate)
+        .blockOptional()
+        .map(this::extractCategoriesFromSchedules)
+        .orElse(Collections.emptyList());
+  }
+
+  private List<String> extractCategoriesFromSchedules(
+      ProviderFirmOfficeContractAndScheduleDto schedulesDto) {
+    if (schedulesDto == null || schedulesDto.getSchedules() == null) {
+      return Collections.emptyList();
+    }
+    return schedulesDto.getSchedules().stream()
+        .map(FirmOfficeContractAndScheduleDetails::getScheduleLines)
+        .flatMap(List::stream)
+        .map(FirmOfficeContractAndScheduleLine::getCategoryOfLaw)
+        .distinct()
+        .toList();
   }
 
   private void validateCategoryOfLaw(
@@ -102,9 +122,9 @@ public class EffectiveCategoryOfLawClaimValidator implements ClaimValidator {
 
     log.debug("Validating category of law for claim {}", claim.getId());
 
-    Optional<FeeDetailsResponse> feeDetailsOpt = feeSchemeClient.getFeeDetails(feeCode);
+    ResponseEntity<FeeDetailsResponse> response = feeSchemeClient.getFeeDetails(feeCode);
 
-    if (feeDetailsOpt.isEmpty()) {
+    if (response == null || response.getBody() == null) {
       // Fee details not found - this is an error
       issues.add(
           new ValidationIssue(
@@ -115,8 +135,8 @@ public class EffectiveCategoryOfLawClaimValidator implements ClaimValidator {
       return;
     }
 
-    FeeDetailsResponse feeDetails = feeDetailsOpt.get();
-    String categoryOfLaw = feeDetails.categoryOfLaw();
+    FeeDetailsResponse feeDetails = response.getBody();
+    String categoryOfLaw = feeDetails.getCategoryOfLawCode();
 
     if (categoryOfLaw == null) {
       issues.add(

@@ -1,120 +1,59 @@
 package uk.gov.justice.laa.dstew.payments.claims.validation.core.client;
 
-import java.util.Map;
-import java.util.Optional;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.stereotype.Component;
-import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.reactive.function.client.WebClientResponseException;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.service.annotation.GetExchange;
+import org.springframework.web.service.annotation.HttpExchange;
+import org.springframework.web.service.annotation.PostExchange;
+import uk.gov.justice.laa.fee.scheme.model.FeeCalculationRequest;
+import uk.gov.justice.laa.fee.scheme.model.FeeCalculationResponse;
+import uk.gov.justice.laa.fee.scheme.model.FeeDetailsResponse;
 
 /**
- * Client for calling the Fee Scheme Platform API. Retrieves fee details and category of law
- * information for claims.
+ * REST service interface for verifying category of law against a fee code and calculating fee
+ * totals. This interface communicates with the Fee Scheme Platform API.
  */
-@Component
-@Slf4j
-public class FeeSchemeClient {
-
-  private final WebClient feeSchemeWebClient;
-
-  public FeeSchemeClient(@Qualifier("feeSchemeWebClient") WebClient feeSchemeWebClient) {
-    this.feeSchemeWebClient = feeSchemeWebClient;
-  }
+@HttpExchange(value = "/api/v1", accept = MediaType.APPLICATION_JSON_VALUE)
+public interface FeeSchemeClient {
 
   /**
-   * Retrieves fee details for a given fee code.
+   * Get the fee details corresponding to the provided fee code. Can return the following HTTP
+   * statuses:
    *
-   * @param feeCode the fee code to look up
-   * @return optional containing fee details, or empty if not found
+   * <ul>
+   *   <li>200 - Success
+   *   <li>400 - Bad request.
+   *   <li>401 - Unauthorized.
+   *   <li>403 - Forbidden.
+   *   <li>404 - Category code not found.
+   *   <li>500 - Internal Server Error.
+   * </ul>
+   *
+   * @param feeCode The fee code
+   * @return The corresponding category of law
    */
-  public Optional<FeeDetailsResponse> getFeeDetails(String feeCode) {
-    if (feeCode == null || feeCode.isBlank()) {
-      return Optional.empty();
-    }
-
-    log.debug("Fetching fee details for fee code: {}", feeCode);
-
-    try {
-      FeeDetailsResponse response =
-          feeSchemeWebClient
-              .get()
-              .uri("/api/v1/fees/{feeCode}", feeCode)
-              .retrieve()
-              .bodyToMono(FeeDetailsResponse.class)
-              .block();
-
-      return Optional.ofNullable(response);
-
-    } catch (WebClientResponseException.NotFound e) {
-      log.debug("Fee code not found: {}", feeCode);
-      return Optional.empty();
-    } catch (Exception e) {
-      log.error("Error fetching fee details for fee code: {}", feeCode, e);
-      throw new FeeSchemeClientException("Failed to fetch fee details", e);
-    }
-  }
+  @GetExchange("/fee-details/{feeCode}")
+  ResponseEntity<FeeDetailsResponse> getFeeDetails(final @PathVariable String feeCode);
 
   /**
-   * Checks if a provider is authorized for a category of law.
+   * Get the category of law corresponding to the provided fee code. Can return the following HTTP
+   * statuses:
    *
-   * @param officeAccountNumber the provider's office account number
-   * @param categoryOfLaw the category of law to check
-   * @return true if authorized, false otherwise
-   */
-  public boolean isProviderAuthorizedForCategoryOfLaw(
-      String officeAccountNumber, String categoryOfLaw) {
-
-    if (officeAccountNumber == null || categoryOfLaw == null) {
-      return false;
-    }
-
-    log.debug(
-        "Checking provider {} authorization for category: {}", officeAccountNumber, categoryOfLaw);
-
-    try {
-      Boolean authorized =
-          feeSchemeWebClient
-              .get()
-              .uri(
-                  "/api/v1/providers/{office}/categories/{category}/authorized",
-                  officeAccountNumber,
-                  categoryOfLaw)
-              .retrieve()
-              .bodyToMono(Boolean.class)
-              .block();
-
-      return Boolean.TRUE.equals(authorized);
-
-    } catch (WebClientResponseException.NotFound e) {
-      log.debug("Provider or category not found");
-      return false;
-    } catch (Exception e) {
-      log.error("Error checking provider authorization", e);
-      throw new FeeSchemeClientException("Failed to check provider authorization", e);
-    }
-  }
-
-  /**
-   * Response object for fee details.
+   * <ul>
+   *   <li>200 - Success
+   *   <li>400 - Bad request.
+   *   <li>401 - Unauthorized.
+   *   <li>403 - Forbidden.
+   *   <li>404 - Category code not found.
+   *   <li>500 - Internal Server Error.
+   * </ul>
    *
-   * @param feeCode the fee code
-   * @param feeType the type of fee
-   * @param categoryOfLaw the category of law
-   * @param description the fee description
-   * @param additionalProperties any additional properties
+   * @param feeCalculationRequest The details required for the fee calculation
+   * @return The result of the fee calculation
    */
-  public record FeeDetailsResponse(
-      String feeCode,
-      String feeType,
-      String categoryOfLaw,
-      String description,
-      Map<String, Object> additionalProperties) {}
-
-  /** Exception thrown when fee scheme API calls fail. */
-  public static class FeeSchemeClientException extends RuntimeException {
-    public FeeSchemeClientException(String message, Throwable cause) {
-      super(message, cause);
-    }
-  }
+  @PostExchange("/fee-calculation")
+  ResponseEntity<FeeCalculationResponse> calculateFee(
+      final @RequestBody FeeCalculationRequest feeCalculationRequest);
 }

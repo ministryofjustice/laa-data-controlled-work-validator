@@ -13,8 +13,13 @@ java {
 dependencies {
     api project(':claims-validation-api')
 
+    implementation project(':reference-provider-details-api')
+    implementation project(':reference-fee-scheme-platform-api')
+    implementation project(':reference-data-claims-api')
+
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
+    implementation 'org.springframework.data:spring-data-commons'
     implementation 'org.apache.commons:commons-lang3:3.20.0'
     implementation 'com.networknt:json-schema-validator:1.5.8'
 
@@ -24,15 +29,6 @@ dependencies {
 
 test {
     finalizedBy jacocoTestReport
-}
-
-publishing {
-    publications {
-        mavenJava(MavenPublication) {
-            from components.java
-            artifactId = 'claims-validation-core'
-        }
-    }
 }
 
 // disable for library module

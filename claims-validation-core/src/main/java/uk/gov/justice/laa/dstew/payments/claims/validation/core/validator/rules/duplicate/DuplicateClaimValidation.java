@@ -1,24 +1,42 @@
 package uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.rules.duplicate;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Predicate;
+import org.springframework.http.ResponseEntity;
 import uk.gov.justice.laa.dstew.payments.claims.model.Claim;
 import uk.gov.justice.laa.dstew.payments.claims.model.ClaimStatus;
-import uk.gov.justice.laa.dstew.payments.claims.validation.core.client.ClaimsApiClient;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.client.DataClaimsClient;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.util.ClaimMapper;
+import uk.gov.justice.laa.dstew.payments.claimsdata.model.ClaimResultSet;
+import uk.gov.justice.laa.dstew.payments.claimsdata.model.SubmissionStatus;
 
 /**
  * Base class for duplicate claim validation. Provides common methods for checking duplicates in
- * current submission and previous submissions via the DuplicateClaimClient.
+ * current submission and previous submissions via the DataClaimsClient.
  */
 public abstract class DuplicateClaimValidation {
 
   protected static final List<ClaimStatus> LIST_OF_NON_INVALID_STATUS =
       List.of(ClaimStatus.READY_TO_PROCESS, ClaimStatus.VALID);
 
-  protected final ClaimsApiClient claimsApiClient;
+  protected static final List<SubmissionStatus> SUBMISSION_STATUSES_FOR_DUPLICATE_CHECK =
+      List.of(
+          SubmissionStatus.CREATED,
+          SubmissionStatus.VALIDATION_IN_PROGRESS,
+          SubmissionStatus.READY_FOR_VALIDATION,
+          SubmissionStatus.VALIDATION_SUCCEEDED);
 
-  protected DuplicateClaimValidation(ClaimsApiClient claimsApiClient) {
-    this.claimsApiClient = claimsApiClient;
+  protected static final List<uk.gov.justice.laa.dstew.payments.claimsdata.model.ClaimStatus>
+      CLAIM_STATUSES_FOR_DUPLICATE_CHECK =
+          List.of(
+              uk.gov.justice.laa.dstew.payments.claimsdata.model.ClaimStatus.READY_TO_PROCESS,
+              uk.gov.justice.laa.dstew.payments.claimsdata.model.ClaimStatus.VALID);
+
+  protected final DataClaimsClient dataClaimsClient;
+
+  protected DuplicateClaimValidation(DataClaimsClient dataClaimsClient) {
+    this.dataClaimsClient = dataClaimsClient;
   }
 
   /**
@@ -54,8 +72,9 @@ public abstract class DuplicateClaimValidation {
   }
 
   /**
-   * Search for duplicates in all other claims made by this office. Uses the DuplicateClaimClient to
-   * query for potential duplicates.
+   * Search for duplicates in all other claims made by this office, with the same office code, fee
+   * code, and unique file number. Ignore claims within this submission as they are verified
+   * separately.
    *
    * @param officeCode the unique identifier for the office
    * @param feeCode the fee code
@@ -73,10 +92,40 @@ public abstract class DuplicateClaimValidation {
       String uniqueCaseId,
       List<Claim> submissionClaims) {
 
-    // TODO: DuplicateClaimClient.getClaims() needs to be implemented
-    // It should call the Data Claims API with these parameters and return matching claims
-    // For now, return empty list as placeholder
-    return claimsApiClient.getClaims(
-        officeCode, feeCode, uniqueFileNumber, uniqueClientNumber, uniqueCaseId, submissionClaims);
+    ResponseEntity<ClaimResultSet> response =
+        dataClaimsClient.getClaims(
+            officeCode,
+            null, // submissionId - not filtering by submission
+            SUBMISSION_STATUSES_FOR_DUPLICATE_CHECK,
+            feeCode,
+            uniqueFileNumber,
+            uniqueClientNumber,
+            uniqueCaseId,
+            CLAIM_STATUSES_FOR_DUPLICATE_CHECK,
+            null, // page
+            null, // size
+            null); // sort
+
+    if (response == null || response.getBody() == null || response.getBody().getContent() == null) {
+      return Collections.emptyList();
+    }
+
+    // Get the submission ID of the current submission to filter out
+    String currentSubmissionId =
+        submissionClaims.isEmpty() || submissionClaims.get(0).getSubmissionId() == null
+            ? null
+            : submissionClaims.get(0).getSubmissionId().toString();
+
+    return response.getBody().getContent().stream()
+        // Filter out claims from the current submission
+        .filter(
+            prevClaim ->
+                currentSubmissionId == null
+                    || !currentSubmissionId.equals(prevClaim.getSubmissionId()))
+        // Convert to our Claim model
+        .map(ClaimMapper::fromClaimResponse)
+        // Filter out any claims that are in the submission claims list
+        .filter(claim -> !submissionClaims.contains(claim))
+        .toList();
   }
 }

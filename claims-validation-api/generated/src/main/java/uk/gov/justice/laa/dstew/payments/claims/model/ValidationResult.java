@@ -24,7 +24,7 @@ import jakarta.annotation.Generated;
  * ValidationResult
  */
 
-@Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2026-03-10T20:58:45.694706Z[Europe/London]", comments = "Generator version: 7.18.0")
+@Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2026-03-13T14:44:44.264326Z[Europe/London]", comments = "Generator version: 7.18.0")
 public class ValidationResult implements Serializable {
 
   private static final long serialVersionUID = 1L;

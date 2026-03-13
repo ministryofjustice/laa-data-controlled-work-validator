@@ -7,7 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.justice.laa.dstew.payments.claims.model.Claim;
 import uk.gov.justice.laa.dstew.payments.claims.model.ValidationIssue;
-import uk.gov.justice.laa.dstew.payments.claims.validation.core.client.ClaimsApiClient;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.client.DataClaimsClient;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.error.ClaimValidationError;
 
 /**
@@ -19,8 +19,8 @@ import uk.gov.justice.laa.dstew.payments.claims.validation.core.error.ClaimValid
 public final class DuplicateClaimLegalHelpValidationServiceStrategy extends DuplicateClaimValidation
     implements LegalHelpDuplicateClaimValidationStrategy {
 
-  public DuplicateClaimLegalHelpValidationServiceStrategy(ClaimsApiClient claimsApiClient) {
-    super(claimsApiClient);
+  public DuplicateClaimLegalHelpValidationServiceStrategy(DataClaimsClient dataClaimsClient) {
+    super(dataClaimsClient);
   }
 
   @Override

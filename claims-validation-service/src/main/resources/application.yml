@@ -14,16 +14,26 @@ management:
       exposure:
         include: health, info, metrics
 
-# External service configuration
-external:
-  validation:
-    base-url: ${VALIDATION_SERVICE_URL:http://localhost:8080}
-    connect-timeout-ms: ${EXTERNAL_CONNECT_TIMEOUT:5000}
-    read-timeout-ms: ${EXTERNAL_READ_TIMEOUT:10000}
-  fee-scheme:
-    base-url: ${FEE_SCHEME_SERVICE_URL:http://localhost:8082}
-  data-claims:
-    base-url: ${DATA_CLAIMS_SERVICE_URL:http://localhost:8083}
+# LAA API configuration
+laa:
+  fee-scheme-platform-api:
+    url: ${FEE_SCHEME_PLATFORM_API_URL:http://localhost:8082}
+    accessToken: ${FEE_SCHEME_PLATFORM_API_ACCESS_TOKEN:}
+    authHeader: ${FEE_SCHEME_PLATFORM_API_AUTH_HEADER:Authorization}
+    connectTimeoutMs: ${FEE_SCHEME_PLATFORM_API_CONNECT_TIMEOUT:5000}
+    readTimeoutMs: ${FEE_SCHEME_PLATFORM_API_READ_TIMEOUT:10000}
+  provider-details-api:
+    url: ${PROVIDER_DETAILS_API_URL:http://localhost:8083}
+    accessToken: ${PROVIDER_DETAILS_API_ACCESS_TOKEN:}
+    authHeader: ${PROVIDER_DETAILS_API_AUTH_HEADER:Authorization}
+    connectTimeoutMs: ${PROVIDER_DETAILS_API_CONNECT_TIMEOUT:5000}
+    readTimeoutMs: ${PROVIDER_DETAILS_API_READ_TIMEOUT:10000}
+  data-claims-api:
+    url: ${DATA_CLAIMS_API_URL:http://localhost:8084}
+    accessToken: ${DATA_CLAIMS_API_ACCESS_TOKEN:}
+    authHeader: ${DATA_CLAIMS_API_AUTH_HEADER:Authorization}
+    connectTimeoutMs: ${DATA_CLAIMS_API_CONNECT_TIMEOUT:5000}
+    readTimeoutMs: ${DATA_CLAIMS_API_READ_TIMEOUT:10000}
 
 sentry:
   dsn: ${SENTRY_DSN:}
