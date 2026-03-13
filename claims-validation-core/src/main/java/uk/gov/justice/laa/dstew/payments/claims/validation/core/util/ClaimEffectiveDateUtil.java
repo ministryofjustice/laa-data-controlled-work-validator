@@ -4,16 +4,17 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Objects;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import org.springframework.util.StringUtils;
 import uk.gov.justice.laa.dstew.payments.claims.model.Claim;
 
 /** Utility class for calculating the effective date of a claim. */
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ClaimEffectiveDateUtil {
 
   private static final String PROD_FEE_CODE = "PROD";
   private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-
-  private ClaimEffectiveDateUtil() {}
 
   /**
    * Gets the effective date for a claim based on what fields are available.

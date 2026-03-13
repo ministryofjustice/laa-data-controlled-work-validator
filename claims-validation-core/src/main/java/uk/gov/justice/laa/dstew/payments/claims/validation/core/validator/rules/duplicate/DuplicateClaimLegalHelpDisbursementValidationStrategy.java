@@ -1,5 +1,8 @@
 package uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.rules.duplicate;
 
+import static uk.gov.justice.laa.dstew.payments.claims.validation.core.util.DateValidationUtils.parseSubmissionPeriod;
+import static uk.gov.justice.laa.dstew.payments.claims.validation.core.util.FeeTypeUtils.isDisbursementClaim;
+
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
@@ -36,10 +39,10 @@ public class DuplicateClaimLegalHelpDisbursementValidationStrategy extends Dupli
 
     List<ValidationIssue> issues = new ArrayList<>();
 
-    // TODO: Check if this is a disbursement claim
-    // if (!isDisbursementClaim(feeType)) {
-    //   return issues;
-    // }
+    // This strategy only applies to disbursement claims
+    if (!isDisbursementClaim(feeType)) {
+      return issues;
+    }
 
     List<Claim> candidateDuplicateClaims =
         findEligibleDuplicateClaims(incomingClaim, submissionClaims, officeCode);
@@ -161,20 +164,6 @@ public class DuplicateClaimLegalHelpDisbursementValidationStrategy extends Dupli
     } catch (Exception e) {
       log.debug(
           "Could not parse caseConcludedDate '{}' for claim {}", concludedCaseDate, claim.getId());
-      return null;
-    }
-  }
-
-  /** Parses submission period string to YearMonth. */
-  protected static YearMonth parseSubmissionPeriod(String submissionPeriod) {
-    if (submissionPeriod == null || submissionPeriod.isBlank()) {
-      return null;
-    }
-    try {
-      // TODO: Confirm format - assuming "MMM-yyyy" like "MAY-2025"
-      return YearMonth.parse(submissionPeriod, DateTimeFormatter.ofPattern("MMM-yyyy"));
-    } catch (Exception e) {
-      log.debug("Could not parse submission period: {}", submissionPeriod);
       return null;
     }
   }

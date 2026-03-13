@@ -3,13 +3,12 @@ package uk.gov.justice.laa.dstew.payments.claims.validation.core.util;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 
 /** Utility class for string case conversions. */
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class StringCaseUtil {
-
-  private StringCaseUtil() {
-    // Utility class
-  }
 
   /**
    * Converts a string to Title Case.

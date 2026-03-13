@@ -1,16 +1,15 @@
 package uk.gov.justice.laa.dstew.payments.claims.validation.core.util;
 
 import java.util.UUID;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import uk.gov.justice.laa.dstew.payments.claims.model.Claim;
 import uk.gov.justice.laa.dstew.payments.claims.model.ClaimStatus;
 import uk.gov.justice.laa.dstew.payments.claimsdata.model.ClaimResponse;
 
 /** Utility class for mapping between different claim model representations. */
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ClaimMapper {
-
-  private ClaimMapper() {
-    // Utility class
-  }
 
   /**
    * Converts a ClaimResponse from the Data Claims API to our internal Claim model.

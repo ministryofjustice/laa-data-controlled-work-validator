@@ -1,20 +1,19 @@
 package uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.rules;
 
+import static uk.gov.justice.laa.dstew.payments.claims.validation.core.util.DateValidationUtils.parseSubmissionPeriod;
+import static uk.gov.justice.laa.dstew.payments.claims.validation.core.util.FeeTypeUtils.isDisbursementClaim;
+
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeFormatterBuilder;
-import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import uk.gov.justice.laa.dstew.payments.claims.model.Claim;
 import uk.gov.justice.laa.dstew.payments.claims.model.ValidationIssue;
 import uk.gov.justice.laa.dstew.payments.claims.model.ValidationSeverity;
-import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.FeeCalculationType;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.ValidationContext;
 
 /**
@@ -34,11 +33,6 @@ public final class DisbursementClaimStartDateValidator implements ClaimValidator
       DateTimeFormatter.ofPattern("yyyy-MM-dd");
   private static final DateTimeFormatter DATE_FORMATTER_FOR_DISPLAY =
       DateTimeFormatter.ofPattern("dd/MM/yyyy");
-  private static final DateTimeFormatter SUBMISSION_PERIOD_FORMATTER =
-      new DateTimeFormatterBuilder()
-          .parseCaseInsensitive()
-          .appendPattern("MMM-yyyy")
-          .toFormatter(Locale.ENGLISH);
 
   @Override
   public List<ValidationIssue> validate(Claim claim, ValidationContext context) {
@@ -80,30 +74,6 @@ public final class DisbursementClaimStartDateValidator implements ClaimValidator
     }
 
     return issues;
-  }
-
-  /**
-   * Checks if the claim is a disbursement claim based on fee calculation type.
-   *
-   * @param feeType the fee calculation type
-   * @return true if this is a disbursement claim
-   */
-  private boolean isDisbursementClaim(String feeType) {
-    return FeeCalculationType.DISB_ONLY.getValue().equals(feeType);
-  }
-
-  /**
-   * Parses a submission period string (e.g., "JUL-2025") into a YearMonth.
-   *
-   * @param submissionPeriod the submission period string
-   * @return the parsed YearMonth, or null if parsing fails
-   */
-  private YearMonth parseSubmissionPeriod(String submissionPeriod) {
-    try {
-      return YearMonth.parse(submissionPeriod, SUBMISSION_PERIOD_FORMATTER);
-    } catch (DateTimeParseException e) {
-      return null;
-    }
   }
 
   @Override

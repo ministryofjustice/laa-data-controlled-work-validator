@@ -20,7 +20,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
  * Category code assigned to a legal aid matter start. 
  */
 
-@Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2026-03-13T14:44:45.032142Z[Europe/London]", comments = "Generator version: 7.14.0")
+@Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2026-03-13T15:47:02.322440Z[Europe/London]", comments = "Generator version: 7.14.0")
 public enum CategoryCode implements Serializable {
   
   AAP("AAP"),

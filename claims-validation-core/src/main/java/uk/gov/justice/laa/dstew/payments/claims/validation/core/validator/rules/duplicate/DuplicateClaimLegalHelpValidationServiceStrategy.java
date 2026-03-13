@@ -1,7 +1,8 @@
 package uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.rules.duplicate;
 
+import static uk.gov.justice.laa.dstew.payments.claims.validation.core.util.FeeTypeUtils.isDisbursementClaim;
+
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -12,7 +13,8 @@ import uk.gov.justice.laa.dstew.payments.claims.validation.core.error.ClaimValid
 
 /**
  * Validation service for Legal Help duplicate claims. Checks for duplicates in previous
- * submissions.
+ * submissions. Disbursement claims are handled by
+ * DuplicateClaimLegalHelpDisbursementValidationStrategy.
  */
 @Slf4j
 @Service
@@ -31,19 +33,18 @@ public final class DuplicateClaimLegalHelpValidationServiceStrategy extends Dupl
 
     // Disbursement claims are handled exclusively by
     // DuplicateClaimLegalHelpDisbursementValidationStrategy
-    // TODO: Add isDisbursementClaim check when fee type logic is confirmed
-    boolean isDisbursement = false; // TODO: isDisbursementClaim(feeType)
+    if (isDisbursementClaim(feeType)) {
+      return issues;
+    }
 
     List<Claim> duplicateClaimsInPreviousSubmission =
-        isDisbursement
-            ? Collections.emptyList()
-            : getDuplicateClaimsInPreviousSubmission(
-                officeCode,
-                currentClaim.getFeeCode(),
-                currentClaim.getUniqueFileNumber(),
-                currentClaim.getUniqueClientNumber(),
-                null,
-                submissionClaims);
+        getDuplicateClaimsInPreviousSubmission(
+            officeCode,
+            currentClaim.getFeeCode(),
+            currentClaim.getUniqueFileNumber(),
+            currentClaim.getUniqueClientNumber(),
+            null,
+            submissionClaims);
 
     if (!duplicateClaimsInPreviousSubmission.isEmpty()) {
       logDuplicates(currentClaim, duplicateClaimsInPreviousSubmission);

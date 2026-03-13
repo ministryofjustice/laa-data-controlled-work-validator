@@ -26,7 +26,7 @@ import jakarta.annotation.Generated;
  * ProviderFirmUserOfficeListDto
  */
 
-@Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2026-03-13T14:44:48.222559Z[Europe/London]", comments = "Generator version: 7.14.0")
+@Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2026-03-13T15:47:03.890223Z[Europe/London]", comments = "Generator version: 7.14.0")
 public class ProviderFirmUserOfficeListDto implements Serializable {
 
   private static final long serialVersionUID = 1L;

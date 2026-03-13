@@ -8,6 +8,8 @@ import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.StringUtils;
 import uk.gov.justice.laa.dstew.payments.claims.model.Claim;
@@ -19,6 +21,7 @@ import uk.gov.justice.laa.dstew.payments.claims.model.ValidationSeverity;
  * multiple validators.
  */
 @Slf4j
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class DateValidationUtils {
 
   public static final DateTimeFormatter DATE_FORMATTER_YYYY_MM_DD =
@@ -30,10 +33,6 @@ public final class DateValidationUtils {
           .parseCaseInsensitive()
           .appendPattern("MMM-yyyy")
           .toFormatter(Locale.ENGLISH);
-
-  private DateValidationUtils() {
-    // Utility class
-  }
 
   /**
    * Validates whether the provided date value is between the earliest date allowed and today's
@@ -192,5 +191,24 @@ public final class DateValidationUtils {
       case "Client Date of Birth", "Client 2 Date of Birth" -> "INVALID_CLIENT_DATE_OF_BIRTH";
       default -> "INVALID_DATE_FORMAT";
     };
+  }
+
+  /**
+   * Parses a submission period string (e.g., "JAN-2026", "jan-2026", "Jan-2026") into a YearMonth.
+   * The parsing is case-insensitive.
+   *
+   * @param submissionPeriod the submission period string in format "MMM-yyyy"
+   * @return the parsed YearMonth, or null if parsing fails or input is blank
+   */
+  public static YearMonth parseSubmissionPeriod(String submissionPeriod) {
+    if (!StringUtils.hasText(submissionPeriod)) {
+      return null;
+    }
+    try {
+      return YearMonth.parse(submissionPeriod, SUBMISSION_PERIOD_FORMATTER);
+    } catch (DateTimeParseException e) {
+      log.debug("Could not parse submission period: {}", submissionPeriod);
+      return null;
+    }
   }
 }

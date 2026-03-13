@@ -33,7 +33,7 @@ import java.util.Map;
 import java.util.Optional;
 import jakarta.annotation.Generated;
 
-@Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2026-03-13T14:44:48.222559Z[Europe/London]", comments = "Generator version: 7.14.0")
+@Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2026-03-13T15:47:03.890223Z[Europe/London]", comments = "Generator version: 7.14.0")
 @Validated
 @Tag(name = "Admin Controller Endpoints", description = "These are UTILITY ENDPOINTS ONLY FOR ADMINS.")
 public interface AdminControllerEndpointsApi {

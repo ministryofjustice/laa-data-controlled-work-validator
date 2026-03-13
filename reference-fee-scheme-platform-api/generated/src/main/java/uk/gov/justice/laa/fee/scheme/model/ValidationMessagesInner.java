@@ -22,7 +22,7 @@ import jakarta.annotation.Generated;
  */
 
 @JsonTypeName("ValidationMessages_inner")
-@Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2026-03-13T14:44:47.890373Z[Europe/London]", comments = "Generator version: 7.14.0")
+@Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2026-03-13T15:47:03.507230Z[Europe/London]", comments = "Generator version: 7.14.0")
 public class ValidationMessagesInner implements Serializable {
 
   private static final long serialVersionUID = 1L;
