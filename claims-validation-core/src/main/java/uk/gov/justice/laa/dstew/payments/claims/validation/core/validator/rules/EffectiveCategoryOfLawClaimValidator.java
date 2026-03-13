@@ -73,7 +73,7 @@ public class EffectiveCategoryOfLawClaimValidator implements ClaimValidator {
           areaOfLaw != null ? areaOfLaw.getValue() : null,
           effectiveDate,
           ex);
-      handleProviderDetailsApiError(issues);
+      handleProviderDetailsApiError(issues, ex);
     } catch (Exception ex) {
       log.error(
           "Unexpected error during category of law validation for officeCode={}, "
@@ -82,7 +82,7 @@ public class EffectiveCategoryOfLawClaimValidator implements ClaimValidator {
           areaOfLaw != null ? areaOfLaw.getValue() : null,
           effectiveDate,
           ex);
-      handleProviderDetailsApiError(issues);
+      handleProviderDetailsApiError(issues, ex);
     }
 
     return issues;
@@ -156,12 +156,14 @@ public class EffectiveCategoryOfLawClaimValidator implements ClaimValidator {
     log.debug("Category of law validation completed for claim {}", claim.getId());
   }
 
-  private void handleProviderDetailsApiError(List<ValidationIssue> issues) {
-    issues.add(
+  private void handleProviderDetailsApiError(List<ValidationIssue> issues, Exception ex) {
+    ValidationIssue issue =
         new ValidationIssue(
             "TECHNICAL_ERROR_PROVIDER_DETAILS_API",
             "A technical error occurred, please try again after some time",
-            ValidationSeverity.ERROR));
+            ValidationSeverity.ERROR);
+    issue.setTechnicalMessage(ex.getMessage());
+    issues.add(issue);
   }
 
   @Override

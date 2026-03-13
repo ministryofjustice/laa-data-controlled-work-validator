@@ -102,15 +102,30 @@ Validators run in priority order (lower numbers first):
 
 ## Configuration
 
-Environment variables:
+### Environment Variables
+
+The service uses environment variables for configuration. For local development, copy `.env.example` to `.env` and update the values:
+
+```bash
+cp .env.example .env
+```
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `FEE_SCHEME_SERVICE_URL` | `http://localhost:8082` | Fee Scheme Platform API URL |
-| `DATA_CLAIMS_SERVICE_URL` | `http://localhost:8083` | Data Claims API URL |
-| `EXTERNAL_CONNECT_TIMEOUT` | `5000` | Connection timeout (ms) |
-| `EXTERNAL_READ_TIMEOUT` | `10000` | Read timeout (ms) |
+| `FEE_SCHEME_PLATFORM_API_URL` | `http://localhost:8082` | Fee Scheme Platform API URL |
+| `FEE_SCHEME_PLATFORM_API_ACCESS_TOKEN` | | API access token |
+| `FEE_SCHEME_PLATFORM_API_AUTH_HEADER` | `Authorization` | Auth header name |
+| `PROVIDER_DETAILS_API_URL` | `http://localhost:8083` | Provider Details API URL |
+| `PROVIDER_DETAILS_API_ACCESS_TOKEN` | | API access token |
+| `PROVIDER_DETAILS_API_AUTH_HEADER` | `Authorization` | Auth header name |
+| `DATA_CLAIMS_API_URL` | `http://localhost:8084` | Data Claims API URL |
+| `DATA_CLAIMS_API_ACCESS_TOKEN` | | API access token |
+| `DATA_CLAIMS_API_AUTH_HEADER` | `Authorization` | Auth header name |
+| `*_CONNECT_TIMEOUT` | `5000` | Connection timeout (ms) |
+| `*_READ_TIMEOUT` | `10000` | Read timeout (ms) |
 | `LOG_LEVEL` | `INFO` | Application log level |
+| `SENTRY_DSN` | | Sentry DSN for error tracking |
+| `SENTRY_ENVIRONMENT` | `local` | Sentry environment name |
 
 ## Build & Run
 

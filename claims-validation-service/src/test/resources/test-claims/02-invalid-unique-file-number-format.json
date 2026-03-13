@@ -1,0 +1,38 @@
+{
+  "claim": {
+    "areaOfLaw": "LEGAL_HELP",
+    "officeAccountNumber": "1A234B",
+    "uniqueFileNumber": "invalid-ufn",
+    "caseStartDate": "2025-01-15",
+    "caseConcludedDate": "2025-06-15",
+    "clientDateOfBirth": "1985-03-20",
+    "clientForename": "Jane",
+    "clientSurname": "Doe",
+    "uniqueClientNumber": "20031985/A/1234",
+    "matterTypeCode": "FAMA",
+    "stageReachedCode": "AB",
+    "outcomeCode": "FA",
+    "feeCode": "FEE001",
+    "scheduleReference": "SCHED001",
+    "netProfitCostsAmount": 500.00,
+    "disbursementsVatAmount": 100.00,
+    "netDisbursementAmount": 500.00,
+    "submissionPeriod": "JUL-2025",
+    "status": "READY_TO_PROCESS",
+    "lineNumber": 1,
+    "travelWaitingCostsAmount": 50.00,
+    "clientPostcode": "SW1A 1AA",
+    "genderCode": "M",
+    "ethnicityCode": "01",
+    "disabilityCode": "NCD",
+    "adviceTime": 60,
+    "travelTime": 30,
+    "waitingTime": 15,
+    "netCounselCostsAmount": 100.00,
+    "caseId": "001",
+    "caseReferenceNumber": "REF123456",
+    "isVatApplicable": true
+  },
+  "scope": "all"
+}
+

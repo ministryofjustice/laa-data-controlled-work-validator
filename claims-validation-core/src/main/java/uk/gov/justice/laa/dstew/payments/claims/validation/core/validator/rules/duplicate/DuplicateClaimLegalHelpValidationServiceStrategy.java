@@ -37,7 +37,7 @@ public final class DuplicateClaimLegalHelpValidationServiceStrategy extends Dupl
       return issues;
     }
 
-    List<Claim> duplicateClaimsInPreviousSubmission =
+    DuplicateCheckResult result =
         getDuplicateClaimsInPreviousSubmission(
             officeCode,
             currentClaim.getFeeCode(),
@@ -46,8 +46,13 @@ public final class DuplicateClaimLegalHelpValidationServiceStrategy extends Dupl
             null,
             submissionClaims);
 
-    if (!duplicateClaimsInPreviousSubmission.isEmpty()) {
-      logDuplicates(currentClaim, duplicateClaimsInPreviousSubmission);
+    if (result.hasError()) {
+      issues.add(result.error());
+      return issues;
+    }
+
+    if (result.hasDuplicates()) {
+      logDuplicates(currentClaim, result.duplicates());
       issues.add(
           ClaimValidationError.INVALID_CLAIM_HAS_DUPLICATE_IN_ANOTHER_SUBMISSION
               .toValidationIssue());

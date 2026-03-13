@@ -25,7 +25,7 @@ import jakarta.annotation.Generated;
 
 @Schema(name = "validation_message_base", description = "Validation message")
 @JsonTypeName("validation_message_base")
-@Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2026-03-13T15:47:02.322440Z[Europe/London]", comments = "Generator version: 7.14.0")
+@Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2026-03-13T18:11:17.854857Z[Europe/London]", comments = "Generator version: 7.14.0")
 public class ValidationMessageBase implements Serializable {
 
   private static final long serialVersionUID = 1L;

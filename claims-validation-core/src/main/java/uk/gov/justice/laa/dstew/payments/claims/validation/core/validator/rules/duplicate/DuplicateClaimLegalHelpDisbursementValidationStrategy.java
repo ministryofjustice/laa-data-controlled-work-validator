@@ -44,8 +44,24 @@ public class DuplicateClaimLegalHelpDisbursementValidationStrategy extends Dupli
       return issues;
     }
 
+    // Check for duplicates in previous submissions
+    DuplicateCheckResult result =
+        getDuplicateClaimsInPreviousSubmission(
+            officeCode,
+            incomingClaim.getFeeCode(),
+            incomingClaim.getUniqueFileNumber(),
+            incomingClaim.getUniqueClientNumber(),
+            null,
+            submissionClaims);
+
+    if (result.hasError()) {
+      issues.add(result.error());
+      return issues;
+    }
+
     List<Claim> candidateDuplicateClaims =
-        findEligibleDuplicateClaims(incomingClaim, submissionClaims, officeCode);
+        result.duplicates().stream().filter(c -> parseConcludedDate(c) != null).toList();
+
     if (candidateDuplicateClaims.isEmpty()) {
       return issues;
     }
@@ -68,24 +84,6 @@ public class DuplicateClaimLegalHelpDisbursementValidationStrategy extends Dupli
     }
 
     return issues;
-  }
-
-  /**
-   * Retrieves all claims from previous submissions that share the same office code, fee code,
-   * unique file number, and unique client number as the incoming claim.
-   */
-  protected List<Claim> findEligibleDuplicateClaims(
-      Claim incomingClaim, List<Claim> submissionClaims, String officeCode) {
-    return getDuplicateClaimsInPreviousSubmission(
-            officeCode,
-            incomingClaim.getFeeCode(),
-            incomingClaim.getUniqueFileNumber(),
-            incomingClaim.getUniqueClientNumber(),
-            null,
-            submissionClaims)
-        .stream()
-        .filter(c -> parseConcludedDate(c) != null)
-        .toList();
   }
 
   /** Selects the anchor claim - the claim whose Case Concluded Date is closest to incomingDate. */

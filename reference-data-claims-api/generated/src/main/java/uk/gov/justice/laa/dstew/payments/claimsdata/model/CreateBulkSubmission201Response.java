@@ -26,7 +26,7 @@ import jakarta.annotation.Generated;
 
 @Schema(name = "createBulkSubmission_201_response", description = "Bulk Submission details")
 @JsonTypeName("createBulkSubmission_201_response")
-@Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2026-03-13T15:47:02.322440Z[Europe/London]", comments = "Generator version: 7.14.0")
+@Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2026-03-13T18:11:17.854857Z[Europe/London]", comments = "Generator version: 7.14.0")
 public class CreateBulkSubmission201Response implements Serializable {
 
   private static final long serialVersionUID = 1L;

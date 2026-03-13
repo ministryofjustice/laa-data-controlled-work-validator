@@ -20,7 +20,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
  * Processing status indicator tracking the lifecycle stage of the submission from receipt through to completion 
  */
 
-@Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2026-03-13T15:47:02.322440Z[Europe/London]", comments = "Generator version: 7.14.0")
+@Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2026-03-13T18:11:17.854857Z[Europe/London]", comments = "Generator version: 7.14.0")
 public enum SubmissionStatus implements Serializable {
   
   CREATED("CREATED"),

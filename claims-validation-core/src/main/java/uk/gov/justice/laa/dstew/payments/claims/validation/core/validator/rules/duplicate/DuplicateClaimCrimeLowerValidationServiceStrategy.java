@@ -50,9 +50,14 @@ public final class DuplicateClaimCrimeLowerValidationServiceStrategy
                     && Objects.equals(uniqueFileNumber, claimToCompare.getUniqueFileNumber()));
 
     // Check for duplicates in previous submissions
-    List<Claim> officeDuplicateClaims =
+    DuplicateCheckResult result =
         getDuplicateClaimsInPreviousSubmission(
             officeCode, feeCode, uniqueFileNumber, null, null, submissionClaims);
+
+    if (result.hasError()) {
+      issues.add(result.error());
+      return issues;
+    }
 
     if (!submissionDuplicateClaims.isEmpty()) {
       log.debug("Duplicate claims found in submission");
@@ -62,9 +67,9 @@ public final class DuplicateClaimCrimeLowerValidationServiceStrategy
               .toValidationIssue());
     }
 
-    if (!officeDuplicateClaims.isEmpty()) {
+    if (result.hasDuplicates()) {
       log.debug("Duplicate claims found in another submission for this office");
-      logDuplicates(claim, officeDuplicateClaims);
+      logDuplicates(claim, result.duplicates());
       issues.add(
           ClaimValidationError.INVALID_CLAIM_HAS_DUPLICATE_IN_ANOTHER_SUBMISSION
               .toValidationIssue());

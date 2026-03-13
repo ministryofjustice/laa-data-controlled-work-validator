@@ -3,6 +3,26 @@
   "title": "ClaimResponse",
   "type": "object",
   "properties": {
+    "areaOfLaw": {
+      "type": "string",
+      "enum": ["LEGAL_HELP", "CRIME_LOWER", "MEDIATION"],
+      "validationErrorMessages": [
+        {
+          "key": "ALL",
+          "value": "Area of Law must be one of LEGAL_HELP, CRIME_LOWER, or MEDIATION"
+        }
+      ]
+    },
+    "officeAccountNumber": {
+      "type": "string",
+      "pattern": "^[0-9A-Za-z]{6}$",
+      "validationErrorMessages": [
+        {
+          "key": "ALL",
+          "value": "Office Account Number must be exactly 6 alphanumeric characters"
+        }
+      ]
+    },
     "id": {
       "type": "string"
     },
