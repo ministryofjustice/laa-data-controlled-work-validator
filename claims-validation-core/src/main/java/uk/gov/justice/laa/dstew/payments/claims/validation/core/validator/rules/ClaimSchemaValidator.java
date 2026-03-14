@@ -19,7 +19,7 @@ import org.springframework.stereotype.Component;
 import uk.gov.justice.laa.dstew.payments.claims.model.AreaOfLaw;
 import uk.gov.justice.laa.dstew.payments.claims.model.Claim;
 import uk.gov.justice.laa.dstew.payments.claims.model.ValidationIssue;
-import uk.gov.justice.laa.dstew.payments.claims.model.ValidationSeverity;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.error.ClaimValidationError;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.ValidationContext;
 
 /**
@@ -43,7 +43,6 @@ import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.Valida
 public class ClaimSchemaValidator implements ClaimValidator {
 
   private static final String SCHEMA_PATH = "/schemas/claim-fields.schema.json";
-  private static final String ERROR_CODE = "SCHEMA_VALIDATION_ERROR";
   private static final String REQUIRED_TYPE = "required";
   private static final String VALIDATION_ERROR_MESSAGES_KEY = "validationErrorMessages";
   private static final String KEY_FIELD = "key";
@@ -141,8 +140,8 @@ public class ClaimSchemaValidator implements ClaimValidator {
       String technicalMessage = String.format("Required field '%s' is missing", fieldName);
 
       ValidationIssue issue =
-          new ValidationIssue(ERROR_CODE, displayMessage, ValidationSeverity.ERROR);
-      issue.setTechnicalMessage(technicalMessage);
+          ClaimValidationError.SCHEMA_VALIDATION_ERROR.toValidationIssueWithTechnicalMessage(
+              technicalMessage, displayMessage);
       issues.add(issue);
     }
 
@@ -157,8 +156,8 @@ public class ClaimSchemaValidator implements ClaimValidator {
         String displayMessage = buildDisplayMessage(fieldName, claim.getAreaOfLaw());
 
         ValidationIssue issue =
-            new ValidationIssue(ERROR_CODE, displayMessage, ValidationSeverity.ERROR);
-        issue.setTechnicalMessage(technicalMessage);
+            ClaimValidationError.SCHEMA_VALIDATION_ERROR.toValidationIssueWithTechnicalMessage(
+                technicalMessage, displayMessage);
 
         issues.add(issue);
       }
@@ -203,13 +202,12 @@ public class ClaimSchemaValidator implements ClaimValidator {
             "Schema configuration warning: %d field(s) not defined in schema: %s",
             missingFields.size(), String.join(", ", missingFields));
 
-    ValidationIssue warningIssue =
-        new ValidationIssue("SCHEMA_CONFIG_WARNING", warningMessage, ValidationSeverity.WARNING);
-    warningIssue.setTechnicalMessage(
+    String technicalMessage =
         "These fields exist in the Claim class but are not defined in the JSON schema. "
-            + "Update claim-fields.schema.json to add validation rules for these fields.");
+            + "Update claim-fields.schema.json to add validation rules for these fields.";
 
-    return warningIssue;
+    return ClaimValidationError.SCHEMA_CONFIG_WARNING.toValidationIssueWithTechnicalMessage(
+        technicalMessage, warningMessage);
   }
 
   /**

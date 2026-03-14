@@ -1,6 +1,6 @@
 package uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.rules.duplicate;
 
-import static uk.gov.justice.laa.dstew.payments.claims.validation.core.util.DateValidationUtils.parseSubmissionPeriod;
+import static uk.gov.justice.laa.dstew.payments.claims.validation.core.util.DateUtils.parseSubmissionPeriod;
 import static uk.gov.justice.laa.dstew.payments.claims.validation.core.util.FeeTypeUtils.isDisbursementClaim;
 
 import java.time.LocalDate;

@@ -13,123 +13,212 @@ import uk.gov.justice.laa.dstew.payments.claims.model.ValidationSeverity;
 @RequiredArgsConstructor
 public enum ClaimValidationError {
 
+  // JSON/HTTP parsing errors (used by REST controller advice)
+  INVALID_JSON_SYNTAX(
+      "The request body could not be parsed",
+      null,
+      ValidationSeverity.ERROR
+  ),
+  INVALID_FIELD_TYPE(
+      "Field '%s' has an invalid value",
+      null,
+      ValidationSeverity.ERROR
+  ),
+
   // Schema validation errors
   INVALID_JSON_SCHEMA(
       "The claim does not conform to the expected schema",
       "JSON schema validation failed",
-      "SCHEMA",
-      ValidationSeverity.ERROR),
+      ValidationSeverity.ERROR
+  ),
 
   SCHEMA_VALIDATION_ERROR(
-      "Field '%s' has an invalid value", "%s", "SCHEMA", ValidationSeverity.ERROR),
+      "%s",
+      "%s",
+      ValidationSeverity.ERROR
+  ),
 
   SCHEMA_CONFIG_WARNING(
       "Schema configuration warning: field(s) not defined in schema",
       "Update claim-fields.schema.json to add validation rules for these fields",
-      "SCHEMA",
-      ValidationSeverity.WARNING),
+      ValidationSeverity.WARNING
+  ),
 
   // Date validation errors
-  INVALID_CASE_START_DATE("Case start date is invalid: %s", null, "DATE", ValidationSeverity.ERROR),
+  INVALID_CASE_START_DATE(
+      "Case start date is invalid: %s",
+      null,
+      ValidationSeverity.ERROR
+  ),
   INVALID_CASE_CONCLUDED_DATE(
-      "Case concluded date is invalid: %s", null, "DATE", ValidationSeverity.ERROR),
-  INVALID_TRANSFER_DATE("Transfer date is invalid: %s", null, "DATE", ValidationSeverity.ERROR),
+      "Case concluded date is invalid: %s",
+      null,
+      ValidationSeverity.ERROR
+  ),
+  INVALID_TRANSFER_DATE(
+      "Transfer date is invalid: %s",
+      null,
+      ValidationSeverity.ERROR
+  ),
   INVALID_REPRESENTATION_ORDER_DATE(
-      "Representation order date is invalid: %s", null, "DATE", ValidationSeverity.ERROR),
+      "Representation order date is invalid: %s",
+      null,
+      ValidationSeverity.ERROR
+  ),
   INVALID_CLIENT_DATE_OF_BIRTH(
-      "Client date of birth is invalid: %s", null, "DATE", ValidationSeverity.ERROR),
-  INVALID_DATE_FORMAT("%s has an invalid date format", null, "DATE", ValidationSeverity.ERROR),
+      "Client date of birth is invalid: %s",
+      null,
+      ValidationSeverity.ERROR
+  ),
+  INVALID_CLIENT_2_DATE_OF_BIRTH(
+      "Client 2 date of birth is invalid: %s",
+      null,
+      ValidationSeverity.ERROR
+  ),
+  INVALID_DATE_FORMAT(
+      "%s has an invalid date format",
+      null,
+      ValidationSeverity.ERROR
+  ),
 
   // Unique File Number (UFN) errors
   INVALID_UNIQUE_FILE_NUMBER_FORMAT(
       "Unique File Number (UFN) must be in the format DDMMYY/NNN",
       null,
-      "UFN",
-      ValidationSeverity.ERROR),
+      ValidationSeverity.ERROR
+  ),
   INVALID_DATE_IN_UNIQUE_FILE_NUMBER(
       "Unique File Number (UFN) must be in the format DDMMYY/NNN with a date in the past",
       null,
-      "UFN",
-      ValidationSeverity.ERROR),
+      ValidationSeverity.ERROR
+  ),
 
   // Mandatory field errors
   MISSING_MANDATORY_FIELD(
-      "Required field '%s' is missing", null, "MANDATORY", ValidationSeverity.ERROR),
+      "%s is required for %s claims",
+      null,
+      ValidationSeverity.ERROR
+  ),
+  MISSING_CLAIM(
+      "No claim data provided for validation",
+      null,
+      ValidationSeverity.ERROR
+  ),
 
   // Category of law / fee code errors
   INVALID_CATEGORY_OF_LAW_AND_FEE_CODE(
       "A category of law could not be found for the provided fee code: %s",
-      null, "FEE", ValidationSeverity.ERROR),
+      null,
+      ValidationSeverity.ERROR
+  ),
   INVALID_CATEGORY_OF_LAW_NOT_AUTHORISED_FOR_PROVIDER(
       "The provider is not contracted for the category of law associated with the fee code",
       null,
-      "FEE",
-      ValidationSeverity.ERROR),
+      ValidationSeverity.ERROR
+  ),
   INVALID_FEE_CALCULATION_VALIDATION_FAILED(
       "A validation error occurred when attempting to calculate the fee for this claim",
       null,
-      "FEE",
-      ValidationSeverity.ERROR),
+      ValidationSeverity.ERROR
+  ),
 
   // Technical errors
   TECHNICAL_ERROR_FEE_CALCULATION_SERVICE(
       "A technical error occurred, please try again after some time",
       "A technical error occurred when attempting to make a request to the fee calculation service",
-      "FEE",
-      ValidationSeverity.ERROR),
+      ValidationSeverity.ERROR
+  ),
   TECHNICAL_ERROR_PROVIDER_DETAILS_API(
       "A technical error occurred, please try again after some time",
       "A technical error occurred when attempting to make a request to the Provider Details API",
-      "PROVIDER",
-      ValidationSeverity.ERROR),
+      ValidationSeverity.ERROR
+  ),
+  TECHNICAL_ERROR_DATA_CLAIMS_API(
+      "Unable to complete duplicate claim check due to a technical error. Please try again later.",
+      "Data Claims API error",
+      ValidationSeverity.ERROR
+  ),
 
   // Duplicate claim errors
   INVALID_CLAIM_HAS_DUPLICATE_IN_EXISTING_SUBMISSION(
       "A duplicate claim was found within the same submission",
       null,
-      "DUPLICATE",
-      ValidationSeverity.ERROR),
+      ValidationSeverity.ERROR
+  ),
   INVALID_CLAIM_HAS_DUPLICATE_IN_ANOTHER_SUBMISSION(
       "A duplicate claim was found in another submission",
       null,
-      "DUPLICATE",
-      ValidationSeverity.ERROR),
+      ValidationSeverity.ERROR
+  ),
 
   // Stage reached errors
-  INVALID_STAGE_REACHED("Invalid stage reached value", null, "STAGE", ValidationSeverity.ERROR),
+  INVALID_STAGE_REACHED_LEGAL_HELP(
+      "Stage Reached Code must be exactly 2 alphanumeric characters for Legal Help claims",
+      null,
+      ValidationSeverity.ERROR
+  ),
+  INVALID_STAGE_REACHED_CRIME_LOWER(
+      "Stage Reached Code must be one of the allowed values for Crime Lower claims",
+      null,
+      ValidationSeverity.ERROR
+  ),
+  INVALID_STAGE_REACHED(
+      "Invalid stage reached value",
+      null,
+      ValidationSeverity.ERROR
+  ),
 
   // Disbursement errors
   DISBURSEMENT_TOO_EARLY(
-      "Disbursement claims can only be submitted at least "
-          + "3 calendar months after the Case Start Date",
+      "Disbursement claims can only be submitted "
+              + "at least %d calendar months after the Case Start Date %s",
       null,
-      "DISBURSEMENT",
-      ValidationSeverity.ERROR),
+      ValidationSeverity.ERROR
+  ),
 
   // Matter type errors
   INVALID_MATTER_TYPE_CODE(
-      "Invalid matter type code: %s", null, "MATTER_TYPE", ValidationSeverity.ERROR),
+      "Invalid matter type code: %s",
+      null,
+      ValidationSeverity.ERROR
+  ),
 
   // Outcome code errors
-  INVALID_OUTCOME_CODE("Invalid outcome code: %s", null, "OUTCOME", ValidationSeverity.ERROR),
+  INVALID_OUTCOME_CODE(
+      "%s",
+      null,
+      ValidationSeverity.ERROR
+  ),
 
   // Disbursement errors
   INVALID_DISBURSEMENT_VAT_AMOUNT(
-      "Disbursement VAT amount is invalid", null, "DISBURSEMENT", ValidationSeverity.ERROR),
+      "Disbursement VAT amount is invalid",
+      null,
+      ValidationSeverity.ERROR
+  ),
   INVALID_DISBURSEMENT_START_DATE(
-      "Disbursement claim start date is invalid", null, "DISBURSEMENT", ValidationSeverity.ERROR),
+      "Disbursement claim start date is invalid",
+      null,
+      ValidationSeverity.ERROR
+  ),
 
   // Schedule reference errors
   INVALID_SCHEDULE_REFERENCE(
-      "Invalid schedule reference", null, "SCHEDULE", ValidationSeverity.ERROR),
+      "Schedule Reference must be a maximum of 20 characters "
+              + "and contain only letters, numbers, forward slashes, periods, and hyphens",
+      null,
+      ValidationSeverity.ERROR
+  ),
 
   // Warning level issues
   CLAIM_DATA_INCOMPLETE(
-      "Some optional claim data is missing", null, "DATA", ValidationSeverity.WARNING);
+      "Some optional claim data is missing",
+      null,
+      ValidationSeverity.WARNING
+  );
 
   private final String displayMessage;
   private final String technicalMessage;
-  private final String source;
   private final ValidationSeverity severity;
 
   /**
@@ -140,6 +229,21 @@ public enum ClaimValidationError {
    */
   public ValidationIssue toValidationIssue(Object... params) {
     return new ValidationIssue(this.name(), String.format(displayMessage, params), severity);
+  }
+
+  /**
+   * Converts this error to a ValidationIssue with a custom technical message.
+   *
+   * @param technicalMsg the technical message to include
+   * @param params optional parameters to format into the display message
+   * @return a ValidationIssue representing this error with technical message
+   */
+  public ValidationIssue toValidationIssueWithTechnicalMessage(
+      String technicalMsg, Object... params) {
+    ValidationIssue issue =
+        new ValidationIssue(this.name(), String.format(displayMessage, params), severity);
+    issue.setTechnicalMessage(technicalMsg);
+    return issue;
   }
 
   /**

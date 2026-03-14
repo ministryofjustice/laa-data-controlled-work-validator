@@ -6,9 +6,10 @@ import java.util.ArrayList;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 import uk.gov.justice.laa.dstew.payments.claims.model.Claim;
 import uk.gov.justice.laa.dstew.payments.claims.model.ValidationIssue;
-import uk.gov.justice.laa.dstew.payments.claims.model.ValidationSeverity;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.error.ClaimValidationError;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.ValidationContext;
 
 /**
@@ -26,44 +27,56 @@ public class UniqueFileNumberClaimValidator implements ClaimValidator {
     List<ValidationIssue> issues = new ArrayList<>();
 
     String uniqueFileNumber = claim.getUniqueFileNumber();
-    if (uniqueFileNumber != null && uniqueFileNumber.length() > 1) {
-      try {
-        LocalDate date = parseUniqueFileNumber(uniqueFileNumber);
-        if (date.isAfter(LocalDate.now())) {
-          issues.add(
-              new ValidationIssue(
-                  "INVALID_DATE_IN_UNIQUE_FILE_NUMBER",
-                  "Unique File Number (UFN) must be in the format DDMMYY/NNN "
-                      + "with a date in the past",
-                  ValidationSeverity.ERROR));
-        }
-      } catch (DateTimeException | IllegalArgumentException e) {
-        issues.add(
-            new ValidationIssue(
-                "INVALID_DATE_IN_UNIQUE_FILE_NUMBER",
-                "Unique File Number (UFN) must be in the format DDMMYY/NNN "
-                    + "with a date in the past",
-                ValidationSeverity.ERROR));
-      }
+
+    if (!StringUtils.hasText(uniqueFileNumber)) {
+      return issues; // Not present, skip validation
+    }
+
+    if (!isValidFormat(uniqueFileNumber)) {
+      issues.add(ClaimValidationError.INVALID_DATE_IN_UNIQUE_FILE_NUMBER.toValidationIssue());
+      return issues;
+    }
+
+    if (!isValidDateInPast(uniqueFileNumber)) {
+      issues.add(ClaimValidationError.INVALID_DATE_IN_UNIQUE_FILE_NUMBER.toValidationIssue());
     }
 
     return issues;
   }
 
   /**
-   * Parses a unique file number into a {@link LocalDate} object.
+   * Checks if the unique file number matches the expected format DDMMYY/NNN.
    *
-   * @param uniqueFileNumber the unique file number to parse, should be in format ddMMyy/NNN.
-   * @return the parsed {@link LocalDate} object.
+   * @param uniqueFileNumber the unique file number to check
+   * @return true if format is valid, false otherwise
    */
-  private LocalDate parseUniqueFileNumber(String uniqueFileNumber) {
-    if (uniqueFileNumber == null || !uniqueFileNumber.matches(UFN_PATTERN)) {
-      throw new IllegalArgumentException(
-          String.format(
-              "Invalid format for unique file number: %s. Expected format: ddMMyy/NNN",
-              uniqueFileNumber));
-    }
+  private boolean isValidFormat(String uniqueFileNumber) {
+    return uniqueFileNumber.matches(UFN_PATTERN);
+  }
 
+  /**
+   * Checks if the date portion of the unique file number is valid and in the past.
+   *
+   * @param uniqueFileNumber the unique file number to check
+   * @return true if date is valid and in the past, false otherwise
+   */
+  private boolean isValidDateInPast(String uniqueFileNumber) {
+    try {
+      LocalDate date = parseDate(uniqueFileNumber);
+      return !date.isAfter(LocalDate.now());
+    } catch (DateTimeException e) {
+      return false;
+    }
+  }
+
+  /**
+   * Parses the date portion of a unique file number.
+   *
+   * @param uniqueFileNumber the unique file number in format DDMMYY/NNN
+   * @return the parsed LocalDate
+   * @throws DateTimeException if the date is invalid
+   */
+  private LocalDate parseDate(String uniqueFileNumber) {
     String datePart = uniqueFileNumber.split("/")[0];
 
     int day = Integer.parseInt(datePart.substring(0, 2));

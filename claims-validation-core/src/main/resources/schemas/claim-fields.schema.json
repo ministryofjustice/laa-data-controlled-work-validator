@@ -24,19 +24,42 @@
       ]
     },
     "id": {
-      "type": "string"
+      "type": "string",
+      "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+      "validationErrorMessages": [
+        {
+          "key": "ALL",
+          "value": "ID must be a valid UUID"
+        }
+      ]
     },
     "status": {
       "type": "string"
     },
     "submissionId": {
-      "type": "string"
+      "type": "string",
+      "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+      "validationErrorMessages": [
+        {
+          "key": "ALL",
+          "value": "Submission ID must be a valid UUID"
+        }
+      ]
     },
     "submissionPeriod": {
-      "type": "string"
+      "type": "string",
+      "pattern": "^[A-Z]{3}-[0-9]{4}$",
+      "validationErrorMessages": [
+        {
+          "key": "ALL",
+          "value": "Submission Period must be in the format MMM-YYYY (e.g. JAN-2026)"
+        }
+      ]
     },
     "scheduleReference": {
       "type": "string",
+      "pattern": "^[a-zA-Z0-9/.\\-]{1,20}$",
+      "maxLength": 20,
       "validationErrorMessages": [
         {
           "key": "LEGAL HELP",
@@ -906,16 +929,16 @@
       ]
     },
     "isEligibleClient": {
-      "type": "boolean"
-    },
-    "court_location_code": {
-      "type": "string",
+      "type": "boolean",
       "validationErrorMessages": [
         {
           "key": "ALL",
           "value": "Eligible Client must be Y or N"
         }
       ]
+    },
+    "court_location_code": {
+      "type": "string"
     },
     "advice_type_code": {
       "type": "string",

@@ -13,6 +13,7 @@ import uk.gov.justice.laa.dstew.payments.claims.model.ClaimValidationRequest;
 import uk.gov.justice.laa.dstew.payments.claims.model.ValidationIssue;
 import uk.gov.justice.laa.dstew.payments.claims.model.ValidationResult;
 import uk.gov.justice.laa.dstew.payments.claims.model.ValidationSeverity;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.error.ClaimValidationError;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.ValidationContext;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.rules.ClaimValidator;
 
@@ -100,9 +101,7 @@ public class ValidationService {
    * @return validation result with MISSING_CLAIM error
    */
   private ValidationResult buildMissingClaimResult() {
-    ValidationIssue issue =
-        new ValidationIssue(
-            "MISSING_CLAIM", "No claim data provided for validation", ValidationSeverity.ERROR);
+    ValidationIssue issue = ClaimValidationError.MISSING_CLAIM.toValidationIssue();
 
     ValidationResult result = new ValidationResult();
     result.setIsValid(false);

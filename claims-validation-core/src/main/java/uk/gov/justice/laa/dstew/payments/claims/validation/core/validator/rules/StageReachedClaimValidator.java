@@ -22,7 +22,7 @@ public class StageReachedClaimValidator implements ClaimValidator {
   private static final Pattern LEGAL_HELP_PATTERN = Pattern.compile("^[a-zA-Z0-9]{2}$");
   private static final Pattern CRIME_LOWER_PATTERN =
       Pattern.compile(
-          "^(INV[A-M]|PRI[A-E]|PRO[C-FH-LP-TUVW]|APP[ABC]|AS|MSPLAS|YOU[EFKLXY]|VOID)$");
+          "^(INV[A-M]|PRI[A-E]|PRO[C-FH-LP-TUVW]|APP[ABC]|AS(MS|PL|AS)|YOU[EFKLXY]|VOID)$");
 
   @Override
   public List<ValidationIssue> validate(Claim claim, ValidationContext context) {
@@ -39,7 +39,28 @@ public class StageReachedClaimValidator implements ClaimValidator {
 
     Pattern pattern = getPattern(areaOfLaw);
     if (pattern != null && !pattern.matcher(stageReached).matches()) {
-      issues.add(ClaimValidationError.INVALID_STAGE_REACHED.toValidationIssue());
+      String technicalMessage = null;
+      if (areaOfLaw == AreaOfLaw.LEGAL_HELP) {
+        technicalMessage =
+            String.format(
+                "stage_reached_code (LEGAL_HELP): "
+                    + "does not match the regex pattern %s (provided value: %s)",
+                LEGAL_HELP_PATTERN.pattern(), stageReached);
+        issues.add(
+            ClaimValidationError.INVALID_STAGE_REACHED_LEGAL_HELP
+                .toValidationIssueWithTechnicalMessage(technicalMessage));
+      } else if (areaOfLaw == AreaOfLaw.CRIME_LOWER) {
+        technicalMessage =
+            String.format(
+                "stage_reached_code (CRIME_LOWER): "
+                    + "does not match the regex pattern %s (provided value: %s)",
+                CRIME_LOWER_PATTERN.pattern(), stageReached);
+        issues.add(
+            ClaimValidationError.INVALID_STAGE_REACHED_CRIME_LOWER
+                .toValidationIssueWithTechnicalMessage(technicalMessage));
+      } else {
+        issues.add(ClaimValidationError.INVALID_STAGE_REACHED.toValidationIssue());
+      }
     }
 
     return issues;

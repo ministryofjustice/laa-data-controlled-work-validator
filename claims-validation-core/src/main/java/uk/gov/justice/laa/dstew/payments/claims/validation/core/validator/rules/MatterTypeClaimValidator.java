@@ -1,9 +1,7 @@
 package uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.rules;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.gov.justice.laa.dstew.payments.claims.model.AreaOfLaw;
@@ -13,53 +11,63 @@ import uk.gov.justice.laa.dstew.payments.claims.validation.core.error.ClaimValid
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.ValidationContext;
 
 /**
- * Validator for matter type code. Validates that the matter type code is valid for the area of law.
+ * Validator for matter type code. Validates that the matter type code is valid for the area of law
+ * using regex patterns.
  */
 @Component
 @Slf4j
 public class MatterTypeClaimValidator implements ClaimValidator {
 
-  // TODO: These should be loaded from reference data or configuration
-  private static final Set<String> VALID_LEGAL_HELP_MATTER_TYPES =
-      Set.of(
-          "FAMA", "FAMB", "FAMC", "FAMD", "FAME", "FAMF", "FAMG", "FAMH", "IMMA", "IMMB", "IMMC",
-          "IMMD", "IMME", "IMMF", "IMMG", "IMMH", "HOUS", "DEBT", "WELF", "EDUC", "PUBL", "MENT",
-          "COMM", "CLIN");
-
-  private static final Set<String> VALID_CRIME_LOWER_MATTER_TYPES = Set.of("CRIM");
+  private static final String MATTER_TYPE_LEGAL_HELP_PATTERN =
+      "^[a-zA-Z0-9]{1,4}[-:][a-zA-Z0-9]{1,4}$";
+  private static final String MATTER_TYPE_MEDIATION_PATTERN = "^[A-Z]{4}[-:][A-Z]{4}$";
 
   @Override
   public List<ValidationIssue> validate(Claim claim, ValidationContext context) {
     List<ValidationIssue> issues = new ArrayList<>();
 
     String matterType = claim.getMatterTypeCode();
-    if (matterType == null || matterType.isBlank()) {
-      return issues; // Optional - mandatory validator handles if required
+    AreaOfLaw areaOfLaw = claim.getAreaOfLaw();
+
+    if (matterType == null || areaOfLaw == null) {
+      return issues; // Skip if no matter type or area of law
     }
 
-    matterType = matterType.toUpperCase();
-    AreaOfLaw areaOfLaw = claim.getAreaOfLaw();
+    String regex = getRegexForAreaOfLaw(areaOfLaw);
+    if (regex == null) {
+      return issues; // No regex defined for this area of law
+    }
 
     log.debug("Validating matter type: {} for area of law: {}", matterType, areaOfLaw);
 
-    Set<String> validTypes = getValidMatterTypes(areaOfLaw);
-    if (validTypes != null && !validTypes.contains(matterType)) {
-      issues.add(
-          ClaimValidationError.INVALID_MATTER_TYPE_CODE.toValidationIssue(
-              matterType + " for area of law: " + areaOfLaw));
+    if (!matterType.matches(regex)) {
+      String technicalMessage =
+          String.format(
+              "matter_type_code (%s): does not match the regex pattern %s (provided value: %s)",
+              areaOfLaw, regex, matterType);
+      String displayMessage = null;
+      // Set display message to match legacy expectations
+      if (AreaOfLaw.LEGAL_HELP.equals(areaOfLaw)) {
+        displayMessage = "Each Matter Type Code 1 and 2 must be 4 characters";
+      } else if (AreaOfLaw.MEDIATION.equals(areaOfLaw)) {
+        displayMessage = "Each Matter Type Code 1 and 2 must be 4 uppercase characters";
+      } else {
+        displayMessage = String.format("Invalid matter type code: %s", matterType);
+      }
+      ValidationIssue issue =
+          ClaimValidationError.INVALID_MATTER_TYPE_CODE.toValidationIssueWithTechnicalMessage(
+              technicalMessage, matterType);
+      issue.setMessage(displayMessage);
+      issues.add(issue);
     }
 
     return issues;
   }
 
-  private Set<String> getValidMatterTypes(AreaOfLaw areaOfLaw) {
-    if (areaOfLaw == null) {
-      return Collections.emptySet(); // No validation without area of law
-    }
-
+  private String getRegexForAreaOfLaw(AreaOfLaw areaOfLaw) {
     return switch (areaOfLaw) {
-      case LEGAL_HELP -> VALID_LEGAL_HELP_MATTER_TYPES;
-      case CRIME_LOWER -> VALID_CRIME_LOWER_MATTER_TYPES;
+      case LEGAL_HELP -> MATTER_TYPE_LEGAL_HELP_PATTERN;
+      case MEDIATION -> MATTER_TYPE_MEDIATION_PATTERN;
       default -> null;
     };
   }

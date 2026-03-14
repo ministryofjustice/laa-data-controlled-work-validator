@@ -22,7 +22,7 @@ import jakarta.annotation.Generated;
  * InternalUser
  */
 
-@Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2026-03-13T21:51:32.806274Z[Europe/London]", comments = "Generator version: 7.14.0")
+@Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2026-03-14T10:05:02.190518Z[Europe/London]", comments = "Generator version: 7.14.0")
 public class InternalUser implements Serializable {
 
   private static final long serialVersionUID = 1L;

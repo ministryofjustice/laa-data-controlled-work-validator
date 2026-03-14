@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import uk.gov.justice.laa.dstew.payments.claims.model.ValidationIssue;
 import uk.gov.justice.laa.dstew.payments.claims.model.ValidationResult;
-import uk.gov.justice.laa.dstew.payments.claims.model.ValidationSeverity;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.error.ClaimValidationError;
 
 /**
  * Global exception handler for validation controller.
@@ -27,8 +27,6 @@ import uk.gov.justice.laa.dstew.payments.claims.model.ValidationSeverity;
 @Slf4j
 public class ValidationControllerAdvice {
 
-  private static final String INVALID_JSON_SYNTAX = "INVALID_JSON_SYNTAX";
-  private static final String INVALID_FIELD_TYPE = "INVALID_FIELD_TYPE";
   private static final String UNKNOWN = "unknown";
 
   // Patterns for extracting information from Jackson exception messages
@@ -69,16 +67,13 @@ public class ValidationControllerAdvice {
     String fieldPath = extractFieldPath(message);
     String invalidValue = extractInvalidValue(message);
 
-    String simpleMessage = String.format("Field '%s' has an invalid value", fieldPath);
     String technicalMessage =
         String.format("Invalid value '%s' for field '%s': %s", invalidValue, fieldPath, message);
 
     log.debug("Field error: {}", technicalMessage);
 
-    ValidationIssue issue =
-        new ValidationIssue(INVALID_FIELD_TYPE, simpleMessage, ValidationSeverity.ERROR);
-    issue.setTechnicalMessage(technicalMessage);
-    return issue;
+    return ClaimValidationError.INVALID_FIELD_TYPE.toValidationIssueWithTechnicalMessage(
+        technicalMessage, fieldPath);
   }
 
   private ValidationIssue buildJsonSyntaxError(Throwable cause) {
@@ -86,11 +81,8 @@ public class ValidationControllerAdvice {
 
     log.debug("JSON syntax error: {}", technicalMessage);
 
-    ValidationIssue issue =
-        new ValidationIssue(
-            INVALID_JSON_SYNTAX,
-            "The request contains invalid JSON syntax",
-            ValidationSeverity.ERROR);
+    ValidationIssue issue = ClaimValidationError.INVALID_JSON_SYNTAX.toValidationIssue();
+    issue.setMessage("The request contains invalid JSON syntax");
     issue.setTechnicalMessage(technicalMessage);
     return issue;
   }
@@ -101,11 +93,8 @@ public class ValidationControllerAdvice {
 
     log.debug("Generic parsing error: {}", technicalMessage);
 
-    ValidationIssue issue =
-        new ValidationIssue(
-            INVALID_JSON_SYNTAX, "The request body could not be parsed", ValidationSeverity.ERROR);
-    issue.setTechnicalMessage(technicalMessage);
-    return issue;
+    return ClaimValidationError.INVALID_JSON_SYNTAX.toValidationIssueWithTechnicalMessage(
+        technicalMessage);
   }
 
   private String extractFieldPath(String message) {
@@ -117,13 +106,13 @@ public class ValidationControllerAdvice {
     StringBuilder path = new StringBuilder();
 
     while (matcher.find()) {
-      if (path.length() > 0) {
+      if (!path.isEmpty()) {
         path.append(".");
       }
       path.append(matcher.group(1));
     }
 
-    return path.length() > 0 ? path.toString() : UNKNOWN;
+    return !path.isEmpty() ? path.toString() : UNKNOWN;
   }
 
   private String extractInvalidValue(String message) {

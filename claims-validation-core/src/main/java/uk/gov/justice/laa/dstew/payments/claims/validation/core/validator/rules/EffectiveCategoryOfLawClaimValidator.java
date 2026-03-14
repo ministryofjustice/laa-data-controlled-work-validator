@@ -12,9 +12,9 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import uk.gov.justice.laa.dstew.payments.claims.model.AreaOfLaw;
 import uk.gov.justice.laa.dstew.payments.claims.model.Claim;
 import uk.gov.justice.laa.dstew.payments.claims.model.ValidationIssue;
-import uk.gov.justice.laa.dstew.payments.claims.model.ValidationSeverity;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.client.FeeSchemeClient;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.client.ProviderDetailsClient;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.error.ClaimValidationError;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.util.ClaimEffectiveDateUtil;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.ValidationContext;
 import uk.gov.justice.laa.fee.scheme.model.FeeDetailsResponse;
@@ -133,11 +133,7 @@ public class EffectiveCategoryOfLawClaimValidator implements ClaimValidator {
     if (response == null || response.getBody() == null) {
       // Fee details not found - this is an error
       issues.add(
-          new ValidationIssue(
-              "INVALID_CATEGORY_OF_LAW_AND_FEE_CODE",
-              String.format(
-                  "A category of law could not be found for the provided fee code: %s", feeCode),
-              ValidationSeverity.ERROR));
+          ClaimValidationError.INVALID_CATEGORY_OF_LAW_AND_FEE_CODE.toValidationIssue(feeCode));
       return;
     }
 
@@ -146,30 +142,20 @@ public class EffectiveCategoryOfLawClaimValidator implements ClaimValidator {
 
     if (categoryOfLaw == null) {
       issues.add(
-          new ValidationIssue(
-              "INVALID_CATEGORY_OF_LAW_AND_FEE_CODE",
-              String.format(
-                  "A category of law could not be found for the provided fee code: %s", feeCode),
-              ValidationSeverity.ERROR));
+          ClaimValidationError.INVALID_CATEGORY_OF_LAW_AND_FEE_CODE.toValidationIssue(feeCode));
     } else if (!providerCategoriesOfLaw.contains(categoryOfLaw)) {
       issues.add(
-          new ValidationIssue(
-              "INVALID_CATEGORY_OF_LAW_NOT_AUTHORISED_FOR_PROVIDER",
-              "The provider is not contracted for the category of law associated with the fee code",
-              ValidationSeverity.ERROR));
+          ClaimValidationError.INVALID_CATEGORY_OF_LAW_NOT_AUTHORISED_FOR_PROVIDER
+              .toValidationIssue());
     }
 
     log.debug("Category of law validation completed for claim {}", claim.getId());
   }
 
   private void handleProviderDetailsApiError(List<ValidationIssue> issues, Exception ex) {
-    ValidationIssue issue =
-        new ValidationIssue(
-            "TECHNICAL_ERROR_PROVIDER_DETAILS_API",
-            "A technical error occurred, please try again after some time",
-            ValidationSeverity.ERROR);
-    issue.setTechnicalMessage(ex.getMessage());
-    issues.add(issue);
+    issues.add(
+        ClaimValidationError.TECHNICAL_ERROR_PROVIDER_DETAILS_API
+            .toValidationIssueWithTechnicalMessage(ex.getMessage()));
   }
 
   @Override

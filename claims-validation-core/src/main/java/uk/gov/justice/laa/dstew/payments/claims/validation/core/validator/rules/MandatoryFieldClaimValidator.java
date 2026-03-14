@@ -13,9 +13,9 @@ import org.springframework.stereotype.Component;
 import uk.gov.justice.laa.dstew.payments.claims.model.AreaOfLaw;
 import uk.gov.justice.laa.dstew.payments.claims.model.Claim;
 import uk.gov.justice.laa.dstew.payments.claims.model.ValidationIssue;
-import uk.gov.justice.laa.dstew.payments.claims.model.ValidationSeverity;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.config.ExclusionsRegistry;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.config.MandatoryFieldsRegistry;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.error.ClaimValidationError;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.FeeCalculationType;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.util.StringCaseUtil;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.ValidationContext;
@@ -77,16 +77,10 @@ public class MandatoryFieldClaimValidator implements ClaimValidator {
         Object value = getter.invoke(claim);
 
         if (value == null || (value instanceof String s && s.trim().isEmpty())) {
-          String displayMessage =
-              String.format(
-                  "%s is required for %s claims",
+          issues.add(
+              ClaimValidationError.MISSING_MANDATORY_FIELD.toValidationIssue(
                   StringCaseUtil.toTitleCase(fieldName),
-                  StringCaseUtil.toTitleCase(areaOfLaw.name()));
-
-          ValidationIssue issue =
-              new ValidationIssue(
-                  "MISSING_MANDATORY_FIELD", displayMessage, ValidationSeverity.ERROR);
-          issues.add(issue);
+                  StringCaseUtil.toTitleCase(areaOfLaw.name())));
         }
 
       } catch (IntrospectionException | IllegalAccessException | InvocationTargetException e) {

@@ -7,6 +7,15 @@ subprojects {
 
     repositories {
         mavenCentral()
+        // GitHub Packages for published API models
+        maven {
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/ministryofjustice/laa-data-claims-api")
+            credentials {
+                username = System.getenv("GITHUB_ACTOR")
+                password = System.getenv("GITHUB_TOKEN")
+            }
+        }
     }
 
     // Apply to subprojects that have java plugin
@@ -42,6 +51,7 @@ configure(subprojects.findAll { it.name in ['claims-validation-core', 'claims-va
     spotless {
         java {
             target 'src/*/java/**/*.java'
+            targetExclude 'src/main/java/uk/gov/justice/laa/dstew/payments/claims/validation/core/error/ClaimValidationError.java'
             importOrder()
             removeUnusedImports()
             cleanthat()
@@ -88,4 +98,3 @@ tasks.register("checkstyleStaged") {
     description = "Runs Checkstyle on staged files across all subprojects"
     dependsOn subprojects.findAll { it.tasks.findByName('checkstyleStaged') }.collect { it.tasks.checkstyleStaged }
 }
-

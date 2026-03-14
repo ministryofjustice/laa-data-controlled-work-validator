@@ -1,6 +1,6 @@
 package uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.rules;
 
-import static uk.gov.justice.laa.dstew.payments.claims.validation.core.util.DateValidationUtils.parseSubmissionPeriod;
+import static uk.gov.justice.laa.dstew.payments.claims.validation.core.util.DateUtils.parseSubmissionPeriod;
 import static uk.gov.justice.laa.dstew.payments.claims.validation.core.util.FeeTypeUtils.isDisbursementClaim;
 
 import java.time.LocalDate;
@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import uk.gov.justice.laa.dstew.payments.claims.model.Claim;
 import uk.gov.justice.laa.dstew.payments.claims.model.ValidationIssue;
-import uk.gov.justice.laa.dstew.payments.claims.model.ValidationSeverity;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.error.ClaimValidationError;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.ValidationContext;
 
 /**
@@ -61,15 +61,9 @@ public final class DisbursementClaimStartDateValidator implements ClaimValidator
             MAXIMUM_MONTHS_DIFFERENCE,
             caseStartDate.format(DATE_FORMATTER_FOR_DISPLAY));
 
-        String message =
-            String.format(
-                "Disbursement claims can only be submitted at least %d calendar months "
-                    + "after the Case Start Date %s",
-                MAXIMUM_MONTHS_DIFFERENCE, caseStartDate.format(DATE_FORMATTER_FOR_DISPLAY));
-
-        ValidationIssue issue =
-            new ValidationIssue("DISBURSEMENT_TOO_EARLY", message, ValidationSeverity.ERROR);
-        issues.add(issue);
+        issues.add(
+            ClaimValidationError.DISBURSEMENT_TOO_EARLY.toValidationIssue(
+                MAXIMUM_MONTHS_DIFFERENCE, caseStartDate.format(DATE_FORMATTER_FOR_DISPLAY)));
       }
     }
 

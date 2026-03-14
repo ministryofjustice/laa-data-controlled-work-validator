@@ -14,15 +14,27 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.StringUtils;
 import uk.gov.justice.laa.dstew.payments.claims.model.Claim;
 import uk.gov.justice.laa.dstew.payments.claims.model.ValidationIssue;
-import uk.gov.justice.laa.dstew.payments.claims.model.ValidationSeverity;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.error.ClaimValidationError;
 
 /**
- * Utility class for date validation operations. Provides common date validation methods used by
- * multiple validators.
+ * Utility class for date validation and parsing operations used by multiple claim validators.
+ *
+ * <p>Provides methods for:
+ *
+ * <ul>
+ *   <li>Validating date ranges and formats
+ *   <li>Checking if dates are in the past, not in the future, or within a submission period
+ *   <li>Parsing submission periods and date strings
+ *   <li>Formatting dates for display
+ * </ul>
+ *
+ * <p>All methods are static and the class cannot be instantiated.
  */
 @Slf4j
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public final class DateValidationUtils {
+public final class DateUtils {
+
+  private static final LocalDate MIN_BIRTH_DATE = LocalDate.of(1900, 1, 1);
 
   public static final DateTimeFormatter DATE_FORMATTER_YYYY_MM_DD =
       DateTimeFormatter.ofPattern("yyyy-MM-dd");
@@ -33,6 +45,43 @@ public final class DateValidationUtils {
           .parseCaseInsensitive()
           .appendPattern("MMM-yyyy")
           .toFormatter(Locale.ENGLISH);
+
+  /**
+   * Checks if the given date is non-null.
+   *
+   * @param date the date to check
+   * @return true if the date is not null, false otherwise
+   */
+  public static boolean isValidDate(LocalDate date) {
+    return date != null;
+  }
+
+  /**
+   * Checks if the given date of birth is valid (not null and within allowed range).
+   *
+   * @param date the date of birth to check
+   * @return true if the date is valid and within the allowed range, false otherwise
+   */
+  public static boolean isValidDateOfBirth(LocalDate date) {
+    return isValidDate(date) && isDateWithinRange(date, MIN_BIRTH_DATE, LocalDate.now());
+  }
+
+  /**
+   * Checks if a date is within the specified range (inclusive).
+   *
+   * @param date the date to check
+   * @param earliestDateAllowed the earliest allowed date (inclusive)
+   * @param latestDateAllowed the latest allowed date (inclusive)
+   * @return true if the date is within the range, false otherwise
+   */
+  public static boolean isDateWithinRange(
+      LocalDate date, LocalDate earliestDateAllowed, LocalDate latestDateAllowed) {
+    return isValidDate(date)
+        && isValidDate(earliestDateAllowed)
+        && isValidDate(latestDateAllowed)
+        && !date.isBefore(earliestDateAllowed)
+        && !date.isAfter(latestDateAllowed);
+  }
 
   /**
    * Validates whether the provided date value is between the earliest date allowed and today's
@@ -55,8 +104,8 @@ public final class DateValidationUtils {
   }
 
   /**
-   * Validates a date string against the following rules tied to a claim's submission period. When
-   * the claim has a submission period and the date string is not blank, this method:
+   * Validates a date string against rules tied to a claim's submission period. When the claim has a
+   * submission period and the date string is not blank, this method:
    *
    * <ul>
    *   <li>Parses the value as a {@code yyyy-MM-dd} date.
@@ -159,7 +208,7 @@ public final class DateValidationUtils {
   }
 
   /**
-   * Given a string describing the submission period, it parses and returns the local date of the
+   * Given a string describing the submission period, parses and returns the local date of the
    * twentieth day of the following month. If the submission period is Jan 2026 then the latest Case
    * Concluded Date allowed is the 20 Feb 2026.
    *
@@ -175,21 +224,33 @@ public final class DateValidationUtils {
     return yearMonth.plusMonths(1).atDay(20);
   }
 
-  /** Creates a date validation issue. */
+  /**
+   * Creates a date validation issue for the given field and message.
+   *
+   * @param fieldName the name of the field
+   * @param message the error message
+   * @return a ValidationIssue for the error
+   */
   private static ValidationIssue createDateIssue(String fieldName, String message) {
-    String code = getDateErrorCode(fieldName);
-    return new ValidationIssue(code, message, ValidationSeverity.ERROR);
+    ClaimValidationError error = getDateError(fieldName);
+    return error.toValidationIssue(message);
   }
 
-  /** Gets the appropriate error code for a date field. */
-  private static String getDateErrorCode(String fieldName) {
+  /**
+   * Gets the appropriate ClaimValidationError for a date field name.
+   *
+   * @param fieldName the field name
+   * @return the corresponding ClaimValidationError
+   */
+  private static ClaimValidationError getDateError(String fieldName) {
     return switch (fieldName) {
-      case "Case Start Date" -> "INVALID_CASE_START_DATE";
-      case "Case Concluded Date" -> "INVALID_CASE_CONCLUDED_DATE";
-      case "Transfer Date" -> "INVALID_TRANSFER_DATE";
-      case "Representation Order Date" -> "INVALID_REPRESENTATION_ORDER_DATE";
-      case "Client Date of Birth", "Client 2 Date of Birth" -> "INVALID_CLIENT_DATE_OF_BIRTH";
-      default -> "INVALID_DATE_FORMAT";
+      case "Case Start Date" -> ClaimValidationError.INVALID_CASE_START_DATE;
+      case "Case Concluded Date" -> ClaimValidationError.INVALID_CASE_CONCLUDED_DATE;
+      case "Transfer Date" -> ClaimValidationError.INVALID_TRANSFER_DATE;
+      case "Representation Order Date" -> ClaimValidationError.INVALID_REPRESENTATION_ORDER_DATE;
+      case "Client Date of Birth", "Client 2 Date of Birth" ->
+          ClaimValidationError.INVALID_CLIENT_DATE_OF_BIRTH;
+      default -> ClaimValidationError.INVALID_DATE_FORMAT;
     };
   }
 
@@ -208,6 +269,24 @@ public final class DateValidationUtils {
       return YearMonth.parse(submissionPeriod, SUBMISSION_PERIOD_FORMATTER);
     } catch (DateTimeParseException e) {
       log.debug("Could not parse submission period: {}", submissionPeriod);
+      return null;
+    }
+  }
+
+  /**
+   * Parses a date string in yyyy-MM-dd format to a LocalDate.
+   *
+   * @param dateValue the date string to parse
+   * @return the parsed LocalDate, or null if parsing fails or input is blank
+   */
+  public static LocalDate parseDate(String dateValue) {
+    if (!StringUtils.hasText(dateValue)) {
+      return null;
+    }
+    try {
+      return LocalDate.parse(dateValue, DATE_FORMATTER_YYYY_MM_DD);
+    } catch (DateTimeParseException e) {
+      log.debug("Could not parse date value: {}", dateValue);
       return null;
     }
   }

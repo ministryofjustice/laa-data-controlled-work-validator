@@ -1,10 +1,10 @@
 package uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.rules;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import uk.gov.justice.laa.dstew.payments.claims.model.AreaOfLaw;
 import uk.gov.justice.laa.dstew.payments.claims.model.Claim;
 import uk.gov.justice.laa.dstew.payments.claims.model.ValidationIssue;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.error.ClaimValidationError;
@@ -19,26 +19,29 @@ import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.Valida
 public class ScheduleReferenceClaimValidator implements ClaimValidator {
 
   // Schedule reference format: typically alphanumeric
-  private static final Pattern SCHEDULE_REF_PATTERN = Pattern.compile("^[A-Z0-9]{1,20}$");
+  private static final Pattern SCHEDULE_REF_PATTERN = Pattern.compile("^[a-zA-Z0-9/.\\-]{1,20}$");
 
   @Override
   public List<ValidationIssue> validate(Claim claim, ValidationContext context) {
-    List<ValidationIssue> issues = new ArrayList<>();
-
-    String scheduleRef = claim.getScheduleReference();
-    if (scheduleRef == null || scheduleRef.isBlank()) {
-      return issues; // Optional
+    String scheduleReference = claim.getScheduleReference();
+    if (AreaOfLaw.LEGAL_HELP.equals(claim.getAreaOfLaw())) {
+      String regex = "^[a-zA-Z0-9/.\\-]{1,20}$";
+      boolean isValid = scheduleReference != null && scheduleReference.matches(regex);
+      if (!isValid) {
+        String errorMessage =
+            "Schedule Reference must be a maximum of 20 characters and "
+                + "contain only letters, numbers, forward slashes, periods, and hyphens";
+        String technicalMessage =
+            String.format(
+                "schedule_reference (LEGAL_HELP): does not "
+                    + "match the regex pattern %s (provided value: %s)",
+                regex, scheduleReference);
+        return List.of(
+            ClaimValidationError.INVALID_SCHEDULE_REFERENCE.toValidationIssueWithTechnicalMessage(
+                technicalMessage, errorMessage));
+      }
     }
-
-    scheduleRef = scheduleRef.toUpperCase();
-
-    log.debug("Validating schedule reference: {}", scheduleRef);
-
-    if (!SCHEDULE_REF_PATTERN.matcher(scheduleRef).matches()) {
-      issues.add(ClaimValidationError.INVALID_SCHEDULE_REFERENCE.toValidationIssue());
-    }
-
-    return issues;
+    return List.of();
   }
 
   @Override

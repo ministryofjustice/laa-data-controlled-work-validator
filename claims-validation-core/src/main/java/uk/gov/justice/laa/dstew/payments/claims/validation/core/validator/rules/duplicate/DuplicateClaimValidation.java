@@ -8,8 +8,8 @@ import org.springframework.http.ResponseEntity;
 import uk.gov.justice.laa.dstew.payments.claims.model.Claim;
 import uk.gov.justice.laa.dstew.payments.claims.model.ClaimStatus;
 import uk.gov.justice.laa.dstew.payments.claims.model.ValidationIssue;
-import uk.gov.justice.laa.dstew.payments.claims.model.ValidationSeverity;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.client.DataClaimsClient;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.error.ClaimValidationError;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.util.ClaimMapper;
 import uk.gov.justice.laa.dstew.payments.claimsdata.model.ClaimResultSet;
 import uk.gov.justice.laa.dstew.payments.claimsdata.model.SubmissionStatus;
@@ -158,12 +158,8 @@ public abstract class DuplicateClaimValidation {
           e.getMessage());
 
       ValidationIssue error =
-          new ValidationIssue(
-              "TECHNICAL_ERROR_DATA_CLAIMS_API",
-              "Unable to complete duplicate claim check due to a technical error. "
-                  + "Please try again later.",
-              ValidationSeverity.ERROR);
-      error.setTechnicalMessage("Data Claims API error: " + e.getMessage());
+          ClaimValidationError.TECHNICAL_ERROR_DATA_CLAIMS_API
+              .toValidationIssueWithTechnicalMessage("Data Claims API error: " + e.getMessage());
 
       return new DuplicateCheckResult(null, error);
     }

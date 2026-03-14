@@ -5,6 +5,11 @@ plugins {
     id 'uk.gov.laa.springboot.laa-spring-boot-gradle-plugin'
 }
 
+// Use Maven Central for resolving dependencies.
+repositories {
+    mavenCentral()
+}
+
 java {
     withSourcesJar()
     withJavadocJar()
@@ -15,7 +20,9 @@ dependencies {
 
     implementation project(':reference-provider-details-api')
     implementation project(':reference-fee-scheme-platform-api')
-    implementation project(':reference-data-claims-api')
+    
+    // Published package from laa-data-claims-api (replaces local reference-data-claims-api)
+    implementation 'uk.gov.justice.laa.datastewardship.payments:data-claims-api-models:4803269'
 
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
