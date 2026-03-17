@@ -5,7 +5,6 @@ import static uk.gov.justice.laa.dstew.payments.claims.validation.core.util.FeeT
 
 import java.time.LocalDate;
 import java.time.YearMonth;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
@@ -14,6 +13,7 @@ import org.springframework.util.StringUtils;
 import uk.gov.justice.laa.dstew.payments.claims.model.Claim;
 import uk.gov.justice.laa.dstew.payments.claims.model.ValidationIssue;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.error.ClaimValidationError;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.util.DateUtils;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.ValidationContext;
 
 /**
@@ -27,12 +27,6 @@ import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.Valida
 @Slf4j
 @Component
 public final class DisbursementClaimStartDateValidator implements ClaimValidator {
-
-  private static final int MAXIMUM_MONTHS_DIFFERENCE = 3;
-  private static final DateTimeFormatter DATE_FORMATTER_YYYY_MM_DD =
-      DateTimeFormatter.ofPattern("yyyy-MM-dd");
-  private static final DateTimeFormatter DATE_FORMATTER_FOR_DISPLAY =
-      DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
   @Override
   public List<ValidationIssue> validate(Claim claim, ValidationContext context) {
@@ -50,20 +44,23 @@ public final class DisbursementClaimStartDateValidator implements ClaimValidator
       if (submissionPeriod == null) {
         return issues;
       }
-      LocalDate submissionEndDate = submissionPeriod.atEndOfMonth();
+      LocalDate submissionEndDate = DateUtils.submissionPeriodCutoffDate(submissionPeriod);
       LocalDate caseStartDate =
-          LocalDate.parse(claim.getCaseStartDate(), DATE_FORMATTER_YYYY_MM_DD);
+          LocalDate.parse(claim.getCaseStartDate(), DateUtils.DATE_FORMATTER_YYYY_MM_DD);
 
-      if (caseStartDate.plusMonths(MAXIMUM_MONTHS_DIFFERENCE).isAfter(submissionEndDate)) {
+      if (caseStartDate
+          .plusMonths(DateUtils.MAXIMUM_MONTHS_DIFFERENCE)
+          .isAfter(submissionEndDate)) {
         log.debug(
             "Disbursement claims can only be submitted at least {} calendar months "
                 + "after the Case Start Date {}",
-            MAXIMUM_MONTHS_DIFFERENCE,
-            caseStartDate.format(DATE_FORMATTER_FOR_DISPLAY));
+            DateUtils.MAXIMUM_MONTHS_DIFFERENCE,
+            caseStartDate.format(DateUtils.DATE_FORMATTER_FOR_DISPLAY_MESSAGE));
 
         issues.add(
             ClaimValidationError.DISBURSEMENT_TOO_EARLY.toValidationIssue(
-                MAXIMUM_MONTHS_DIFFERENCE, caseStartDate.format(DATE_FORMATTER_FOR_DISPLAY)));
+                DateUtils.MAXIMUM_MONTHS_DIFFERENCE,
+                caseStartDate.format(DateUtils.DATE_FORMATTER_FOR_DISPLAY_MESSAGE)));
       }
     }
 

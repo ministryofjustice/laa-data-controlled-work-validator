@@ -20,7 +20,7 @@ import jakarta.annotation.Generated;
  * FeeCalculation
  */
 
-@Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2026-03-14T10:05:01.697703Z[Europe/London]", comments = "Generator version: 7.14.0")
+@Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2026-03-17T18:38:01.044961Z[Europe/London]", comments = "Generator version: 7.14.0")
 public class FeeCalculation implements Serializable {
 
   private static final long serialVersionUID = 1L;

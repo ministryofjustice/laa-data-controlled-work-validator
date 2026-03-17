@@ -37,6 +37,7 @@ dependencies {
     annotationProcessor 'org.mapstruct:mapstruct-processor:1.6.3'
 
     implementation 'io.micrometer:micrometer-core'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.4'
 
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
@@ -54,4 +55,8 @@ dependencies {
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
 }
 
-
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(25)
+    }
+}

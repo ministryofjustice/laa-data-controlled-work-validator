@@ -35,11 +35,11 @@ class ValidationControllerAdviceTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(malformedJson))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.isValid").value(false))
+        .andExpect(jsonPath("$.is_valid").value(false))
         .andExpect(jsonPath("$.issues[0].code").value("INVALID_JSON_SYNTAX"))
         .andExpect(jsonPath("$.issues[0].severity").value("ERROR"))
         .andExpect(jsonPath("$.issues[0].message").exists())
-        .andExpect(jsonPath("$.issues[0].technicalMessage").exists());
+        .andExpect(jsonPath("$.issues[0].technical_message").exists());
   }
 
   @Test
@@ -48,8 +48,8 @@ class ValidationControllerAdviceTest {
         """
         {
           "claim": {
-            "areaOfLaw": "INVALID_VALUE",
-            "officeAccountNumber": "1A234B"
+            "area_of_law": "INVALID_VALUE",
+            "office_account_number": "1A234B"
           }
         }
         """;
@@ -60,12 +60,12 @@ class ValidationControllerAdviceTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(invalidEnumJson))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.isValid").value(false))
+        .andExpect(jsonPath("$.is_valid").value(false))
         .andExpect(jsonPath("$.issues[0].code").value("INVALID_FIELD_TYPE"))
         .andExpect(jsonPath("$.issues[0].severity").value("ERROR"))
         .andExpect(
-            jsonPath("$.issues[0].message").value("Field 'claim.areaOfLaw' has an invalid value"))
-        .andExpect(jsonPath("$.issues[0].technicalMessage").exists());
+            jsonPath("$.issues[0].message").value("Field 'claim.area_of_law' has an invalid value"))
+        .andExpect(jsonPath("$.issues[0].technical_message").exists());
   }
 
   @Test
@@ -74,8 +74,8 @@ class ValidationControllerAdviceTest {
         """
         {
           "claim": {
-            "areaOfLaw": 123,
-            "officeAccountNumber": "1A234B"
+            "area_of_law": 123,
+            "office_account_number": "1A234B"
           }
         }
         """;
@@ -86,7 +86,7 @@ class ValidationControllerAdviceTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(wrongTypeJson))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.isValid").value(false))
+        .andExpect(jsonPath("$.is_valid").value(false))
         .andExpect(jsonPath("$.issues[0].code").value("INVALID_FIELD_TYPE"))
         .andExpect(jsonPath("$.issues[0].severity").value("ERROR"));
   }
@@ -96,7 +96,7 @@ class ValidationControllerAdviceTest {
     mockMvc
         .perform(post("/v1/validation/claim").contentType(MediaType.APPLICATION_JSON).content(""))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.isValid").value(false))
+        .andExpect(jsonPath("$.is_valid").value(false))
         .andExpect(jsonPath("$.issues[0].severity").value("ERROR"));
   }
 }

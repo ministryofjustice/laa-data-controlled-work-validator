@@ -13,6 +13,7 @@ import org.springframework.web.reactive.function.client.support.WebClientAdapter
 import org.springframework.web.service.invoker.HttpServiceProxyFactory;
 import reactor.core.publisher.Mono;
 import reactor.netty.http.client.HttpClient;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.client.CachedFeeSchemeClient;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.client.DataClaimsClient;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.client.FeeSchemeClient;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.client.ProviderDetailsClient;
@@ -31,12 +32,22 @@ public class WebClientConfig {
    * @param properties The configuration properties for the Fee Scheme Platform API
    * @return An instance of {@link FeeSchemeClient}
    */
-  @Bean
-  public FeeSchemeClient feeSchemeClient(final FeeSchemePlatformApiProperties properties) {
+  private FeeSchemeClient createRawFeeSchemeClient(
+      final FeeSchemePlatformApiProperties properties) {
     final WebClient webClient = createWebClient(properties);
     final WebClientAdapter webClientAdapter = WebClientAdapter.create(webClient);
     HttpServiceProxyFactory factory = HttpServiceProxyFactory.builderFor(webClientAdapter).build();
     return factory.createClient(FeeSchemeClient.class);
+  }
+
+  /**
+   * Expose a cached FeeSchemeClient bean using Caffeine for response caching. Cache duration is set
+   * to 5 minutes for demonstration.
+   */
+  @Bean
+  public FeeSchemeClient feeSchemeClient(final FeeSchemePlatformApiProperties properties) {
+    FeeSchemeClient rawClient = createRawFeeSchemeClient(properties);
+    return new CachedFeeSchemeClient(rawClient, 5);
   }
 
   /**

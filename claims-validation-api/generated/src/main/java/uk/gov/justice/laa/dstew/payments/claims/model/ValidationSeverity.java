@@ -21,7 +21,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
  * Severity level of the validation issue
  */
 
-@Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2026-03-14T10:05:01.052215Z[Europe/London]", comments = "Generator version: 7.18.0")
+@Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2026-03-17T18:38:00.191747Z[Europe/London]", comments = "Generator version: 7.18.0")
 public enum ValidationSeverity implements Serializable {
   
   ERROR("ERROR"),

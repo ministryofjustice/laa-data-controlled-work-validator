@@ -1,13 +1,14 @@
 package uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.rules;
 
-import static uk.gov.justice.laa.dstew.payments.claims.validation.core.util.DateUtils.checkDateInPast;
 import static uk.gov.justice.laa.dstew.payments.claims.validation.core.util.DateUtils.checkDateNotInFutureAndWithinAllowedPeriod;
+import static uk.gov.justice.laa.dstew.payments.claims.validation.core.util.DateUtils.validateDateInPast;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 import uk.gov.justice.laa.dstew.payments.claims.model.AreaOfLaw;
 import uk.gov.justice.laa.dstew.payments.claims.model.Claim;
 import uk.gov.justice.laa.dstew.payments.claims.model.ValidationIssue;
@@ -28,7 +29,6 @@ public class CaseDatesClaimValidator implements ClaimValidator {
 
   @Override
   public List<ValidationIssue> validate(Claim claim, ValidationContext context) {
-    List<ValidationIssue> issues = new ArrayList<>();
 
     log.debug("Validating case dates");
 
@@ -36,7 +36,8 @@ public class CaseDatesClaimValidator implements ClaimValidator {
 
     // Case Start Date - must be in the past and after 1995
     String caseStartDate = claim.getCaseStartDate();
-    issues.addAll(checkDateInPast("Case Start Date", caseStartDate, OLDEST_DATE_ALLOWED));
+    List<ValidationIssue> issues =
+        new ArrayList<>(validateDateInPast("Case Start Date", caseStartDate, OLDEST_DATE_ALLOWED));
 
     // Case Concluded Date - depends on area of law and must be within submission period
     LocalDate earliestDateAllowedForCaseConcludedDate =
@@ -52,12 +53,19 @@ public class CaseDatesClaimValidator implements ClaimValidator {
             earliestDateAllowedForCaseConcludedDate));
 
     // Transfer Date - must be in the past and after 1995
-    issues.addAll(checkDateInPast("Transfer Date", claim.getTransferDate(), OLDEST_DATE_ALLOWED));
+    if (StringUtils.hasText(claim.getTransferDate())) {
+      log.debug("Validating transfer date: {}", claim.getTransferDate());
+      issues.addAll(
+          validateDateInPast("Transfer Date", claim.getTransferDate(), OLDEST_DATE_ALLOWED));
+    }
 
     // Representation Order Date - must be in the past and after 2016
-    issues.addAll(
-        checkDateInPast(
-            "Representation Order Date", claim.getRepresentationOrderDate(), MIN_REP_ORDER_DATE));
+    if (StringUtils.hasText(claim.getTransferDate())) {
+      log.debug("Validating transfer date: {}", claim.getTransferDate());
+      issues.addAll(
+          validateDateInPast(
+              "Representation Order Date", claim.getRepresentationOrderDate(), MIN_REP_ORDER_DATE));
+    }
 
     log.debug("Case dates validation completed, found {} issues", issues.size());
     return issues;

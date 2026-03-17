@@ -39,6 +39,7 @@ openApiGenerate {
             useJakartaEe        : "true",
             useSpringBoot3      : "true",
             useTags             : "true",
+            modelPropertyNaming : "snake_case"
     ]
 }
 
@@ -55,4 +56,10 @@ tasks.named('bootJar') {
 
 tasks.named('bootRun') {
     enabled = false
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(25)
+    }
 }

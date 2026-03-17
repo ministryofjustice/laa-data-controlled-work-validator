@@ -25,8 +25,8 @@ public class ValidationController implements ValidationApi {
 
     log.info(
         "Validation completed. isValid: {}, issues count: {}",
-        result.getIsValid(),
-        result.getIssues().size());
+        result != null && result.getIsValid(),
+        result != null ? result.getIssues().size() : 0);
 
     return ResponseEntity.ok(result);
   }

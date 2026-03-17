@@ -46,37 +46,37 @@ public enum ClaimValidationError {
 
   // Date validation errors
   INVALID_CASE_START_DATE(
-      "Case start date is invalid: %s",
+      "Case Start Date must be between %s and today",
       null,
       ValidationSeverity.ERROR
   ),
   INVALID_CASE_CONCLUDED_DATE(
-      "Case concluded date is invalid: %s",
+      "%s",
       null,
       ValidationSeverity.ERROR
   ),
   INVALID_TRANSFER_DATE(
-      "Transfer date is invalid: %s",
+      "Transfer Date must be between %s and today",
       null,
       ValidationSeverity.ERROR
   ),
   INVALID_REPRESENTATION_ORDER_DATE(
-      "Representation order date is invalid: %s",
+      "Representation Order Date must be between %s and today",
       null,
       ValidationSeverity.ERROR
   ),
   INVALID_CLIENT_DATE_OF_BIRTH(
-      "Client date of birth is invalid: %s",
+      "Client Date of Birth must be between 01/01/1900 and today",
       null,
       ValidationSeverity.ERROR
   ),
   INVALID_CLIENT_2_DATE_OF_BIRTH(
-      "Client 2 date of birth is invalid: %s",
+      "Client 2 Date of Birth must be between 01/01/1900 and today",
       null,
       ValidationSeverity.ERROR
   ),
   INVALID_DATE_FORMAT(
-      "%s has an invalid date format",
+      "Invalid date value provided for %s",
       null,
       ValidationSeverity.ERROR
   ),
@@ -192,7 +192,7 @@ public enum ClaimValidationError {
 
   // Disbursement errors
   INVALID_DISBURSEMENT_VAT_AMOUNT(
-      "Disbursement VAT amount is invalid",
+      "Disbursements VAT Amount has exceeded the maximum accepted value",
       null,
       ValidationSeverity.ERROR
   ),

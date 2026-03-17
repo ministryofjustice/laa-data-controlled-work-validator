@@ -4,6 +4,8 @@ server:
 spring:
   application:
     name: LAA Claims Validation Service
+  jackson:
+    property-naming-strategy: SNAKE_CASE
 
 management:
   server:

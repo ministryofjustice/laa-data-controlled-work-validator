@@ -35,10 +35,12 @@ public class ValidationService {
    * @return the validation result containing isValid flag and any issues
    */
   public ValidationResult validateClaim(ClaimValidationRequest request) {
+    log.info("Validating claim request with scope: {}", request.getScope());
     Claim claim = request.getClaim();
     String scope = request.getScope();
 
     log.info("Starting validation for claim with scope: {}", scope);
+    log.info("Received claim: {}", claim != null ? claim.toString() : "null");
 
     // Handle missing claim - return validation error, not 400
     if (claim == null) {

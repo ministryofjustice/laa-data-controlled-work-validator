@@ -3,7 +3,7 @@
   "title": "ClaimResponse",
   "type": "object",
   "properties": {
-    "areaOfLaw": {
+    "area_of_law": {
       "type": "string",
       "enum": ["LEGAL HELP", "CRIME LOWER", "MEDIATION"],
       "validationErrorMessages": [
@@ -13,7 +13,7 @@
         }
       ]
     },
-    "officeAccountNumber": {
+    "office_account_number": {
       "type": "string",
       "pattern": "^[0-9A-Za-z]{6}$",
       "validationErrorMessages": [
@@ -36,7 +36,7 @@
     "status": {
       "type": "string"
     },
-    "submissionId": {
+    "submission_id": {
       "type": "string",
       "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
       "validationErrorMessages": [
@@ -46,7 +46,7 @@
         }
       ]
     },
-    "submissionPeriod": {
+    "submission_period": {
       "type": "string",
       "pattern": "^[A-Z]{3}-[0-9]{4}$",
       "validationErrorMessages": [
@@ -56,7 +56,7 @@
         }
       ]
     },
-    "scheduleReference": {
+    "schedule_reference": {
       "type": "string",
       "pattern": "^[a-zA-Z0-9/.\\-]{1,20}$",
       "maxLength": 20,
@@ -67,11 +67,11 @@
         }
       ]
     },
-    "lineNumber": {
+    "line_number": {
       "type": "integer",
       "minimum": 1
     },
-    "caseReferenceNumber": {
+    "case_reference_number": {
       "type": "string",
       "pattern": "^[a-zA-Z0-9/.\\-\\s]+$",
       "maxLength": 30,
@@ -82,7 +82,7 @@
         }
       ]
     },
-    "uniqueFileNumber": {
+    "unique_file_number": {
       "type": "string",
       "pattern": "^[0-9]{6}/[0-9]{3}$",
       "validationErrorMessages": [
@@ -92,7 +92,7 @@
         }
       ]
     },
-    "caseStartDate": {
+    "case_start_date": {
       "type": "string",
       "pattern": "^(19\\d{2}|20\\d{2}|2100)-(0?[1-9]|1[0-2])-(0?[1-9]|[12][0-9]|3[01])$",
       "validationErrorMessages": [
@@ -102,7 +102,7 @@
         }
       ]
     },
-    "caseConcludedDate": {
+    "case_concluded_date": {
       "type": "string",
       "pattern": "^(19\\d{2}|20\\d{2}|2100)-(0?[1-9]|1[0-2])-(0?[1-9]|[12][0-9]|3[01])$",
       "validationErrorMessages": [
@@ -112,7 +112,7 @@
         }
       ]
     },
-    "matterTypeCode": {
+    "matter_type_code": {
       "type": "string",
       "validationErrorMessages": [
         {
@@ -126,7 +126,7 @@
       ]
 
     },
-    "crimeMatterTypeCode": {
+    "crime_matter_type_code": {
       "type": "string",
       "pattern": "^(?:$|0[1-9]|[1-9]|1[0-3]|1[56]|1[89]|2[13]|3[3-8])$",
       "validationErrorMessages": [
@@ -136,10 +136,10 @@
         }
       ]
     },
-    "feeSchemeCode": {
+    "fee_scheme_code": {
       "type": "string"
     },
-    "feeCode": {
+    "fee_code": {
       "type": "string",
       "pattern": "^[a-zA-Z0-9]+$",
       "maxLength": 10,
@@ -150,7 +150,7 @@
         }
       ]
     },
-    "procurementAreaCode": {
+    "procurement_area_code": {
       "type": "string",
       "pattern": "^[A-Z]{2}[0-9]{5}$",
       "validationErrorMessages": [
@@ -160,7 +160,7 @@
         }
       ]
     },
-    "accessPointCode": {
+    "access_point_code": {
       "type": "string",
       "pattern": "^AP[0-9]{5}$",
       "validationErrorMessages": [
@@ -170,7 +170,7 @@
         }
       ]
     },
-    "deliveryLocation": {
+    "delivery_location": {
       "type": "string",
       "pattern": "^[A-Z]{2}[0-9]{5}$",
       "validationErrorMessages": [
@@ -180,7 +180,7 @@
         }
       ]
     },
-    "representationOrderDate": {
+    "representation_order_date": {
       "type": "string",
       "pattern": "^(19\\d{2}|20\\d{2}|2100)-(0?[1-9]|1[0-2])-(0?[1-9]|[12][0-9]|3[01])$",
       "validationErrorMessages": [
@@ -190,7 +190,7 @@
         }
       ]
     },
-    "suspectsDefendantsCount": {
+    "suspects_defendants_count": {
       "type": "integer",
       "minimum": 0,
       "maximum": 99,
@@ -201,7 +201,7 @@
         }
       ]
     },
-    "policeStationCourtAttendancesCount": {
+    "police_station_court_attendances_count": {
       "type": "integer",
       "minimum": 0,
       "maximum": 99,
@@ -212,7 +212,7 @@
         }
       ]
     },
-    "policeStationCourtPrisonId": {
+    "police_station_court_prison_id": {
       "type": "string",
       "pattern": "^(?=.*[A-Za-z])[A-Za-z0-9]{1,6}$",
       "validationErrorMessages": [
@@ -222,7 +222,7 @@
         }
       ]
     },
-    "dsccNumber": {
+    "dscc_number": {
       "type": "string",
       "pattern": "^[a-zA-Z0-9]{10}$",
       "validationErrorMessages": [
@@ -232,7 +232,7 @@
         }
       ]
     },
-    "maatId": {
+    "maat_id": {
       "type": "string",
       "pattern": "^[a-zA-Z0-9]{1,10}$",
       "validationErrorMessages": [
@@ -242,7 +242,7 @@
         }
       ]
     },
-    "prisonLawPriorApprovalNumber": {
+    "prison_law_prior_approval_number": {
       "type": "string",
       "pattern": "^[a-zA-Z0-9]{10}$",
       "validationErrorMessages": [
@@ -252,7 +252,7 @@
         }
       ]
     },
-    "isDutySolicitor": {
+    "is_duty_solicitor": {
       "type": "boolean",
       "validationErrorMessages": [
         {
@@ -261,7 +261,7 @@
         }
       ]
     },
-    "isYouthCourt": {
+    "is_youth_court": {
       "type": "boolean",
       "validationErrorMessages": [
         {
@@ -270,7 +270,7 @@
         }
       ]
     },
-    "schemeId": {
+    "scheme_id": {
       "type": "string",
       "pattern": "^[a-zA-Z0-9]{4}$",
       "validationErrorMessages": [
@@ -280,7 +280,7 @@
         }
       ]
     },
-    "mediationSessionsCount": {
+    "mediation_sessions_count": {
       "type": "integer",
       "minimum": 1,
       "maximum": 99,
@@ -291,7 +291,7 @@
         }
       ]
     },
-    "mediationTimeMinutes": {
+    "mediation_time_minutes": {
       "type": "integer",
       "minimum": 0,
       "maximum": 99999,
@@ -302,7 +302,7 @@
         }
       ]
     },
-    "outreachLocation": {
+    "outreach_location": {
       "type": "string",
       "pattern": "^[a-zA-Z0-9]{3}$",
       "validationErrorMessages": [
@@ -312,7 +312,7 @@
         }
       ]
     },
-    "referralSource": {
+    "referral_source": {
       "type": "string",
       "pattern": "^(0[2-9]|1[0-1])$",
       "validationErrorMessages": [
@@ -322,10 +322,10 @@
         }
       ]
     },
-    "totalWarnings": {
+    "total_warnings": {
       "type": "number"
     },
-    "clientForename": {
+    "client_forename": {
       "type": "string",
       "pattern": "^[\\p{L}\\p{N}\\p{Zs}\\-''&]{1,30}$",
       "validationErrorMessages": [
@@ -335,7 +335,7 @@
         }
       ]
     },
-    "clientSurname": {
+    "client_surname": {
       "type": "string",
       "pattern": "^[\\p{L}\\p{N}\\p{Zs}\\-''&]{1,30}$",
       "validationErrorMessages": [
@@ -345,7 +345,7 @@
         }
       ]
     },
-    "clientDateOfBirth": {
+    "client_date_of_birth": {
       "type": "string",
       "pattern": "^([0-9]{4})-(0?[1-9]|1[0-2])-(0?[1-9]|[12][0-9]|3[01])$",
       "validationErrorMessages": [
@@ -355,7 +355,7 @@
         }
       ]
     },
-    "uniqueClientNumber": {
+    "unique_client_number": {
       "type": "string",
       "pattern": "^(0[1-9]|[12][0-9]|3[01])(0[1-9]|1[0-2])([0-9]{4})/[\\p{L}0-9 \\-''&]/[\\p{L}0-9 \\-''&]{1,4}$",
       "maxLength": 15,
@@ -366,7 +366,7 @@
         }
       ]
     },
-    "clientPostcode": {
+    "client_postcode": {
       "type": "string",
       "pattern": "^NFA|[A-Z]{1,2}[0-9][0-9A-Z]?\\s?[0-9][A-Z]{2}$",
       "validationErrorMessages": [
@@ -376,7 +376,7 @@
         }
       ]
     },
-    "genderCode": {
+    "gender_code": {
       "type": "string",
       "pattern": "^([MmFfUu])$",
       "validationErrorMessages": [
@@ -386,7 +386,7 @@
         }
       ]
     },
-    "ethnicityCode": {
+    "ethnicity_code": {
       "type": "string",
       "pattern": "^(0[0-9]|1[0-6]|99)$",
       "minLength": 2,
@@ -398,7 +398,7 @@
         }
       ]
     },
-    "disabilityCode": {
+    "disability_code": {
       "type": "string",
       "pattern": "^(NCD|MOB|DEA|HEA|VIS|BLI|MHC|LDD|COG|ILL|OTH|UKN|PHY|SEN)$",
       "minLength": 3,
@@ -410,7 +410,7 @@
         }
       ]
     },
-    "isLegallyAided": {
+    "is_legally_aided": {
       "type": "boolean",
       "validationErrorMessages": [
         {
@@ -419,7 +419,7 @@
         }
       ]
     },
-    "clientTypeCode": {
+    "client_type_code": {
       "type": "string",
       "pattern": "^([PCJ])$",
       "validationErrorMessages": [
@@ -429,7 +429,7 @@
         }
       ]
     },
-    "homeOfficeClientNumber": {
+    "home_office_client_number": {
       "type": "string",
       "pattern": "^[a-zA-Z0-9]+$",
       "maxLength": 16,
@@ -440,7 +440,7 @@
         }
       ]
     },
-    "claReferenceNumber": {
+    "cla_reference_number": {
       "type": "string",
       "pattern": "^[0-9]{1,7}$",
       "validationErrorMessages": [
@@ -450,7 +450,7 @@
         }
       ]
     },
-    "claExemptionCode": {
+    "cla_exemption_code": {
       "type": "string",
       "minLength": 4,
       "maxLength": 4,
@@ -461,7 +461,7 @@
         }
       ]
     },
-    "client2Forename": {
+    "client2_forename": {
       "type": "string",
       "pattern": "^[\\p{L}\\p{N}\\p{Zs}\\-''&]{1,30}$",
       "validationErrorMessages": [
@@ -471,7 +471,7 @@
         }
       ]
     },
-    "client2Surname": {
+    "client2_surname": {
       "type": "string",
       "pattern": "^[\\p{L}\\p{N}\\p{Zs}\\-''&]{1,30}$",
       "validationErrorMessages": [
@@ -481,7 +481,7 @@
         }
       ]
     },
-    "client2DateOfBirth": {
+    "client2_date_of_birth": {
       "type": "string",
       "pattern": "^([0-9]{4})-(0?[1-9]|1[0-2])-(0?[1-9]|[12][0-9]|3[01])$",
       "validationErrorMessages": [
@@ -491,7 +491,7 @@
         }
       ]
     },
-    "client2Ucn": {
+    "client2_ucn": {
       "type": "string",
       "pattern": "^(0[1-9]|[12][0-9]|3[01])(0[1-9]|1[0-2])([0-9]{4})/[\\p{L}0-9 \\-''&]/[\\p{L}0-9 \\-''&]{1,4}$",
       "maxLength": 15,
@@ -502,7 +502,7 @@
         }
       ]
     },
-    "client2Postcode": {
+    "client2_postcode": {
       "type": "string",
       "pattern": "^NFA|[A-Z]{1,2}[0-9][0-9A-Z]?\\s?[0-9][A-Z]{2}$",
       "validationErrorMessages": [
@@ -512,7 +512,7 @@
         }
       ]
     },
-    "client2GenderCode": {
+    "client2_gender_code": {
       "type": "string",
       "pattern": "^([MmFfUu])$",
       "validationErrorMessages": [
@@ -522,7 +522,7 @@
         }
       ]
     },
-    "client2EthnicityCode": {
+    "client2_ethnicity_code": {
       "type": "string",
       "pattern": "^(0[0-9]|1[0-6]|99)$",
       "minLength": 2,
@@ -534,7 +534,7 @@
         }
       ]
     },
-    "client2DisabilityCode": {
+    "client2_disability_code": {
       "type": "string",
       "pattern": "^(NCD|MOB|DEA|HEA|VIS|BLI|MHC|LDD|COG|ILL|OTH|UKN|PHY|SEN)$",
       "minLength": 3,
@@ -546,7 +546,7 @@
         }
       ]
     },
-    "client2IsLegallyAided": {
+    "client2_is_legally_aided": {
       "type": "boolean",
       "validationErrorMessages": [
         {
@@ -555,7 +555,7 @@
         }
       ]
     },
-    "caseId": {
+    "case_id": {
       "type": "string",
       "pattern": "^[0-9]{3}$",
       "validationErrorMessages": [
@@ -565,7 +565,7 @@
         }
       ]
     },
-    "uniqueCaseId": {
+    "unique_case_id": {
       "type": "string",
       "pattern": "^\\s*\\S.*$",
       "validationErrorMessages": [
@@ -575,7 +575,7 @@
         }
       ]
     },
-    "caseStageCode": {
+    "case_stage_code": {
       "type": "string",
       "pattern": "^(FPL(0[1-9]|1[0-9]|20|21)|FPC0[1-3]|MHL(0[1-9]|10))$",
       "minLength": 5,
@@ -587,7 +587,7 @@
         }
       ]
     },
-    "stageReachedCode": {
+    "stage_reached_code": {
       "type": "string",
       "pattern": "^[a-zA-Z0-9]+$",
       "minLength": 2,
@@ -603,7 +603,7 @@
         }
       ]
     },
-    "standardFeeCategoryCode": {
+    "standard_fee_category_code": {
       "type": "string",
       "pattern": "^(1A|2A|1B|2B|1A-HSF|1B-HSF|1A-LSF|1B-LSF|1EW|1SO|2|3|ULF|UHF|CLF|CHF|Sending Hearing Fixed Fee)$",
       "validationErrorMessages": [
@@ -613,7 +613,7 @@
         }
       ]
     },
-    "outcomeCode": {
+    "outcome_code": {
       "type": "string",
       "validationErrorMessages": [
         {
@@ -630,7 +630,7 @@
         }
       ]
     },
-    "designatedAccreditedRepresentativeCode": {
+    "designated_accredited_representative_code": {
       "type": "string",
       "pattern": "^[1-5]$",
       "validationErrorMessages": [
@@ -640,7 +640,7 @@
         }
       ]
     },
-    "isPostalApplicationAccepted": {
+    "is_postal_application_accepted": {
       "type": "boolean",
       "validationErrorMessages": [
         {
@@ -649,7 +649,7 @@
         }
       ]
     },
-    "isClient2PostalApplicationAccepted": {
+    "is_client2_postal_application_accepted": {
       "type": "boolean",
       "validationErrorMessages": [
         {
@@ -658,7 +658,7 @@
         }
       ]
     },
-    "mentalHealthTribunalReference": {
+    "mental_health_tribunal_reference": {
       "type": "string",
       "pattern": "^([A-Z]{2}/[0-9]{4}/[0-9]{5}|[A-Z]{2}[0-9]{5})$",
       "validationErrorMessages": [
@@ -668,7 +668,7 @@
         }
       ]
     },
-    "isNrmAdvice": {
+    "is_nrm_advice": {
       "type": "boolean",
       "validationErrorMessages": [
         {
@@ -677,10 +677,10 @@
         }
       ]
     },
-    "followOnWork": {
+    "follow_on_work": {
       "type": "string"
     },
-    "transferDate": {
+    "transfer_date": {
       "type": "string",
       "pattern": "^(19\\d{2}|20\\d{2}|2100)-(0?[1-9]|1[0-2])-(0?[1-9]|[12][0-9]|3[01])$",
       "validationErrorMessages": [
@@ -690,7 +690,7 @@
         }
       ]
     },
-    "exemptionCriteriaSatisfied": {
+    "exemption_criteria_satisfied": {
       "type": "string",
       "pattern": "^[A-Z]{2}[0-9]{3}$",
       "validationErrorMessages": [
@@ -700,7 +700,7 @@
         }
       ]
     },
-    "exceptionalCaseFundingReference": {
+    "exceptional_case_funding_reference": {
       "type": "string",
       "pattern": "^[0-9]{7}[A-Z]{2}$",
       "validationErrorMessages": [
@@ -710,7 +710,7 @@
         }
       ]
     },
-    "isLegacyCase": {
+    "is_legacy_case": {
       "type": "boolean",
       "validationErrorMessages": [
         {
@@ -719,7 +719,7 @@
         }
       ]
     },
-    "adviceTime": {
+    "advice_time": {
       "type": "integer",
       "minimum": 0,
       "maximum": 99999,
@@ -730,7 +730,7 @@
         }
       ]
     },
-    "travelTime": {
+    "travel_time": {
       "type": "integer",
       "minimum": 0,
       "maximum": 99999,
@@ -741,7 +741,7 @@
         }
       ]
     },
-    "waitingTime": {
+    "waiting_time": {
       "type": "integer",
       "minimum": 0,
       "maximum": 99999,
@@ -752,7 +752,7 @@
         }
       ]
     },
-    "netProfitCostsAmount": {
+    "net_profit_costs_amount": {
       "type": "number",
       "minimum": 0.0,
       "maximum": 999999999.99,
@@ -764,7 +764,7 @@
         }
       ]
     },
-    "netDisbursementAmount": {
+    "net_disbursement_amount": {
       "type": "number",
       "minimum": 0.0,
       "maximum": 999999999.99,
@@ -776,7 +776,7 @@
         }
       ]
     },
-    "netCounselCostsAmount": {
+    "net_counsel_costs_amount": {
       "type": "number",
       "minimum": 0.0,
       "maximum": 99999.99,
@@ -788,7 +788,7 @@
         }
       ]
     },
-    "disbursementsVatAmount": {
+    "disbursements_vat_amount": {
       "type": "number",
       "minimum": 0.0,
       "multipleOf": 0.01,
@@ -799,7 +799,7 @@
         }
       ]
     },
-    "travelWaitingCostsAmount": {
+    "travel_waiting_costs_amount": {
       "type": "number",
       "minimum": 0.0,
       "maximum": 9999.99,
@@ -811,7 +811,7 @@
         }
       ]
     },
-    "netWaitingCostsAmount": {
+    "net_waiting_costs_amount": {
       "type": "number",
       "minimum": 0.0,
       "maximum": 999999.99,
@@ -823,7 +823,7 @@
         }
       ]
     },
-    "isVatApplicable": {
+    "is_vat_applicable": {
       "type": "boolean",
       "validationErrorMessages": [
         {
@@ -832,7 +832,7 @@
         }
       ]
     },
-    "isToleranceApplicable": {
+    "is_tolerance_applicable": {
       "type": "boolean",
       "validationErrorMessages": [
         {
@@ -853,7 +853,7 @@
         }
       ]
     },
-    "isLondonRate": {
+    "is_london_rate": {
       "type": "boolean",
       "validationErrorMessages": [
         {
@@ -862,7 +862,7 @@
         }
       ]
     },
-    "adjournedHearingFeeAmount": {
+    "adjourned_hearing_fee_amount": {
       "type": "integer",
       "minimum": 0,
       "maximum": 9,
@@ -873,7 +873,7 @@
         }
       ]
     },
-    "isAdditionalTravelPayment": {
+    "is_additional_travel_payment": {
       "type": "boolean",
       "validationErrorMessages": [
         {
@@ -882,7 +882,7 @@
         }
       ]
     },
-    "costsDamagesRecoveredAmount": {
+    "costs_damages_recovered_amount": {
       "type": "number",
       "minimum": 0.0,
       "maximum": 99999.99,
@@ -904,7 +904,7 @@
         }
       ]
     },
-    "detentionTravelWaitingCostsAmount": {
+    "detention_travel_waiting_costs_amount": {
       "type": "number",
       "minimum": 0.0,
       "maximum": 99999999.99,
@@ -916,7 +916,7 @@
         }
       ]
     },
-    "jrFormFillingAmount": {
+    "jr_form_filling_amount": {
       "type": "number",
       "minimum": 0.0,
       "maximum": 9999.99,
@@ -928,7 +928,7 @@
         }
       ]
     },
-    "isEligibleClient": {
+    "is_eligible_client": {
       "type": "boolean",
       "validationErrorMessages": [
         {
@@ -950,7 +950,7 @@
         }
       ]
     },
-    "medicalReportsCount": {
+    "medical_reports_count": {
       "type": "integer",
       "minimum": 0,
       "maximum": 10,
@@ -961,7 +961,7 @@
         }
       ]
     },
-    "isIrcSurgery": {
+    "is_irc_surgery": {
       "type": "boolean",
       "validationErrorMessages": [
         {
@@ -980,7 +980,7 @@
         }
       ]
     },
-    "surgeryClientsCount": {
+    "surgery_clients_count": {
       "type": "integer",
       "minimum": 1,
       "maximum": 20,
@@ -991,7 +991,7 @@
         }
       ]
     },
-    "surgeryMattersCount": {
+    "surgery_matters_count": {
       "type": "integer",
       "minimum": 1,
       "maximum": 20,
@@ -1002,7 +1002,7 @@
         }
       ]
     },
-    "cmrhOralCount": {
+    "cmrh_oral_count": {
       "type": "integer",
       "minimum": 0,
       "maximum": 9,
@@ -1013,7 +1013,7 @@
         }
       ]
     },
-    "cmrhTelephoneCount": {
+    "cmrh_telephone_count": {
       "type": "integer",
       "minimum": 0,
       "maximum": 9,
@@ -1036,7 +1036,7 @@
         }
       ]
     },
-    "isSubstantiveHearing": {
+    "is_substantive_hearing": {
       "type": "boolean",
       "validationErrorMessages": [
         {
@@ -1045,7 +1045,7 @@
         }
       ]
     },
-    "hoInterview": {
+    "ho_interview": {
       "type": "integer",
       "minimum": 0,
       "maximum": 9,
@@ -1074,9 +1074,9 @@
   "additionalProperties": false,
   "required": [
     "status",
-    "lineNumber",
-    "netDisbursementAmount",
-    "disbursementsVatAmount",
-    "feeCode"
+    "line_number",
+    "net_disbursement_amount",
+    "disbursements_vat_amount",
+    "fee_code"
   ]
 }

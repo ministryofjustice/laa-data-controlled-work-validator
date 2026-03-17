@@ -6,6 +6,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import lombok.AccessLevel;
@@ -35,6 +36,24 @@ import uk.gov.justice.laa.dstew.payments.claims.validation.core.error.ClaimValid
 public final class DateUtils {
 
   private static final LocalDate MIN_BIRTH_DATE = LocalDate.of(1900, 1, 1);
+
+  /**
+   * The number of calendar months that must separate two submission periods for a disbursement
+   * claim to fall outside the duplicate-detection window.
+   */
+  public static final int MAXIMUM_MONTHS_DIFFERENCE = 3;
+
+  /**
+   * The number of months added to the base period when calculating the submission cutoff date. The
+   * cutoff falls in the month <em>following</em> the base period.
+   */
+  private static final int CUTOFF_MONTH_OFFSET = 1;
+
+  /**
+   * The day of the month on which the submission cutoff falls. Disbursement claims must be
+   * submitted by the {@value}th of the cutoff month.
+   */
+  private static final int CUTOFF_DAY_OF_MONTH = 20;
 
   public static final DateTimeFormatter DATE_FORMATTER_YYYY_MM_DD =
       DateTimeFormatter.ofPattern("yyyy-MM-dd");
@@ -92,15 +111,10 @@ public final class DateUtils {
    * @param earliestDateAllowed the earliest date to check the date value against
    * @return a list of validation issues, empty if valid
    */
-  public static List<ValidationIssue> checkDateInPast(
+  public static List<ValidationIssue> validateDateInPast(
       String fieldName, String dateValueToCheck, LocalDate earliestDateAllowed) {
 
-    return checkDateAllowed(
-        fieldName,
-        dateValueToCheck,
-        earliestDateAllowed,
-        LocalDate.now(),
-        "%s must be between %s and today");
+    return validateDateBetween(fieldName, dateValueToCheck, earliestDateAllowed, LocalDate.now());
   }
 
   /**
@@ -134,24 +148,28 @@ public final class DateUtils {
           LocalDate date = LocalDate.parse(dateValueToCheck, DATE_FORMATTER_YYYY_MM_DD);
 
           if (date.isAfter(LocalDate.now())) {
+            // Set technicalMessage for future date error
+            ClaimValidationError error = getDateError(fieldName);
             issues.add(
-                createDateIssue(fieldName, String.format("%s cannot be a future date", fieldName)));
+                error.toValidationIssueWithTechnicalMessage(
+                    String.format("%s cannot be a future date", fieldName),
+                    String.format("%s cannot be a future date", fieldName)));
           } else if (date.isBefore(earliestDateAllowed)) {
-            issues.add(
-                createDateIssue(
-                    fieldName,
-                    String.format(
-                        "%s cannot be before %s",
-                        fieldName,
-                        earliestDateAllowed.format(DATE_FORMATTER_FOR_DISPLAY_MESSAGE))));
+            // Set technicalMessage for early date error
+            ClaimValidationError error = getDateError(fieldName);
+            String msg =
+                String.format(
+                    "%s cannot be before %s",
+                    fieldName, earliestDateAllowed.format(DATE_FORMATTER_FOR_DISPLAY_MESSAGE));
+            issues.add(error.toValidationIssueWithTechnicalMessage(msg, msg));
           } else if (date.isAfter(twentiethOfNextMonth)) {
-            issues.add(
-                createDateIssue(
-                    fieldName,
-                    String.format(
-                        "%s cannot be later than the 20th of the month "
-                            + "following the submission period",
-                        fieldName)));
+            // Set technicalMessage for late date error
+            ClaimValidationError error = getDateError(fieldName);
+            String msg =
+                String.format(
+                    "%s cannot be later than the 20th of the month following the submission period",
+                    fieldName);
+            issues.add(error.toValidationIssueWithTechnicalMessage(msg, msg));
           }
         } catch (DateTimeParseException e) {
           issues.add(
@@ -172,39 +190,26 @@ public final class DateUtils {
    * @param dateValueToCheck The date value to validate in the format "yyyy-MM-dd"
    * @param earliestDateAllowed The earliest allowed date
    * @param latestDateAllowed The latest allowed date
-   * @param errorMessage The error message template to use when validation fails. Should contain two
-   *     '%s' placeholders: first for the field name, second for the formatted oldest allowed date
    * @return a list of validation issues, empty if valid
    */
-  private static List<ValidationIssue> checkDateAllowed(
+  private static List<ValidationIssue> validateDateBetween(
       String fieldName,
       String dateValueToCheck,
       LocalDate earliestDateAllowed,
-      LocalDate latestDateAllowed,
-      String errorMessage) {
-    List<ValidationIssue> issues = new ArrayList<>();
+      LocalDate latestDateAllowed) {
 
-    if (StringUtils.hasText(dateValueToCheck)) {
-      try {
-        LocalDate date = LocalDate.parse(dateValueToCheck, DATE_FORMATTER_YYYY_MM_DD);
-
-        if (date.isBefore(earliestDateAllowed) || date.isAfter(latestDateAllowed)) {
-          issues.add(
-              createDateIssue(
-                  fieldName,
-                  String.format(
-                      errorMessage,
-                      fieldName,
-                      earliestDateAllowed.format(DATE_FORMATTER_FOR_DISPLAY_MESSAGE))));
-        }
-      } catch (DateTimeParseException e) {
-        issues.add(
-            createDateIssue(
-                fieldName, String.format("Invalid date value provided for %s", fieldName)));
-      }
+    LocalDate date = parseDate(dateValueToCheck);
+    if (date == null) {
+      return List.of(ClaimValidationError.INVALID_DATE_FORMAT.toValidationIssue(fieldName));
     }
 
-    return issues;
+    if (!isDateWithinRange(date, earliestDateAllowed, latestDateAllowed)) {
+      return List.of(
+          createDateIssue(
+              fieldName, earliestDateAllowed.format(DATE_FORMATTER_FOR_DISPLAY_MESSAGE)));
+    }
+
+    return Collections.emptyList();
   }
 
   /**
@@ -289,5 +294,20 @@ public final class DateUtils {
       log.debug("Could not parse date value: {}", dateValue);
       return null;
     }
+  }
+
+  /**
+   * Calculates the submission cutoff date for a given disbursement submission period. The cutoff is
+   * the {@value CUTOFF_DAY_OF_MONTH}th day of the month following the given period, and represents
+   * the deadline by which a disbursement claim for that period must be submitted.
+   *
+   * <p>For example, a submission period of MAY-2025 yields a cutoff of 20 JUN-2025.
+   *
+   * @param submissionPeriod the submission period for which the cutoff is calculated
+   * @return the cutoff date ({@value CUTOFF_DAY_OF_MONTH}th of the month following {@code
+   *     submissionPeriod})
+   */
+  public static LocalDate submissionPeriodCutoffDate(YearMonth submissionPeriod) {
+    return submissionPeriod.plusMonths(CUTOFF_MONTH_OFFSET).atDay(CUTOFF_DAY_OF_MONTH);
   }
 }

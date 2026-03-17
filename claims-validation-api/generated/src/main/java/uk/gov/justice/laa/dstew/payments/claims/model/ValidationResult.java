@@ -24,7 +24,7 @@ import jakarta.annotation.Generated;
  * ValidationResult
  */
 
-@Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2026-03-14T10:05:01.052215Z[Europe/London]", comments = "Generator version: 7.18.0")
+@Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2026-03-17T18:38:00.191747Z[Europe/London]", comments = "Generator version: 7.18.0")
 public class ValidationResult implements Serializable {
 
   private static final long serialVersionUID = 1L;
@@ -56,8 +56,8 @@ public class ValidationResult implements Serializable {
    * @return isValid
    */
   @NotNull 
-  @Schema(name = "isValid", description = "Whether the claim passed all validation rules", requiredMode = Schema.RequiredMode.REQUIRED)
-  @JsonProperty("isValid")
+  @Schema(name = "is_valid", description = "Whether the claim passed all validation rules", requiredMode = Schema.RequiredMode.REQUIRED)
+  @JsonProperty("is_valid")
   public Boolean getIsValid() {
     return isValid;
   }

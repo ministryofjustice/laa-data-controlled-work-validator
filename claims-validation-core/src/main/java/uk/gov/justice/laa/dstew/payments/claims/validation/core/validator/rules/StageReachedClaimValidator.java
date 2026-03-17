@@ -39,27 +39,29 @@ public class StageReachedClaimValidator implements ClaimValidator {
 
     Pattern pattern = getPattern(areaOfLaw);
     if (pattern != null && !pattern.matcher(stageReached).matches()) {
-      String technicalMessage = null;
-      if (areaOfLaw == AreaOfLaw.LEGAL_HELP) {
-        technicalMessage =
-            String.format(
-                "stage_reached_code (LEGAL_HELP): "
-                    + "does not match the regex pattern %s (provided value: %s)",
-                LEGAL_HELP_PATTERN.pattern(), stageReached);
-        issues.add(
-            ClaimValidationError.INVALID_STAGE_REACHED_LEGAL_HELP
-                .toValidationIssueWithTechnicalMessage(technicalMessage));
-      } else if (areaOfLaw == AreaOfLaw.CRIME_LOWER) {
-        technicalMessage =
-            String.format(
-                "stage_reached_code (CRIME_LOWER): "
-                    + "does not match the regex pattern %s (provided value: %s)",
-                CRIME_LOWER_PATTERN.pattern(), stageReached);
-        issues.add(
-            ClaimValidationError.INVALID_STAGE_REACHED_CRIME_LOWER
-                .toValidationIssueWithTechnicalMessage(technicalMessage));
-      } else {
-        issues.add(ClaimValidationError.INVALID_STAGE_REACHED.toValidationIssue());
+      String technicalMessage;
+      switch (areaOfLaw) {
+        case AreaOfLaw.LEGAL_HELP -> {
+          technicalMessage =
+              String.format(
+                  "stage_reached_code (LEGAL_HELP): "
+                      + "does not match the regex pattern %s (provided value: %s)",
+                  LEGAL_HELP_PATTERN.pattern(), stageReached);
+          issues.add(
+              ClaimValidationError.INVALID_STAGE_REACHED_LEGAL_HELP
+                  .toValidationIssueWithTechnicalMessage(technicalMessage));
+        }
+        case AreaOfLaw.CRIME_LOWER -> {
+          technicalMessage =
+              String.format(
+                  "stage_reached_code (CRIME_LOWER): "
+                      + "does not match the regex pattern %s (provided value: %s)",
+                  CRIME_LOWER_PATTERN.pattern(), stageReached);
+          issues.add(
+              ClaimValidationError.INVALID_STAGE_REACHED_CRIME_LOWER
+                  .toValidationIssueWithTechnicalMessage(technicalMessage));
+        }
+        default -> issues.add(ClaimValidationError.INVALID_STAGE_REACHED.toValidationIssue());
       }
     }
 

@@ -18,9 +18,9 @@ import uk.gov.justice.laa.dstew.payments.claims.validation.core.error.ClaimValid
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.util.ClaimEffectiveDateUtil;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.ValidationContext;
 import uk.gov.justice.laa.fee.scheme.model.FeeDetailsResponse;
-import uk.gov.justice.laa.provider.model.FirmOfficeContractAndScheduleDetails;
-import uk.gov.justice.laa.provider.model.FirmOfficeContractAndScheduleLine;
-import uk.gov.justice.laa.provider.model.ProviderFirmOfficeContractAndScheduleDto;
+import uk.gov.justice.laadata.providers.model.FirmOfficeContractAndScheduleDetails;
+import uk.gov.justice.laadata.providers.model.FirmOfficeContractAndScheduleLine;
+import uk.gov.justice.laadata.providers.model.ProviderFirmOfficeContractAndScheduleDto;
 
 /** Validates that a claim's effective category of law is valid. */
 @Component

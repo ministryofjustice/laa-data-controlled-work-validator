@@ -19,27 +19,26 @@ import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.Valida
 public class ScheduleReferenceClaimValidator implements ClaimValidator {
 
   // Schedule reference format: typically alphanumeric
-  private static final Pattern SCHEDULE_REF_PATTERN = Pattern.compile("^[a-zA-Z0-9/.\\-]{1,20}$");
+  private static final String SCHEDULE_REF_REGEX = "^[a-zA-Z0-9/.\\-]{1,20}$";
+  private static final Pattern SCHEDULE_REF_PATTERN = Pattern.compile(SCHEDULE_REF_REGEX);
 
   @Override
   public List<ValidationIssue> validate(Claim claim, ValidationContext context) {
     String scheduleReference = claim.getScheduleReference();
-    if (AreaOfLaw.LEGAL_HELP.equals(claim.getAreaOfLaw())) {
-      String regex = "^[a-zA-Z0-9/.\\-]{1,20}$";
-      boolean isValid = scheduleReference != null && scheduleReference.matches(regex);
-      if (!isValid) {
-        String errorMessage =
-            "Schedule Reference must be a maximum of 20 characters and "
-                + "contain only letters, numbers, forward slashes, periods, and hyphens";
-        String technicalMessage =
-            String.format(
-                "schedule_reference (LEGAL_HELP): does not "
-                    + "match the regex pattern %s (provided value: %s)",
-                regex, scheduleReference);
-        return List.of(
-            ClaimValidationError.INVALID_SCHEDULE_REFERENCE.toValidationIssueWithTechnicalMessage(
-                technicalMessage, errorMessage));
-      }
+    if (scheduleReference != null
+        && AreaOfLaw.LEGAL_HELP.equals(claim.getAreaOfLaw())
+        && !SCHEDULE_REF_PATTERN.matcher(scheduleReference).matches()) {
+      String errorMessage =
+          "Schedule Reference must be a maximum of 20 characters and "
+              + "contain only letters, numbers, forward slashes, periods, and hyphens";
+      String technicalMessage =
+          String.format(
+              "schedule_reference (LEGAL_HELP): does not "
+                  + "match the regex pattern %s (provided value: %s)",
+              SCHEDULE_REF_REGEX, scheduleReference);
+      return List.of(
+          ClaimValidationError.INVALID_SCHEDULE_REFERENCE.toValidationIssueWithTechnicalMessage(
+              technicalMessage, errorMessage));
     }
     return List.of();
   }

@@ -26,7 +26,7 @@ import jakarta.annotation.Generated;
  */
 
 @Schema(name = "Claim", description = "Claim data for validation")
-@Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2026-03-14T10:05:01.052215Z[Europe/London]", comments = "Generator version: 7.18.0")
+@Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2026-03-17T18:38:00.191747Z[Europe/London]", comments = "Generator version: 7.18.0")
 public class Claim implements Serializable {
 
   private static final long serialVersionUID = 1L;
@@ -257,8 +257,8 @@ public class Claim implements Serializable {
    * @return areaOfLaw
    */
   @Valid 
-  @Schema(name = "areaOfLaw", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @JsonProperty("areaOfLaw")
+  @Schema(name = "area_of_law", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("area_of_law")
   public @Nullable AreaOfLaw getAreaOfLaw() {
     return areaOfLaw;
   }
@@ -277,8 +277,8 @@ public class Claim implements Serializable {
    * @return officeAccountNumber
    */
   
-  @Schema(name = "officeAccountNumber", example = "1A234B", description = "The unique account number assigned to the provider office by the LAA", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @JsonProperty("officeAccountNumber")
+  @Schema(name = "office_account_number", example = "1A234B", description = "The unique account number assigned to the provider office by the LAA", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("office_account_number")
   public @Nullable String getOfficeAccountNumber() {
     return officeAccountNumber;
   }
@@ -317,8 +317,8 @@ public class Claim implements Serializable {
    * @return submissionId
    */
   @Valid 
-  @Schema(name = "submissionId", description = "UUID of the parent submission", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @JsonProperty("submissionId")
+  @Schema(name = "submission_id", description = "UUID of the parent submission", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("submission_id")
   public @Nullable UUID getSubmissionId() {
     return submissionId;
   }
@@ -357,8 +357,8 @@ public class Claim implements Serializable {
    * @return lineNumber
    */
   
-  @Schema(name = "lineNumber", description = "Line number within the submission", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @JsonProperty("lineNumber")
+  @Schema(name = "line_number", description = "Line number within the submission", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("line_number")
   public @Nullable Integer getLineNumber() {
     return lineNumber;
   }
@@ -377,8 +377,8 @@ public class Claim implements Serializable {
    * @return scheduleReference
    */
   
-  @Schema(name = "scheduleReference", description = "Reference to the schedule", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @JsonProperty("scheduleReference")
+  @Schema(name = "schedule_reference", description = "Reference to the schedule", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("schedule_reference")
   public @Nullable String getScheduleReference() {
     return scheduleReference;
   }
@@ -397,8 +397,8 @@ public class Claim implements Serializable {
    * @return submissionPeriod
    */
   
-  @Schema(name = "submissionPeriod", description = "Submission period (e.g., \"JUL-2025\")", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @JsonProperty("submissionPeriod")
+  @Schema(name = "submission_period", description = "Submission period (e.g., \"JUL-2025\")", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("submission_period")
   public @Nullable String getSubmissionPeriod() {
     return submissionPeriod;
   }
@@ -417,8 +417,8 @@ public class Claim implements Serializable {
    * @return caseReferenceNumber
    */
   
-  @Schema(name = "caseReferenceNumber", description = "Case reference number", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @JsonProperty("caseReferenceNumber")
+  @Schema(name = "case_reference_number", description = "Case reference number", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("case_reference_number")
   public @Nullable String getCaseReferenceNumber() {
     return caseReferenceNumber;
   }
@@ -437,8 +437,8 @@ public class Claim implements Serializable {
    * @return uniqueFileNumber
    */
   
-  @Schema(name = "uniqueFileNumber", description = "Provider's unique case reference number for controlled work billing (format DDMMYY/NNN)", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @JsonProperty("uniqueFileNumber")
+  @Schema(name = "unique_file_number", description = "Provider's unique case reference number for controlled work billing (format DDMMYY/NNN)", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("unique_file_number")
   public @Nullable String getUniqueFileNumber() {
     return uniqueFileNumber;
   }
@@ -457,8 +457,8 @@ public class Claim implements Serializable {
    * @return caseStartDate
    */
   
-  @Schema(name = "caseStartDate", description = "Date the case was started (format YYYY-MM-DD)", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @JsonProperty("caseStartDate")
+  @Schema(name = "case_start_date", description = "Date the case was started (format YYYY-MM-DD)", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("case_start_date")
   public @Nullable String getCaseStartDate() {
     return caseStartDate;
   }
@@ -477,8 +477,8 @@ public class Claim implements Serializable {
    * @return caseConcludedDate
    */
   
-  @Schema(name = "caseConcludedDate", description = "Date the case was concluded (format YYYY-MM-DD)", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @JsonProperty("caseConcludedDate")
+  @Schema(name = "case_concluded_date", description = "Date the case was concluded (format YYYY-MM-DD)", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("case_concluded_date")
   public @Nullable String getCaseConcludedDate() {
     return caseConcludedDate;
   }
@@ -497,8 +497,8 @@ public class Claim implements Serializable {
    * @return caseId
    */
   
-  @Schema(name = "caseId", description = "Case identifier", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @JsonProperty("caseId")
+  @Schema(name = "case_id", description = "Case identifier", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("case_id")
   public @Nullable String getCaseId() {
     return caseId;
   }
@@ -517,8 +517,8 @@ public class Claim implements Serializable {
    * @return uniqueCaseId
    */
   
-  @Schema(name = "uniqueCaseId", description = "Unique case identifier", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @JsonProperty("uniqueCaseId")
+  @Schema(name = "unique_case_id", description = "Unique case identifier", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("unique_case_id")
   public @Nullable String getUniqueCaseId() {
     return uniqueCaseId;
   }
@@ -537,8 +537,8 @@ public class Claim implements Serializable {
    * @return caseStageCode
    */
   
-  @Schema(name = "caseStageCode", description = "Code indicating the stage of the case", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @JsonProperty("caseStageCode")
+  @Schema(name = "case_stage_code", description = "Code indicating the stage of the case", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("case_stage_code")
   public @Nullable String getCaseStageCode() {
     return caseStageCode;
   }
@@ -557,8 +557,8 @@ public class Claim implements Serializable {
    * @return matterTypeCode
    */
   
-  @Schema(name = "matterTypeCode", description = "Matter type code", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @JsonProperty("matterTypeCode")
+  @Schema(name = "matter_type_code", description = "Matter type code", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("matter_type_code")
   public @Nullable String getMatterTypeCode() {
     return matterTypeCode;
   }
@@ -577,8 +577,8 @@ public class Claim implements Serializable {
    * @return crimeMatterTypeCode
    */
   
-  @Schema(name = "crimeMatterTypeCode", description = "Crime-specific matter type code", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @JsonProperty("crimeMatterTypeCode")
+  @Schema(name = "crime_matter_type_code", description = "Crime-specific matter type code", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("crime_matter_type_code")
   public @Nullable String getCrimeMatterTypeCode() {
     return crimeMatterTypeCode;
   }
@@ -597,8 +597,8 @@ public class Claim implements Serializable {
    * @return feeSchemeCode
    */
   
-  @Schema(name = "feeSchemeCode", description = "Fee scheme code", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @JsonProperty("feeSchemeCode")
+  @Schema(name = "fee_scheme_code", description = "Fee scheme code", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("fee_scheme_code")
   public @Nullable String getFeeSchemeCode() {
     return feeSchemeCode;
   }
@@ -617,8 +617,8 @@ public class Claim implements Serializable {
    * @return feeCode
    */
   
-  @Schema(name = "feeCode", description = "Alphanumeric code identifying the specific fee type or category", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @JsonProperty("feeCode")
+  @Schema(name = "fee_code", description = "Alphanumeric code identifying the specific fee type or category", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("fee_code")
   public @Nullable String getFeeCode() {
     return feeCode;
   }
@@ -637,8 +637,8 @@ public class Claim implements Serializable {
    * @return procurementAreaCode
    */
   
-  @Schema(name = "procurementAreaCode", description = "Procurement area code", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @JsonProperty("procurementAreaCode")
+  @Schema(name = "procurement_area_code", description = "Procurement area code", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("procurement_area_code")
   public @Nullable String getProcurementAreaCode() {
     return procurementAreaCode;
   }
@@ -657,8 +657,8 @@ public class Claim implements Serializable {
    * @return accessPointCode
    */
   
-  @Schema(name = "accessPointCode", description = "Access point code", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @JsonProperty("accessPointCode")
+  @Schema(name = "access_point_code", description = "Access point code", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("access_point_code")
   public @Nullable String getAccessPointCode() {
     return accessPointCode;
   }
@@ -677,8 +677,8 @@ public class Claim implements Serializable {
    * @return deliveryLocation
    */
   
-  @Schema(name = "deliveryLocation", description = "Location where service was delivered", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @JsonProperty("deliveryLocation")
+  @Schema(name = "delivery_location", description = "Location where service was delivered", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("delivery_location")
   public @Nullable String getDeliveryLocation() {
     return deliveryLocation;
   }
@@ -697,8 +697,8 @@ public class Claim implements Serializable {
    * @return representationOrderDate
    */
   
-  @Schema(name = "representationOrderDate", description = "Date the representation order was created (format YYYY-MM-DD)", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @JsonProperty("representationOrderDate")
+  @Schema(name = "representation_order_date", description = "Date the representation order was created (format YYYY-MM-DD)", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("representation_order_date")
   public @Nullable String getRepresentationOrderDate() {
     return representationOrderDate;
   }
@@ -717,8 +717,8 @@ public class Claim implements Serializable {
    * @return suspectsDefendantsCount
    */
   
-  @Schema(name = "suspectsDefendantsCount", description = "Number of suspects/defendants", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @JsonProperty("suspectsDefendantsCount")
+  @Schema(name = "suspects_defendants_count", description = "Number of suspects/defendants", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("suspects_defendants_count")
   public @Nullable Integer getSuspectsDefendantsCount() {
     return suspectsDefendantsCount;
   }
@@ -737,8 +737,8 @@ public class Claim implements Serializable {
    * @return policeStationCourtAttendancesCount
    */
   
-  @Schema(name = "policeStationCourtAttendancesCount", description = "Number of police station or court attendances", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @JsonProperty("policeStationCourtAttendancesCount")
+  @Schema(name = "police_station_court_attendances_count", description = "Number of police station or court attendances", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("police_station_court_attendances_count")
   public @Nullable Integer getPoliceStationCourtAttendancesCount() {
     return policeStationCourtAttendancesCount;
   }
@@ -757,8 +757,8 @@ public class Claim implements Serializable {
    * @return policeStationCourtPrisonId
    */
   
-  @Schema(name = "policeStationCourtPrisonId", description = "Police station, court, or prison identifier", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @JsonProperty("policeStationCourtPrisonId")
+  @Schema(name = "police_station_court_prison_id", description = "Police station, court, or prison identifier", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("police_station_court_prison_id")
   public @Nullable String getPoliceStationCourtPrisonId() {
     return policeStationCourtPrisonId;
   }
@@ -777,8 +777,8 @@ public class Claim implements Serializable {
    * @return dsccNumber
    */
   
-  @Schema(name = "dsccNumber", description = "DSCC number", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @JsonProperty("dsccNumber")
+  @Schema(name = "dscc_number", description = "DSCC number", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("dscc_number")
   public @Nullable String getDsccNumber() {
     return dsccNumber;
   }
@@ -797,8 +797,8 @@ public class Claim implements Serializable {
    * @return maatId
    */
   
-  @Schema(name = "maatId", description = "MAAT identifier", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @JsonProperty("maatId")
+  @Schema(name = "maat_id", description = "MAAT identifier", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("maat_id")
   public @Nullable String getMaatId() {
     return maatId;
   }
@@ -817,8 +817,8 @@ public class Claim implements Serializable {
    * @return prisonLawPriorApprovalNumber
    */
   
-  @Schema(name = "prisonLawPriorApprovalNumber", description = "Prison law prior approval number", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @JsonProperty("prisonLawPriorApprovalNumber")
+  @Schema(name = "prison_law_prior_approval_number", description = "Prison law prior approval number", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("prison_law_prior_approval_number")
   public @Nullable String getPrisonLawPriorApprovalNumber() {
     return prisonLawPriorApprovalNumber;
   }
@@ -837,8 +837,8 @@ public class Claim implements Serializable {
    * @return isDutySolicitor
    */
   
-  @Schema(name = "isDutySolicitor", description = "Whether this is a duty solicitor case", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @JsonProperty("isDutySolicitor")
+  @Schema(name = "is_duty_solicitor", description = "Whether this is a duty solicitor case", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("is_duty_solicitor")
   public @Nullable Boolean getIsDutySolicitor() {
     return isDutySolicitor;
   }
@@ -857,8 +857,8 @@ public class Claim implements Serializable {
    * @return isYouthCourt
    */
   
-  @Schema(name = "isYouthCourt", description = "Whether this is a youth court case", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @JsonProperty("isYouthCourt")
+  @Schema(name = "is_youth_court", description = "Whether this is a youth court case", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("is_youth_court")
   public @Nullable Boolean getIsYouthCourt() {
     return isYouthCourt;
   }
@@ -877,8 +877,8 @@ public class Claim implements Serializable {
    * @return schemeId
    */
   
-  @Schema(name = "schemeId", description = "Scheme identifier", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @JsonProperty("schemeId")
+  @Schema(name = "scheme_id", description = "Scheme identifier", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("scheme_id")
   public @Nullable String getSchemeId() {
     return schemeId;
   }
@@ -897,8 +897,8 @@ public class Claim implements Serializable {
    * @return mediationSessionsCount
    */
   
-  @Schema(name = "mediationSessionsCount", description = "Number of mediation sessions", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @JsonProperty("mediationSessionsCount")
+  @Schema(name = "mediation_sessions_count", description = "Number of mediation sessions", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("mediation_sessions_count")
   public @Nullable Integer getMediationSessionsCount() {
     return mediationSessionsCount;
   }
@@ -917,8 +917,8 @@ public class Claim implements Serializable {
    * @return mediationTimeMinutes
    */
   
-  @Schema(name = "mediationTimeMinutes", description = "Total mediation time in minutes", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @JsonProperty("mediationTimeMinutes")
+  @Schema(name = "mediation_time_minutes", description = "Total mediation time in minutes", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("mediation_time_minutes")
   public @Nullable Integer getMediationTimeMinutes() {
     return mediationTimeMinutes;
   }
@@ -937,8 +937,8 @@ public class Claim implements Serializable {
    * @return outreachLocation
    */
   
-  @Schema(name = "outreachLocation", description = "Outreach location", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @JsonProperty("outreachLocation")
+  @Schema(name = "outreach_location", description = "Outreach location", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("outreach_location")
   public @Nullable String getOutreachLocation() {
     return outreachLocation;
   }
@@ -957,8 +957,8 @@ public class Claim implements Serializable {
    * @return referralSource
    */
   
-  @Schema(name = "referralSource", description = "Source of referral", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @JsonProperty("referralSource")
+  @Schema(name = "referral_source", description = "Source of referral", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("referral_source")
   public @Nullable String getReferralSource() {
     return referralSource;
   }
@@ -977,8 +977,8 @@ public class Claim implements Serializable {
    * @return clientForename
    */
   
-  @Schema(name = "clientForename", description = "Client's first name", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @JsonProperty("clientForename")
+  @Schema(name = "client_forename", description = "Client's first name", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("client_forename")
   public @Nullable String getClientForename() {
     return clientForename;
   }
@@ -997,8 +997,8 @@ public class Claim implements Serializable {
    * @return clientSurname
    */
   
-  @Schema(name = "clientSurname", description = "Client's surname", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @JsonProperty("clientSurname")
+  @Schema(name = "client_surname", description = "Client's surname", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("client_surname")
   public @Nullable String getClientSurname() {
     return clientSurname;
   }
@@ -1017,8 +1017,8 @@ public class Claim implements Serializable {
    * @return clientDateOfBirth
    */
   
-  @Schema(name = "clientDateOfBirth", description = "Client's date of birth (format YYYY-MM-DD)", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @JsonProperty("clientDateOfBirth")
+  @Schema(name = "client_date_of_birth", description = "Client's date of birth (format YYYY-MM-DD)", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("client_date_of_birth")
   public @Nullable String getClientDateOfBirth() {
     return clientDateOfBirth;
   }
@@ -1037,8 +1037,8 @@ public class Claim implements Serializable {
    * @return uniqueClientNumber
    */
   
-  @Schema(name = "uniqueClientNumber", description = "Unique client number", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @JsonProperty("uniqueClientNumber")
+  @Schema(name = "unique_client_number", description = "Unique client number", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("unique_client_number")
   public @Nullable String getUniqueClientNumber() {
     return uniqueClientNumber;
   }
@@ -1057,8 +1057,8 @@ public class Claim implements Serializable {
    * @return clientPostcode
    */
   
-  @Schema(name = "clientPostcode", description = "Client's postcode", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @JsonProperty("clientPostcode")
+  @Schema(name = "client_postcode", description = "Client's postcode", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("client_postcode")
   public @Nullable String getClientPostcode() {
     return clientPostcode;
   }
@@ -1077,8 +1077,8 @@ public class Claim implements Serializable {
    * @return genderCode
    */
   
-  @Schema(name = "genderCode", description = "Gender code", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @JsonProperty("genderCode")
+  @Schema(name = "gender_code", description = "Gender code", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("gender_code")
   public @Nullable String getGenderCode() {
     return genderCode;
   }
@@ -1097,8 +1097,8 @@ public class Claim implements Serializable {
    * @return ethnicityCode
    */
   
-  @Schema(name = "ethnicityCode", description = "Ethnicity code", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @JsonProperty("ethnicityCode")
+  @Schema(name = "ethnicity_code", description = "Ethnicity code", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("ethnicity_code")
   public @Nullable String getEthnicityCode() {
     return ethnicityCode;
   }
@@ -1117,8 +1117,8 @@ public class Claim implements Serializable {
    * @return disabilityCode
    */
   
-  @Schema(name = "disabilityCode", description = "Disability code", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @JsonProperty("disabilityCode")
+  @Schema(name = "disability_code", description = "Disability code", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("disability_code")
   public @Nullable String getDisabilityCode() {
     return disabilityCode;
   }
@@ -1137,8 +1137,8 @@ public class Claim implements Serializable {
    * @return isLegallyAided
    */
   
-  @Schema(name = "isLegallyAided", description = "Whether client is legally aided", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @JsonProperty("isLegallyAided")
+  @Schema(name = "is_legally_aided", description = "Whether client is legally aided", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("is_legally_aided")
   public @Nullable Boolean getIsLegallyAided() {
     return isLegallyAided;
   }
@@ -1157,8 +1157,8 @@ public class Claim implements Serializable {
    * @return clientTypeCode
    */
   
-  @Schema(name = "clientTypeCode", description = "Client type code", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @JsonProperty("clientTypeCode")
+  @Schema(name = "client_type_code", description = "Client type code", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("client_type_code")
   public @Nullable String getClientTypeCode() {
     return clientTypeCode;
   }
@@ -1177,8 +1177,8 @@ public class Claim implements Serializable {
    * @return homeOfficeClientNumber
    */
   
-  @Schema(name = "homeOfficeClientNumber", description = "Home Office client number (for immigration cases)", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @JsonProperty("homeOfficeClientNumber")
+  @Schema(name = "home_office_client_number", description = "Home Office client number (for immigration cases)", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("home_office_client_number")
   public @Nullable String getHomeOfficeClientNumber() {
     return homeOfficeClientNumber;
   }
@@ -1197,8 +1197,8 @@ public class Claim implements Serializable {
    * @return claReferenceNumber
    */
   
-  @Schema(name = "claReferenceNumber", description = "CLA reference number", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @JsonProperty("claReferenceNumber")
+  @Schema(name = "cla_reference_number", description = "CLA reference number", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("cla_reference_number")
   public @Nullable String getClaReferenceNumber() {
     return claReferenceNumber;
   }
@@ -1217,8 +1217,8 @@ public class Claim implements Serializable {
    * @return claExemptionCode
    */
   
-  @Schema(name = "claExemptionCode", description = "CLA exemption code", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @JsonProperty("claExemptionCode")
+  @Schema(name = "cla_exemption_code", description = "CLA exemption code", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("cla_exemption_code")
   public @Nullable String getClaExemptionCode() {
     return claExemptionCode;
   }
@@ -1237,8 +1237,8 @@ public class Claim implements Serializable {
    * @return client2Forename
    */
   
-  @Schema(name = "client2Forename", description = "Second client's first name", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @JsonProperty("client2Forename")
+  @Schema(name = "client2_forename", description = "Second client's first name", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("client2_forename")
   public @Nullable String getClient2Forename() {
     return client2Forename;
   }
@@ -1257,8 +1257,8 @@ public class Claim implements Serializable {
    * @return client2Surname
    */
   
-  @Schema(name = "client2Surname", description = "Second client's surname", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @JsonProperty("client2Surname")
+  @Schema(name = "client2_surname", description = "Second client's surname", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("client2_surname")
   public @Nullable String getClient2Surname() {
     return client2Surname;
   }
@@ -1277,8 +1277,8 @@ public class Claim implements Serializable {
    * @return client2DateOfBirth
    */
   
-  @Schema(name = "client2DateOfBirth", description = "Second client's date of birth (format YYYY-MM-DD)", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @JsonProperty("client2DateOfBirth")
+  @Schema(name = "client2_date_of_birth", description = "Second client's date of birth (format YYYY-MM-DD)", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("client2_date_of_birth")
   public @Nullable String getClient2DateOfBirth() {
     return client2DateOfBirth;
   }
@@ -1297,8 +1297,8 @@ public class Claim implements Serializable {
    * @return client2Ucn
    */
   
-  @Schema(name = "client2Ucn", description = "Second client's unique client number", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @JsonProperty("client2Ucn")
+  @Schema(name = "client2_ucn", description = "Second client's unique client number", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("client2_ucn")
   public @Nullable String getClient2Ucn() {
     return client2Ucn;
   }
@@ -1317,8 +1317,8 @@ public class Claim implements Serializable {
    * @return client2Postcode
    */
   
-  @Schema(name = "client2Postcode", description = "Second client's postcode", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @JsonProperty("client2Postcode")
+  @Schema(name = "client2_postcode", description = "Second client's postcode", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("client2_postcode")
   public @Nullable String getClient2Postcode() {
     return client2Postcode;
   }
@@ -1337,8 +1337,8 @@ public class Claim implements Serializable {
    * @return client2GenderCode
    */
   
-  @Schema(name = "client2GenderCode", description = "Second client's gender code", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @JsonProperty("client2GenderCode")
+  @Schema(name = "client2_gender_code", description = "Second client's gender code", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("client2_gender_code")
   public @Nullable String getClient2GenderCode() {
     return client2GenderCode;
   }
@@ -1357,8 +1357,8 @@ public class Claim implements Serializable {
    * @return client2EthnicityCode
    */
   
-  @Schema(name = "client2EthnicityCode", description = "Second client's ethnicity code", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @JsonProperty("client2EthnicityCode")
+  @Schema(name = "client2_ethnicity_code", description = "Second client's ethnicity code", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("client2_ethnicity_code")
   public @Nullable String getClient2EthnicityCode() {
     return client2EthnicityCode;
   }
@@ -1377,8 +1377,8 @@ public class Claim implements Serializable {
    * @return client2DisabilityCode
    */
   
-  @Schema(name = "client2DisabilityCode", description = "Second client's disability code", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @JsonProperty("client2DisabilityCode")
+  @Schema(name = "client2_disability_code", description = "Second client's disability code", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("client2_disability_code")
   public @Nullable String getClient2DisabilityCode() {
     return client2DisabilityCode;
   }
@@ -1397,8 +1397,8 @@ public class Claim implements Serializable {
    * @return client2IsLegallyAided
    */
   
-  @Schema(name = "client2IsLegallyAided", description = "Whether second client is legally aided", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @JsonProperty("client2IsLegallyAided")
+  @Schema(name = "client2_is_legally_aided", description = "Whether second client is legally aided", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("client2_is_legally_aided")
   public @Nullable Boolean getClient2IsLegallyAided() {
     return client2IsLegallyAided;
   }
@@ -1417,8 +1417,8 @@ public class Claim implements Serializable {
    * @return stageReachedCode
    */
   
-  @Schema(name = "stageReachedCode", description = "Stage reached code", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @JsonProperty("stageReachedCode")
+  @Schema(name = "stage_reached_code", description = "Stage reached code", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("stage_reached_code")
   public @Nullable String getStageReachedCode() {
     return stageReachedCode;
   }
@@ -1437,8 +1437,8 @@ public class Claim implements Serializable {
    * @return standardFeeCategoryCode
    */
   
-  @Schema(name = "standardFeeCategoryCode", description = "Standard fee category code", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @JsonProperty("standardFeeCategoryCode")
+  @Schema(name = "standard_fee_category_code", description = "Standard fee category code", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("standard_fee_category_code")
   public @Nullable String getStandardFeeCategoryCode() {
     return standardFeeCategoryCode;
   }
@@ -1457,8 +1457,8 @@ public class Claim implements Serializable {
    * @return outcomeCode
    */
   
-  @Schema(name = "outcomeCode", description = "Outcome code", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @JsonProperty("outcomeCode")
+  @Schema(name = "outcome_code", description = "Outcome code", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("outcome_code")
   public @Nullable String getOutcomeCode() {
     return outcomeCode;
   }
@@ -1477,8 +1477,8 @@ public class Claim implements Serializable {
    * @return designatedAccreditedRepresentativeCode
    */
   
-  @Schema(name = "designatedAccreditedRepresentativeCode", description = "Designated accredited representative code", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @JsonProperty("designatedAccreditedRepresentativeCode")
+  @Schema(name = "designated_accredited_representative_code", description = "Designated accredited representative code", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("designated_accredited_representative_code")
   public @Nullable String getDesignatedAccreditedRepresentativeCode() {
     return designatedAccreditedRepresentativeCode;
   }
@@ -1497,8 +1497,8 @@ public class Claim implements Serializable {
    * @return isPostalApplicationAccepted
    */
   
-  @Schema(name = "isPostalApplicationAccepted", description = "Whether postal application was accepted", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @JsonProperty("isPostalApplicationAccepted")
+  @Schema(name = "is_postal_application_accepted", description = "Whether postal application was accepted", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("is_postal_application_accepted")
   public @Nullable Boolean getIsPostalApplicationAccepted() {
     return isPostalApplicationAccepted;
   }
@@ -1517,8 +1517,8 @@ public class Claim implements Serializable {
    * @return isClient2PostalApplicationAccepted
    */
   
-  @Schema(name = "isClient2PostalApplicationAccepted", description = "Whether second client's postal application was accepted", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @JsonProperty("isClient2PostalApplicationAccepted")
+  @Schema(name = "is_client2_postal_application_accepted", description = "Whether second client's postal application was accepted", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("is_client2_postal_application_accepted")
   public @Nullable Boolean getIsClient2PostalApplicationAccepted() {
     return isClient2PostalApplicationAccepted;
   }
@@ -1537,8 +1537,8 @@ public class Claim implements Serializable {
    * @return mentalHealthTribunalReference
    */
   
-  @Schema(name = "mentalHealthTribunalReference", description = "Mental health tribunal reference", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @JsonProperty("mentalHealthTribunalReference")
+  @Schema(name = "mental_health_tribunal_reference", description = "Mental health tribunal reference", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("mental_health_tribunal_reference")
   public @Nullable String getMentalHealthTribunalReference() {
     return mentalHealthTribunalReference;
   }
@@ -1557,8 +1557,8 @@ public class Claim implements Serializable {
    * @return isNrmAdvice
    */
   
-  @Schema(name = "isNrmAdvice", description = "Whether NRM advice was provided", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @JsonProperty("isNrmAdvice")
+  @Schema(name = "is_nrm_advice", description = "Whether NRM advice was provided", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("is_nrm_advice")
   public @Nullable Boolean getIsNrmAdvice() {
     return isNrmAdvice;
   }
@@ -1577,8 +1577,8 @@ public class Claim implements Serializable {
    * @return followOnWork
    */
   
-  @Schema(name = "followOnWork", description = "Follow-on work details", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @JsonProperty("followOnWork")
+  @Schema(name = "follow_on_work", description = "Follow-on work details", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("follow_on_work")
   public @Nullable String getFollowOnWork() {
     return followOnWork;
   }
@@ -1597,8 +1597,8 @@ public class Claim implements Serializable {
    * @return transferDate
    */
   
-  @Schema(name = "transferDate", description = "Transfer date (format YYYY-MM-DD)", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @JsonProperty("transferDate")
+  @Schema(name = "transfer_date", description = "Transfer date (format YYYY-MM-DD)", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("transfer_date")
   public @Nullable String getTransferDate() {
     return transferDate;
   }
@@ -1617,8 +1617,8 @@ public class Claim implements Serializable {
    * @return exemptionCriteriaSatisfied
    */
   
-  @Schema(name = "exemptionCriteriaSatisfied", description = "Exemption criteria satisfied", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @JsonProperty("exemptionCriteriaSatisfied")
+  @Schema(name = "exemption_criteria_satisfied", description = "Exemption criteria satisfied", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("exemption_criteria_satisfied")
   public @Nullable String getExemptionCriteriaSatisfied() {
     return exemptionCriteriaSatisfied;
   }
@@ -1637,8 +1637,8 @@ public class Claim implements Serializable {
    * @return exceptionalCaseFundingReference
    */
   
-  @Schema(name = "exceptionalCaseFundingReference", description = "Exceptional case funding reference", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @JsonProperty("exceptionalCaseFundingReference")
+  @Schema(name = "exceptional_case_funding_reference", description = "Exceptional case funding reference", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("exceptional_case_funding_reference")
   public @Nullable String getExceptionalCaseFundingReference() {
     return exceptionalCaseFundingReference;
   }
@@ -1657,8 +1657,8 @@ public class Claim implements Serializable {
    * @return isLegacyCase
    */
   
-  @Schema(name = "isLegacyCase", description = "Whether this is a legacy case", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @JsonProperty("isLegacyCase")
+  @Schema(name = "is_legacy_case", description = "Whether this is a legacy case", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("is_legacy_case")
   public @Nullable Boolean getIsLegacyCase() {
     return isLegacyCase;
   }
@@ -1677,8 +1677,8 @@ public class Claim implements Serializable {
    * @return adviceTime
    */
   
-  @Schema(name = "adviceTime", description = "Advice time in minutes", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @JsonProperty("adviceTime")
+  @Schema(name = "advice_time", description = "Advice time in minutes", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("advice_time")
   public @Nullable Integer getAdviceTime() {
     return adviceTime;
   }
@@ -1697,8 +1697,8 @@ public class Claim implements Serializable {
    * @return travelTime
    */
   
-  @Schema(name = "travelTime", description = "Travel time in minutes", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @JsonProperty("travelTime")
+  @Schema(name = "travel_time", description = "Travel time in minutes", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("travel_time")
   public @Nullable Integer getTravelTime() {
     return travelTime;
   }
@@ -1717,8 +1717,8 @@ public class Claim implements Serializable {
    * @return waitingTime
    */
   
-  @Schema(name = "waitingTime", description = "Waiting time in minutes", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @JsonProperty("waitingTime")
+  @Schema(name = "waiting_time", description = "Waiting time in minutes", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("waiting_time")
   public @Nullable Integer getWaitingTime() {
     return waitingTime;
   }
@@ -1737,8 +1737,8 @@ public class Claim implements Serializable {
    * @return netProfitCostsAmount
    */
   @Valid 
-  @Schema(name = "netProfitCostsAmount", description = "Net profit costs amount", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @JsonProperty("netProfitCostsAmount")
+  @Schema(name = "net_profit_costs_amount", description = "Net profit costs amount", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("net_profit_costs_amount")
   public @Nullable BigDecimal getNetProfitCostsAmount() {
     return netProfitCostsAmount;
   }
@@ -1757,8 +1757,8 @@ public class Claim implements Serializable {
    * @return netDisbursementAmount
    */
   @Valid 
-  @Schema(name = "netDisbursementAmount", description = "Net disbursement amount", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @JsonProperty("netDisbursementAmount")
+  @Schema(name = "net_disbursement_amount", description = "Net disbursement amount", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("net_disbursement_amount")
   public @Nullable BigDecimal getNetDisbursementAmount() {
     return netDisbursementAmount;
   }
@@ -1777,8 +1777,8 @@ public class Claim implements Serializable {
    * @return netCounselCostsAmount
    */
   @Valid 
-  @Schema(name = "netCounselCostsAmount", description = "Net counsel costs amount", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @JsonProperty("netCounselCostsAmount")
+  @Schema(name = "net_counsel_costs_amount", description = "Net counsel costs amount", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("net_counsel_costs_amount")
   public @Nullable BigDecimal getNetCounselCostsAmount() {
     return netCounselCostsAmount;
   }
@@ -1797,8 +1797,8 @@ public class Claim implements Serializable {
    * @return disbursementsVatAmount
    */
   @Valid 
-  @Schema(name = "disbursementsVatAmount", description = "Disbursements VAT amount", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @JsonProperty("disbursementsVatAmount")
+  @Schema(name = "disbursements_vat_amount", description = "Disbursements VAT amount", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("disbursements_vat_amount")
   public @Nullable BigDecimal getDisbursementsVatAmount() {
     return disbursementsVatAmount;
   }
@@ -1817,8 +1817,8 @@ public class Claim implements Serializable {
    * @return travelWaitingCostsAmount
    */
   @Valid 
-  @Schema(name = "travelWaitingCostsAmount", description = "Travel and waiting costs amount", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @JsonProperty("travelWaitingCostsAmount")
+  @Schema(name = "travel_waiting_costs_amount", description = "Travel and waiting costs amount", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("travel_waiting_costs_amount")
   public @Nullable BigDecimal getTravelWaitingCostsAmount() {
     return travelWaitingCostsAmount;
   }
@@ -1837,8 +1837,8 @@ public class Claim implements Serializable {
    * @return netWaitingCostsAmount
    */
   @Valid 
-  @Schema(name = "netWaitingCostsAmount", description = "Net waiting costs amount", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @JsonProperty("netWaitingCostsAmount")
+  @Schema(name = "net_waiting_costs_amount", description = "Net waiting costs amount", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("net_waiting_costs_amount")
   public @Nullable BigDecimal getNetWaitingCostsAmount() {
     return netWaitingCostsAmount;
   }
@@ -1857,8 +1857,8 @@ public class Claim implements Serializable {
    * @return isVatApplicable
    */
   
-  @Schema(name = "isVatApplicable", description = "Whether VAT is applicable", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @JsonProperty("isVatApplicable")
+  @Schema(name = "is_vat_applicable", description = "Whether VAT is applicable", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("is_vat_applicable")
   public @Nullable Boolean getIsVatApplicable() {
     return isVatApplicable;
   }
@@ -1877,8 +1877,8 @@ public class Claim implements Serializable {
    * @return isToleranceApplicable
    */
   
-  @Schema(name = "isToleranceApplicable", description = "Whether tolerance is applicable", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @JsonProperty("isToleranceApplicable")
+  @Schema(name = "is_tolerance_applicable", description = "Whether tolerance is applicable", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("is_tolerance_applicable")
   public @Nullable Boolean getIsToleranceApplicable() {
     return isToleranceApplicable;
   }
@@ -1897,8 +1897,8 @@ public class Claim implements Serializable {
    * @return priorAuthorityReference
    */
   
-  @Schema(name = "priorAuthorityReference", description = "Prior authority reference", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @JsonProperty("priorAuthorityReference")
+  @Schema(name = "prior_authority_reference", description = "Prior authority reference", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("prior_authority_reference")
   public @Nullable String getPriorAuthorityReference() {
     return priorAuthorityReference;
   }
@@ -1917,8 +1917,8 @@ public class Claim implements Serializable {
    * @return isLondonRate
    */
   
-  @Schema(name = "isLondonRate", description = "Whether London rate applies", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @JsonProperty("isLondonRate")
+  @Schema(name = "is_london_rate", description = "Whether London rate applies", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("is_london_rate")
   public @Nullable Boolean getIsLondonRate() {
     return isLondonRate;
   }
@@ -1937,8 +1937,8 @@ public class Claim implements Serializable {
    * @return adjournedHearingFeeAmount
    */
   
-  @Schema(name = "adjournedHearingFeeAmount", description = "Number of times the hearing was adjourned", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @JsonProperty("adjournedHearingFeeAmount")
+  @Schema(name = "adjourned_hearing_fee_amount", description = "Number of times the hearing was adjourned", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("adjourned_hearing_fee_amount")
   public @Nullable Integer getAdjournedHearingFeeAmount() {
     return adjournedHearingFeeAmount;
   }
@@ -1957,8 +1957,8 @@ public class Claim implements Serializable {
    * @return isAdditionalTravelPayment
    */
   
-  @Schema(name = "isAdditionalTravelPayment", description = "Whether additional travel payment applies", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @JsonProperty("isAdditionalTravelPayment")
+  @Schema(name = "is_additional_travel_payment", description = "Whether additional travel payment applies", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("is_additional_travel_payment")
   public @Nullable Boolean getIsAdditionalTravelPayment() {
     return isAdditionalTravelPayment;
   }
@@ -1977,8 +1977,8 @@ public class Claim implements Serializable {
    * @return costsDamagesRecoveredAmount
    */
   @Valid 
-  @Schema(name = "costsDamagesRecoveredAmount", description = "Costs/damages recovered amount", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @JsonProperty("costsDamagesRecoveredAmount")
+  @Schema(name = "costs_damages_recovered_amount", description = "Costs/damages recovered amount", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("costs_damages_recovered_amount")
   public @Nullable BigDecimal getCostsDamagesRecoveredAmount() {
     return costsDamagesRecoveredAmount;
   }
@@ -1997,8 +1997,8 @@ public class Claim implements Serializable {
    * @return meetingsAttendedCode
    */
   
-  @Schema(name = "meetingsAttendedCode", description = "Meetings attended code", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @JsonProperty("meetingsAttendedCode")
+  @Schema(name = "meetings_attended_code", description = "Meetings attended code", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("meetings_attended_code")
   public @Nullable String getMeetingsAttendedCode() {
     return meetingsAttendedCode;
   }
@@ -2017,8 +2017,8 @@ public class Claim implements Serializable {
    * @return detentionTravelWaitingCostsAmount
    */
   @Valid 
-  @Schema(name = "detentionTravelWaitingCostsAmount", description = "Detention travel and waiting costs amount", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @JsonProperty("detentionTravelWaitingCostsAmount")
+  @Schema(name = "detention_travel_waiting_costs_amount", description = "Detention travel and waiting costs amount", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("detention_travel_waiting_costs_amount")
   public @Nullable BigDecimal getDetentionTravelWaitingCostsAmount() {
     return detentionTravelWaitingCostsAmount;
   }
@@ -2037,8 +2037,8 @@ public class Claim implements Serializable {
    * @return jrFormFillingAmount
    */
   @Valid 
-  @Schema(name = "jrFormFillingAmount", description = "JR form filling amount", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @JsonProperty("jrFormFillingAmount")
+  @Schema(name = "jr_form_filling_amount", description = "JR form filling amount", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("jr_form_filling_amount")
   public @Nullable BigDecimal getJrFormFillingAmount() {
     return jrFormFillingAmount;
   }
@@ -2057,8 +2057,8 @@ public class Claim implements Serializable {
    * @return isEligibleClient
    */
   
-  @Schema(name = "isEligibleClient", description = "Whether client is eligible", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @JsonProperty("isEligibleClient")
+  @Schema(name = "is_eligible_client", description = "Whether client is eligible", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("is_eligible_client")
   public @Nullable Boolean getIsEligibleClient() {
     return isEligibleClient;
   }
@@ -2077,8 +2077,8 @@ public class Claim implements Serializable {
    * @return courtLocationCode
    */
   
-  @Schema(name = "courtLocationCode", description = "Court location code", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @JsonProperty("courtLocationCode")
+  @Schema(name = "court_location_code", description = "Court location code", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("court_location_code")
   public @Nullable String getCourtLocationCode() {
     return courtLocationCode;
   }
@@ -2097,8 +2097,8 @@ public class Claim implements Serializable {
    * @return adviceTypeCode
    */
   
-  @Schema(name = "adviceTypeCode", description = "Advice type code", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @JsonProperty("adviceTypeCode")
+  @Schema(name = "advice_type_code", description = "Advice type code", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("advice_type_code")
   public @Nullable String getAdviceTypeCode() {
     return adviceTypeCode;
   }
@@ -2117,8 +2117,8 @@ public class Claim implements Serializable {
    * @return medicalReportsCount
    */
   
-  @Schema(name = "medicalReportsCount", description = "Number of medical reports", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @JsonProperty("medicalReportsCount")
+  @Schema(name = "medical_reports_count", description = "Number of medical reports", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("medical_reports_count")
   public @Nullable Integer getMedicalReportsCount() {
     return medicalReportsCount;
   }
@@ -2137,8 +2137,8 @@ public class Claim implements Serializable {
    * @return isIrcSurgery
    */
   
-  @Schema(name = "isIrcSurgery", description = "Whether IRC surgery applies", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @JsonProperty("isIrcSurgery")
+  @Schema(name = "is_irc_surgery", description = "Whether IRC surgery applies", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("is_irc_surgery")
   public @Nullable Boolean getIsIrcSurgery() {
     return isIrcSurgery;
   }
@@ -2157,8 +2157,8 @@ public class Claim implements Serializable {
    * @return surgeryDate
    */
   
-  @Schema(name = "surgeryDate", description = "Surgery date (format YYYY-MM-DD)", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @JsonProperty("surgeryDate")
+  @Schema(name = "surgery_date", description = "Surgery date (format YYYY-MM-DD)", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("surgery_date")
   public @Nullable String getSurgeryDate() {
     return surgeryDate;
   }
@@ -2177,8 +2177,8 @@ public class Claim implements Serializable {
    * @return surgeryClientsCount
    */
   
-  @Schema(name = "surgeryClientsCount", description = "Number of surgery clients", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @JsonProperty("surgeryClientsCount")
+  @Schema(name = "surgery_clients_count", description = "Number of surgery clients", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("surgery_clients_count")
   public @Nullable Integer getSurgeryClientsCount() {
     return surgeryClientsCount;
   }
@@ -2197,8 +2197,8 @@ public class Claim implements Serializable {
    * @return surgeryMattersCount
    */
   
-  @Schema(name = "surgeryMattersCount", description = "Number of surgery matters", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @JsonProperty("surgeryMattersCount")
+  @Schema(name = "surgery_matters_count", description = "Number of surgery matters", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("surgery_matters_count")
   public @Nullable Integer getSurgeryMattersCount() {
     return surgeryMattersCount;
   }
@@ -2217,8 +2217,8 @@ public class Claim implements Serializable {
    * @return cmrhOralCount
    */
   
-  @Schema(name = "cmrhOralCount", description = "CMRH oral count", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @JsonProperty("cmrhOralCount")
+  @Schema(name = "cmrh_oral_count", description = "CMRH oral count", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("cmrh_oral_count")
   public @Nullable Integer getCmrhOralCount() {
     return cmrhOralCount;
   }
@@ -2237,8 +2237,8 @@ public class Claim implements Serializable {
    * @return cmrhTelephoneCount
    */
   
-  @Schema(name = "cmrhTelephoneCount", description = "CMRH telephone count", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @JsonProperty("cmrhTelephoneCount")
+  @Schema(name = "cmrh_telephone_count", description = "CMRH telephone count", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("cmrh_telephone_count")
   public @Nullable Integer getCmrhTelephoneCount() {
     return cmrhTelephoneCount;
   }
@@ -2257,8 +2257,8 @@ public class Claim implements Serializable {
    * @return aitHearingCentreCode
    */
   
-  @Schema(name = "aitHearingCentreCode", description = "AIT hearing centre code", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @JsonProperty("aitHearingCentreCode")
+  @Schema(name = "ait_hearing_centre_code", description = "AIT hearing centre code", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("ait_hearing_centre_code")
   public @Nullable String getAitHearingCentreCode() {
     return aitHearingCentreCode;
   }
@@ -2277,8 +2277,8 @@ public class Claim implements Serializable {
    * @return isSubstantiveHearing
    */
   
-  @Schema(name = "isSubstantiveHearing", description = "Whether this is a substantive hearing", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @JsonProperty("isSubstantiveHearing")
+  @Schema(name = "is_substantive_hearing", description = "Whether this is a substantive hearing", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("is_substantive_hearing")
   public @Nullable Boolean getIsSubstantiveHearing() {
     return isSubstantiveHearing;
   }
@@ -2297,8 +2297,8 @@ public class Claim implements Serializable {
    * @return hoInterview
    */
   
-  @Schema(name = "hoInterview", description = "Number of Home Office interviews", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @JsonProperty("hoInterview")
+  @Schema(name = "ho_interview", description = "Number of Home Office interviews", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("ho_interview")
   public @Nullable Integer getHoInterview() {
     return hoInterview;
   }
@@ -2317,8 +2317,8 @@ public class Claim implements Serializable {
    * @return localAuthorityNumber
    */
   
-  @Schema(name = "localAuthorityNumber", description = "Local authority number", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @JsonProperty("localAuthorityNumber")
+  @Schema(name = "local_authority_number", description = "Local authority number", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("local_authority_number")
   public @Nullable String getLocalAuthorityNumber() {
     return localAuthorityNumber;
   }
@@ -2337,8 +2337,8 @@ public class Claim implements Serializable {
    * @return createdByUserId
    */
   
-  @Schema(name = "createdByUserId", description = "ID of the user who created the claim", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @JsonProperty("createdByUserId")
+  @Schema(name = "created_by_user_id", description = "ID of the user who created the claim", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("created_by_user_id")
   public @Nullable String getCreatedByUserId() {
     return createdByUserId;
   }
@@ -2357,8 +2357,8 @@ public class Claim implements Serializable {
    * @return isAmended
    */
   
-  @Schema(name = "isAmended", description = "Whether the claim has been amended", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @JsonProperty("isAmended")
+  @Schema(name = "is_amended", description = "Whether the claim has been amended", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("is_amended")
   public @Nullable Boolean getIsAmended() {
     return isAmended;
   }
@@ -2377,8 +2377,8 @@ public class Claim implements Serializable {
    * @return hasAssessment
    */
   
-  @Schema(name = "hasAssessment", description = "Whether the claim has an assessment", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @JsonProperty("hasAssessment")
+  @Schema(name = "has_assessment", description = "Whether the claim has an assessment", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("has_assessment")
   public @Nullable Boolean getHasAssessment() {
     return hasAssessment;
   }

@@ -26,13 +26,11 @@ afterEvaluate {
     tasks.named('extractIncludeProto').configure {
         dependsOn ':claims-validation-core:bootBuildInfo'
         dependsOn ':claims-validation-api:bootBuildInfo'
-        dependsOn ':reference-provider-details-api:bootBuildInfo'
         dependsOn ':reference-fee-scheme-platform-api:bootBuildInfo'
     }
     tasks.named('extractIncludeTestProto').configure {
         dependsOn ':claims-validation-core:bootBuildInfo'
         dependsOn ':claims-validation-api:bootBuildInfo'
-        dependsOn ':reference-provider-details-api:bootBuildInfo'
         dependsOn ':reference-fee-scheme-platform-api:bootBuildInfo'
     }
 }
@@ -96,3 +94,8 @@ jacocoTestReport {
     }
 }
 
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(25)
+    }
+}

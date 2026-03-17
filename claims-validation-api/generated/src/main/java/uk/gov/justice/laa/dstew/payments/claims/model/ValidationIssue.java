@@ -26,7 +26,7 @@ import jakarta.annotation.Generated;
  * ValidationIssue
  */
 
-@Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2026-03-14T10:05:01.052215Z[Europe/London]", comments = "Generator version: 7.18.0")
+@Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2026-03-17T18:38:00.191747Z[Europe/London]", comments = "Generator version: 7.18.0")
 public class ValidationIssue implements Serializable {
 
   private static final long serialVersionUID = 1L;
@@ -105,8 +105,8 @@ public class ValidationIssue implements Serializable {
    * @return technicalMessage
    */
   
-  @Schema(name = "technicalMessage", example = "Invalid value 'XYZ' for field 'claim.areaOfLaw'. Expected one of: [LEGAL HELP, CRIME LOWER, MEDIATION]", description = "Detailed technical description for debugging (may include field paths, expected values, etc.)", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @JsonProperty("technicalMessage")
+  @Schema(name = "technical_message", example = "Invalid value 'XYZ' for field 'claim.area_of_law'. Expected one of: [LEGAL HELP, CRIME LOWER, MEDIATION]", description = "Detailed technical description for debugging (may include field paths, expected values, etc.)", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("technical_message")
   public @Nullable String getTechnicalMessage() {
     return technicalMessage;
   }

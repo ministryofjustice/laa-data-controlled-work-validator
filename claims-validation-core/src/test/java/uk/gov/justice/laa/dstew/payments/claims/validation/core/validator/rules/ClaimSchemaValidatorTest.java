@@ -141,7 +141,8 @@ class ClaimSchemaValidatorTest {
         issues.stream().filter(i -> i.getSeverity() == ValidationSeverity.ERROR).toList();
 
     assertThat(errors).hasSize(1);
-    assertThat(errors.getFirst().getMessage()).isEqualTo("Field 'lineNumber' has an invalid value");
+    assertThat(errors.getFirst().getMessage())
+        .isEqualTo("Field 'line_number' has an invalid value");
   }
 
   @Test
@@ -157,7 +158,7 @@ class ClaimSchemaValidatorTest {
     assertThat(errors).hasSize(1);
     assertThat(errors.getFirst().getTechnicalMessage())
         .isEqualTo(
-            "uniqueFileNumber: does not match the regex pattern ^[0-9]{6}/[0-9]{3}$ (provided value: invalid)");
+            "unique_file_number: does not match the regex pattern ^[0-9]{6}/[0-9]{3}$ (provided value: invalid)");
   }
 
   @Test

@@ -63,3 +63,9 @@ tasks.named('bootRun') {
 tasks.withType(Test).configureEach {
     useJUnitPlatform()
 }
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(25)
+    }
+}

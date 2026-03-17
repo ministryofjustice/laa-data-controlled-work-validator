@@ -425,6 +425,7 @@ public class ClaimSchemaValidator implements ClaimValidator {
 
     // Handle camelCase - insert space before capitals
     String spaced = input.replaceAll("([a-z])([A-Z])", "$1 $2");
+    spaced = spaced.replace("_", " "); // Also replace underscores with spaces
 
     String[] words = spaced.split("\\s+");
     StringBuilder result = new StringBuilder();

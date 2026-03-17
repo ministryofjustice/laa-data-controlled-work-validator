@@ -42,11 +42,11 @@ class ValidationControllerTest {
             post("/v1/validation/claim")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
-                    "{\"claim\": {\"areaOfLaw\": \"LEGAL HELP\", \"officeAccountNumber\": \"1A234B\"}, \"scope\": \"fee\"}")
+                    "{\"claim\": {\"area_of_law\": \"LEGAL HELP\", \"office_account_number\": \"1A234B\"}, \"scope\": \"fee\"}")
                 .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-        .andExpect(jsonPath("$.isValid").value(true))
+        .andExpect(jsonPath("$.is_valid").value(true))
         .andExpect(jsonPath("$.issues").isEmpty());
   }
 
@@ -70,11 +70,11 @@ class ValidationControllerTest {
             post("/v1/validation/claim")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
-                    "{\"claim\": {\"areaOfLaw\": \"LEGAL HELP\", \"officeAccountNumber\": \"1A234B\", \"fees\": [{\"type\": \"enhancement\"}]}}")
+                    "{\"claim\": {\"area_of_law\": \"LEGAL HELP\", \"office_account_number\": \"1A234B\", \"fees\": [{\"type\": \"enhancement\"}]}}")
                 .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-        .andExpect(jsonPath("$.isValid").value(false))
+        .andExpect(jsonPath("$.is_valid").value(false))
         .andExpect(jsonPath("$.issues[0].code").value("FEE.MISSING_JUSTIFICATION"))
         .andExpect(jsonPath("$.issues[0].severity").value("ERROR"));
   }
@@ -101,7 +101,7 @@ class ValidationControllerTest {
                 .content("{}")
                 .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.isValid").value(false))
+        .andExpect(jsonPath("$.is_valid").value(false))
         .andExpect(jsonPath("$.issues[0].code").value("MISSING_CLAIM"));
   }
 }

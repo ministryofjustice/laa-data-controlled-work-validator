@@ -59,7 +59,7 @@ public class ClientDateOfBirthClaimValidator implements ClaimValidator {
       return;
     }
 
-    if (DateUtils.isValidDateOfBirth(dateOfBirth)) {
+    if (!DateUtils.isValidDateOfBirth(dateOfBirth)) {
       issues.add(error.toValidationIssue(dateOfBirthString));
     }
   }

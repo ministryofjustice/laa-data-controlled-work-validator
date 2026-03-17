@@ -11,6 +11,9 @@ repositories {
 }
 
 java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(25)
+    }
     withSourcesJar()
     withJavadocJar()
 }
@@ -18,17 +21,18 @@ java {
 dependencies {
     api project(':claims-validation-api')
 
-    implementation project(':reference-provider-details-api')
     implementation project(':reference-fee-scheme-platform-api')
     
     // Published package from laa-data-claims-api (replaces local reference-data-claims-api)
     implementation 'uk.gov.justice.laa.datastewardship.payments:data-claims-api-models:4803269'
+    implementation 'uk.gov.justice.laadata.providers:providers-api:1.36.0'
 
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
     implementation 'org.springframework.data:spring-data-commons'
     implementation 'org.apache.commons:commons-lang3:3.20.0'
     implementation 'com.networknt:json-schema-validator:1.5.8'
+    implementation 'com.github.ben-manes.caffeine:caffeine:3.1.8'
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
@@ -50,7 +54,3 @@ tasks.named('bootRun') {
 tasks.named('jar') {
     enabled = true
 }
-
-
-
-
