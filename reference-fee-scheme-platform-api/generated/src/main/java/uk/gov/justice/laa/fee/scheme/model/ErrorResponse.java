@@ -22,7 +22,7 @@ import jakarta.annotation.Generated;
  */
 
 @Schema(name = "ErrorResponse", description = "Standard error response returned for failed requests")
-@Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2026-03-17T18:38:01.044961Z[Europe/London]", comments = "Generator version: 7.14.0")
+@Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2026-03-17T22:25:28.509841Z[Europe/London]", comments = "Generator version: 7.14.0")
 public class ErrorResponse implements Serializable {
 
   private static final long serialVersionUID = 1L;

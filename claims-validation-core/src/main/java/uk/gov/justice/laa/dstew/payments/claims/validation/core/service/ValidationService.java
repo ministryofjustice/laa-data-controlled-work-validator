@@ -39,9 +39,6 @@ public class ValidationService {
     Claim claim = request.getClaim();
     String scope = request.getScope();
 
-    log.info("Starting validation for claim with scope: {}", scope);
-    log.info("Received claim: {}", claim != null ? claim.toString() : "null");
-
     // Handle missing claim - return validation error, not 400
     if (claim == null) {
       log.warn("Validation request received with null claim");

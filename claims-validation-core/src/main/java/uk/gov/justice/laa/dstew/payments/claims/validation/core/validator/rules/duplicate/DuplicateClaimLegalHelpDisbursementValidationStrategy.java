@@ -51,8 +51,7 @@ public class DuplicateClaimLegalHelpDisbursementValidationStrategy extends Dupli
             incomingClaim.getFeeCode(),
             incomingClaim.getUniqueFileNumber(),
             incomingClaim.getUniqueClientNumber(),
-            null,
-            submissionClaims);
+            incomingClaim.getSubmissionId());
 
     if (result.hasError()) {
       issues.add(result.error());

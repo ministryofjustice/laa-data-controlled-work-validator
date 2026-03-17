@@ -52,7 +52,7 @@ public final class DuplicateClaimCrimeLowerValidationServiceStrategy
     // Check for duplicates in previous submissions
     DuplicateCheckResult result =
         getDuplicateClaimsInPreviousSubmission(
-            officeCode, feeCode, uniqueFileNumber, null, null, submissionClaims);
+            officeCode, feeCode, uniqueFileNumber, null, claim.getSubmissionId());
 
     if (result.hasError()) {
       issues.add(result.error());

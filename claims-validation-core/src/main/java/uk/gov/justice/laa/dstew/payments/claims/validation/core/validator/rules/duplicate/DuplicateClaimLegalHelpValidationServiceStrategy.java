@@ -43,8 +43,7 @@ public final class DuplicateClaimLegalHelpValidationServiceStrategy extends Dupl
             currentClaim.getFeeCode(),
             currentClaim.getUniqueFileNumber(),
             currentClaim.getUniqueClientNumber(),
-            null,
-            submissionClaims);
+            currentClaim.getSubmissionId());
 
     if (result.hasError()) {
       issues.add(result.error());

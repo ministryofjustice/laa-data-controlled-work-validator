@@ -19,15 +19,6 @@ public class ValidationController implements ValidationApi {
 
   @Override
   public ResponseEntity<ValidationResult> validateClaim(ClaimValidationRequest request) {
-    log.info("Received claim validation request with scope: {}", request.getScope());
-
-    ValidationResult result = validationService.validateClaim(request);
-
-    log.info(
-        "Validation completed. isValid: {}, issues count: {}",
-        result != null && result.getIsValid(),
-        result != null ? result.getIssues().size() : 0);
-
-    return ResponseEntity.ok(result);
+    return ResponseEntity.ok(validationService.validateClaim(request));
   }
 }

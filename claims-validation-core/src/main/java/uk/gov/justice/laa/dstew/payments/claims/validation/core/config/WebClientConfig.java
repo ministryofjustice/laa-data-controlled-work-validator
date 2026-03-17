@@ -2,10 +2,12 @@ package uk.gov.justice.laa.dstew.payments.claims.validation.core.config;
 
 import io.netty.channel.ChannelOption;
 import java.time.Duration;
+import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
+import org.springframework.web.reactive.function.client.ClientRequest;
 import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
 import org.springframework.web.reactive.function.client.ExchangeStrategies;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -26,6 +28,10 @@ import uk.gov.justice.laa.dstew.payments.claims.validation.core.client.ProviderD
 @Configuration
 public class WebClientConfig {
 
+  private static final String REQUEST_ID_HEADER = "X-Request-Id";
+  private static final String SERVICE_NAME_HEADER = "X-Service-Name";
+  private static final String SERVICE_NAME = "laa-data-claims-validation-api";
+
   /**
    * Creates a {@link FeeSchemeClient} bean to communicate with the Fee Scheme Platform API.
    *
@@ -42,7 +48,7 @@ public class WebClientConfig {
 
   /**
    * Expose a cached FeeSchemeClient bean using Caffeine for response caching. Cache duration is set
-   * to 5 minutes for demonstration.
+   * to 5 minutes for demonstration. TODO move duration to config.
    */
   @Bean
   public FeeSchemeClient feeSchemeClient(final FeeSchemePlatformApiProperties properties) {
@@ -124,30 +130,38 @@ public class WebClientConfig {
   }
 
   /**
-   * Creates an ExchangeFilterFunction that logs outgoing requests.
-   *
-   * @return ExchangeFilterFunction for request logging
+   * Creates an ExchangeFilterFunction that logs outgoing requests and adds a unique request ID
+   * header.
    */
   private static ExchangeFilterFunction logRequest() {
     return ExchangeFilterFunction.ofRequestProcessor(
         clientRequest -> {
-          log.info("WebClient Request: {} {}", clientRequest.method(), clientRequest.url());
-          return Mono.just(clientRequest);
+          String requestId = UUID.randomUUID().toString();
+          log.info(
+              "WebClient Request: {} {} [requestId={}]",
+              clientRequest.method(),
+              clientRequest.url(),
+              requestId);
+          // Add the requestId and service name as headers for correlation
+          return Mono.just(
+              ClientRequest.from(clientRequest)
+                  .header(REQUEST_ID_HEADER, requestId)
+                  .header(SERVICE_NAME_HEADER, SERVICE_NAME)
+                  .build());
         });
   }
 
-  /**
-   * Creates an ExchangeFilterFunction that logs responses.
-   *
-   * @return ExchangeFilterFunction for response logging
-   */
+  /** Creates an ExchangeFilterFunction that logs responses, including the request ID if present. */
   private static ExchangeFilterFunction logResponse() {
     return ExchangeFilterFunction.ofResponseProcessor(
         clientResponse -> {
+          String requestId =
+              clientResponse.headers().header(REQUEST_ID_HEADER).stream().findFirst().orElse("N/A");
           log.info(
-              "WebClient Response: Status {} from {}",
+              "WebClient Response: Status {} Headers: {} [requestId={}]",
               clientResponse.statusCode(),
-              clientResponse.headers().asHttpHeaders().getLocation());
+              clientResponse.headers().asHttpHeaders(),
+              requestId);
           return Mono.just(clientResponse);
         });
   }

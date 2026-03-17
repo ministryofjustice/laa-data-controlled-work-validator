@@ -71,8 +71,7 @@ public class EffectiveCategoryOfLawClaimValidator implements ClaimValidator {
           ex.getMessage(),
           officeCode,
           areaOfLaw != null ? areaOfLaw.getValue() : null,
-          effectiveDate,
-          ex);
+          effectiveDate);
       handleProviderDetailsApiError(issues, ex);
     } catch (Exception ex) {
       log.error(
@@ -144,6 +143,12 @@ public class EffectiveCategoryOfLawClaimValidator implements ClaimValidator {
       issues.add(
           ClaimValidationError.INVALID_CATEGORY_OF_LAW_AND_FEE_CODE.toValidationIssue(feeCode));
     } else if (!providerCategoriesOfLaw.contains(categoryOfLaw)) {
+      log.info(
+          "Provider is not contracted for category of law {} associated with fee code {}. "
+              + "Provider categories: {}",
+          categoryOfLaw,
+          feeCode,
+          providerCategoriesOfLaw);
       issues.add(
           ClaimValidationError.INVALID_CATEGORY_OF_LAW_NOT_AUTHORISED_FOR_PROVIDER
               .toValidationIssue());

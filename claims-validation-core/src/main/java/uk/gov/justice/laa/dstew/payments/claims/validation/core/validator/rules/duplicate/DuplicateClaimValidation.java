@@ -2,16 +2,17 @@ package uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.rules
 
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 import java.util.function.Predicate;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import uk.gov.justice.laa.dstew.payments.claims.model.Claim;
-import uk.gov.justice.laa.dstew.payments.claims.model.ClaimStatus;
 import uk.gov.justice.laa.dstew.payments.claims.model.ValidationIssue;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.client.DataClaimsClient;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.error.ClaimValidationError;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.util.ClaimMapper;
 import uk.gov.justice.laa.dstew.payments.claimsdata.model.ClaimResultSet;
+import uk.gov.justice.laa.dstew.payments.claimsdata.model.ClaimStatus;
 import uk.gov.justice.laa.dstew.payments.claimsdata.model.SubmissionStatus;
 
 /**
@@ -21,7 +22,7 @@ import uk.gov.justice.laa.dstew.payments.claimsdata.model.SubmissionStatus;
 @Slf4j
 public abstract class DuplicateClaimValidation {
 
-  protected static final List<ClaimStatus> LIST_OF_NON_INVALID_STATUS =
+  protected static final List<ClaimStatus> LIST_OF_VALID_STATUS =
       List.of(ClaimStatus.READY_TO_PROCESS, ClaimStatus.VALID);
 
   protected static final List<SubmissionStatus> SUBMISSION_STATUSES_FOR_DUPLICATE_CHECK =
@@ -31,11 +32,8 @@ public abstract class DuplicateClaimValidation {
           SubmissionStatus.READY_FOR_VALIDATION,
           SubmissionStatus.VALIDATION_SUCCEEDED);
 
-  protected static final List<uk.gov.justice.laa.dstew.payments.claimsdata.model.ClaimStatus>
-      CLAIM_STATUSES_FOR_DUPLICATE_CHECK =
-          List.of(
-              uk.gov.justice.laa.dstew.payments.claimsdata.model.ClaimStatus.READY_TO_PROCESS,
-              uk.gov.justice.laa.dstew.payments.claimsdata.model.ClaimStatus.VALID);
+  protected static final List<ClaimStatus> CLAIM_STATUSES_FOR_DUPLICATE_CHECK =
+      List.of(ClaimStatus.READY_TO_PROCESS, ClaimStatus.VALID);
 
   protected final DataClaimsClient dataClaimsClient;
 
@@ -58,7 +56,10 @@ public abstract class DuplicateClaimValidation {
         .filter(
             submissionClaim ->
                 submissionClaim.getStatus() == null
-                    || LIST_OF_NON_INVALID_STATUS.contains(submissionClaim.getStatus()))
+                    || LIST_OF_VALID_STATUS.stream()
+                        .anyMatch(
+                            validStatus ->
+                                validStatus.name().equals(submissionClaim.getStatus().name())))
         .toList();
   }
 
@@ -98,8 +99,7 @@ public abstract class DuplicateClaimValidation {
    * @param feeCode the fee code
    * @param uniqueFileNumber the unique file number for the claim
    * @param uniqueClientNumber the unique client number for the claim
-   * @param uniqueCaseId the unique case ID (optional)
-   * @param submissionClaims list of claims in the current submission (to exclude)
+   * @param submissionId the submission id to exclude
    * @return a DuplicateCheckResult containing either duplicates or an error
    */
   protected DuplicateCheckResult getDuplicateClaimsInPreviousSubmission(
@@ -107,8 +107,7 @@ public abstract class DuplicateClaimValidation {
       String feeCode,
       String uniqueFileNumber,
       String uniqueClientNumber,
-      String uniqueCaseId,
-      List<Claim> submissionClaims) {
+      UUID submissionId) {
 
     try {
       ResponseEntity<ClaimResultSet> response =
@@ -119,7 +118,7 @@ public abstract class DuplicateClaimValidation {
               feeCode,
               uniqueFileNumber,
               uniqueClientNumber,
-              uniqueCaseId,
+              null,
               CLAIM_STATUSES_FOR_DUPLICATE_CHECK,
               null, // page
               null, // size
@@ -132,10 +131,7 @@ public abstract class DuplicateClaimValidation {
       }
 
       // Get the submission ID of the current submission to filter out
-      String currentSubmissionId =
-          submissionClaims.isEmpty() || submissionClaims.get(0).getSubmissionId() == null
-              ? null
-              : submissionClaims.get(0).getSubmissionId().toString();
+      String currentSubmissionId = submissionId == null ? null : submissionId.toString();
 
       List<Claim> duplicates =
           response.getBody().getContent().stream()
@@ -146,9 +142,19 @@ public abstract class DuplicateClaimValidation {
                           || !currentSubmissionId.equals(prevClaim.getSubmissionId()))
               // Convert to our Claim model
               .map(ClaimMapper::fromClaimResponse)
-              // Filter out any claims that are in the submission claims list
-              .filter(claim -> !submissionClaims.contains(claim))
+              // Filter out any claims that are in the submission claims list: NOTE this is
+              // redundant we do 1 claim at a time and have already filtered by submission id
+              // .filter(claim -> !submissionClaims.contains(claim))
               .toList();
+
+      log.info(
+          "Checked for duplicate claims in previous submissions for officeCode={}, "
+              + "feeCode={}, uniqueFileNumber={}, uniqueClientNumber={}, Found {} duplicates.",
+          officeCode,
+          feeCode,
+          uniqueFileNumber,
+          uniqueClientNumber,
+          duplicates.size());
 
       return new DuplicateCheckResult(duplicates, null);
     } catch (Exception e) {

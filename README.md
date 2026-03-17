@@ -9,9 +9,11 @@ Stateless validation microservice for LAA Data Claims. This service validates cl
 ### Key Features
 - **Stateless**: No database, no persistence - receives claims via REST or gRPC, validates, returns results
 - **Pluggable Validators**: Modular validation rules with priority ordering and scope filtering
-- **External Service Integration**: WebClient-based calls to Fee Scheme Platform and Data Claims APIs
+- **External Service Integration**: WebClient-based calls to Fee Scheme Platform, Data Claims APIs, and Reference APIs
 - **OpenAPI First**: API contracts defined in OpenAPI specification
 - **Dual Protocol Support**: REST (claims-validation-service) and gRPC (claims-validation-grpc)
+- **Code Quality**: Enforced with Checkstyle and Spotless; pre-commit hooks available
+- **Error Monitoring**: Sentry integration for error tracking
 
 ## Project Structure
 
@@ -38,15 +40,20 @@ laa-data-claims-validation-api-poc/
 │   └── src/main/java/.../validation/grpc/
 │       ├── service/                # gRPC service implementation
 │       └── mapper/                 # Proto <-> Domain mappers
+├── reference-fee-scheme-platform-api/ # Reference Fee Scheme Platform API client
+├── reference-provider-details-api/     # Reference Provider Details API client
+├── bruno/                        # API test collections (Bruno)
+├── config/                       # Checkstyle and other config
+├── scripts/                      # Utility scripts (e.g., setup-hooks.sh)
 ```
 
 ## Version Info
 
 | Component | Version |
 |-----------|---------|
-| Java | 17+ |
-| Spring Boot | 4.0.x |
-| Gradle | 9.x |
+| Java | 25 |
+| Spring Boot | 3.x |
+| Gradle | (see gradle/wrapper/gradle-wrapper.properties) |
 | Micrometer | Latest |
 
 ## API Endpoint
@@ -135,6 +142,12 @@ Environment variables:
 
 # Run integration tests
 ./gradlew integrationTest
+
+# Check for dependency updates
+./gradlew dependencyUpdates
+
+# Analyze unused dependencies
+./gradlew :claims-validation-core:projectHealth
 ```
 
 ## gRPC Service
@@ -175,6 +188,13 @@ grpcurl -plaintext -d '{
   "scope": "all"
 }' localhost:9090 uk.gov.justice.laa.dstew.payments.claims.validation.grpc.ClaimValidationService/ValidateClaim
 ```
+
+## Code Quality & Tooling
+
+- **Checkstyle**: Enforced via `config/checkstyle/checkstyle.xml`
+- **Spotless**: Code formatting (see build config)
+- **Pre-commit hooks**: Run `./scripts/setup-hooks.sh` to install
+- **Sentry**: Error monitoring enabled in service modules
 
 ## Test Coverage
 
