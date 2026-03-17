@@ -6,7 +6,8 @@ build/
 !**/src/test/**/build/
 .DS_Store
 
-spring-boot-microservice-api/generated
+reference-fee-scheme-platform-api/generated
+claims-validation-api/generated
 
 ### IntelliJ IDEA ###
 .idea
