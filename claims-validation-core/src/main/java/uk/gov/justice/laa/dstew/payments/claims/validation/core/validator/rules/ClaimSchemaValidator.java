@@ -62,7 +62,7 @@ public class ClaimSchemaValidator implements ClaimValidator {
     // Exclude null fields from serialization so the schema only validates fields with actual
     // values.
     // This prevents pattern/format validation errors for optional fields that are null.
-    // Required fields will still fail validation if missing (handled by schema's "required" array).
+    // Required fields will still fail validation if missing MandatoryFieldClaimValidator.
     this.objectMapper.setDefaultPropertyInclusion(JsonInclude.Include.NON_NULL);
   }
 

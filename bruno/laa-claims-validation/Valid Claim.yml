@@ -11,13 +11,14 @@ grpc:
   message: |-
     {
       "claim": {
-        "officeAccountNumber": "0P322F",
-        "areaOfLaw": "LEGAL HELP",
+        "ben": "value",
+        "office_account_number": "0P322F",
+        "area_of_law": "LEGAL HELP",
         "id": "019cf8ac-f08b-7d2d-b6b5-05a4d1c154a8",
         "submission_id": "019cf8ac-edc9-7a80-84de-dfdcdc6d2fb0",
         "status": "READY_TO_PROCESS",
         "schedule_reference": "CIV/914VAL/TEST",
-        "line_number": 2,
+        "line_number": 1,
         "case_reference_number": "DSTEW913-VALID1",
         "unique_file_number": "010824/917",
         "case_start_date": "2023-08-01",
@@ -114,7 +115,7 @@ grpc:
         "is_substantive_hearing": null,
         "ho_interview": null,
         "local_authority_number": null,
-        "submission_period": "FEB-2022",
+        "submission_period": "FEB-2024",
         "created_by_user_id": "Data-Claims-Event-Service",
         "total_warnings": 0,
         "fee_calculation_response": null

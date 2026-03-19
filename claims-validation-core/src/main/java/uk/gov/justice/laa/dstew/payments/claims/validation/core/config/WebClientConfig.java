@@ -2,7 +2,6 @@ package uk.gov.justice.laa.dstew.payments.claims.validation.core.config;
 
 import io.netty.channel.ChannelOption;
 import java.time.Duration;
-import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -28,7 +27,6 @@ import uk.gov.justice.laa.dstew.payments.claims.validation.core.client.ProviderD
 @Configuration
 public class WebClientConfig {
 
-  private static final String REQUEST_ID_HEADER = "X-Request-Id";
   private static final String SERVICE_NAME_HEADER = "X-Service-Name";
   private static final String SERVICE_NAME = "laa-data-claims-validation-api";
 
@@ -130,38 +128,30 @@ public class WebClientConfig {
   }
 
   /**
-   * Creates an ExchangeFilterFunction that logs outgoing requests and adds a unique request ID
-   * header.
+   * Creates an ExchangeFilterFunction that logs outgoing requests.
    */
   private static ExchangeFilterFunction logRequest() {
     return ExchangeFilterFunction.ofRequestProcessor(
         clientRequest -> {
-          String requestId = UUID.randomUUID().toString();
           log.info(
-              "WebClient Request: {} {} [requestId={}]",
+              "WebClient Request: {} {}",
               clientRequest.method(),
-              clientRequest.url(),
-              requestId);
+              clientRequest.url());
           // Add the requestId and service name as headers for correlation
           return Mono.just(
               ClientRequest.from(clientRequest)
-                  .header(REQUEST_ID_HEADER, requestId)
                   .header(SERVICE_NAME_HEADER, SERVICE_NAME)
                   .build());
         });
   }
 
-  /** Creates an ExchangeFilterFunction that logs responses, including the request ID if present. */
+  /** Creates an ExchangeFilterFunction that logs responses. */
   private static ExchangeFilterFunction logResponse() {
     return ExchangeFilterFunction.ofResponseProcessor(
         clientResponse -> {
-          String requestId =
-              clientResponse.headers().header(REQUEST_ID_HEADER).stream().findFirst().orElse("N/A");
           log.info(
-              "WebClient Response: Status {} Headers: {} [requestId={}]",
-              clientResponse.statusCode(),
-              clientResponse.headers().asHttpHeaders(),
-              requestId);
+              "WebClient Response: Status {}",
+              clientResponse.statusCode());
           return Mono.just(clientResponse);
         });
   }

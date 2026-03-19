@@ -5,15 +5,18 @@ plugins {
     id 'uk.gov.laa.springboot.laa-spring-boot-gradle-plugin'
 }
 
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(25)
+    }
+}
+
 // Use Maven Central for resolving dependencies.
 repositories {
     mavenCentral()
 }
 
 java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(25)
-    }
     withSourcesJar()
     withJavadocJar()
 }

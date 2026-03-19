@@ -57,9 +57,3 @@ tasks.named('bootJar') {
 tasks.named('bootRun') {
     enabled = false
 }
-
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(25)
-    }
-}

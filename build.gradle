@@ -3,7 +3,7 @@ plugins {
 }
 
 subprojects {
-    group = 'uk.gov.justice.laa.springboot.microservice'
+    group = 'uk.gov.justice.laa.dstew.payments.claims.validation'
 
     repositories {
         mavenCentral()
@@ -19,19 +19,20 @@ subprojects {
     }
 
     // Apply to subprojects that have java plugin
-    plugins.withType(JavaPlugin) {
+    plugins.withType(JavaPlugin).configureEach {
+
         test {
             useJUnitPlatform()
         }
 
         // Suppress Javadoc warnings for Lombok-generated code
-        tasks.withType(Javadoc) {
+        tasks.withType(Javadoc).configureEach {
             options.addStringOption('Xdoclint:none', '-quiet')
         }
 
         // Suppress deprecation warnings - these come from OpenAPI generated code
         // which uses deprecated Spring APIs. The generator will update these when needed.
-        tasks.withType(JavaCompile) {
+        tasks.withType(JavaCompile).configureEach {
             options.compilerArgs << '-Xlint:-deprecation'
         }
     }
@@ -55,7 +56,7 @@ configure(subprojects.findAll { it.name in ['claims-validation-core', 'claims-va
             importOrder()
             removeUnusedImports()
             cleanthat()
-            googleJavaFormat()
+            //googleJavaFormat('1.35')
         }
     }
 
