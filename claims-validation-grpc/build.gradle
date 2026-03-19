@@ -75,6 +75,7 @@ dependencies {
 
     // Spring Boot
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'uk.gov.justice.laadata.providers:providers-api:1.36.0'
 
     // Metrics
     implementation 'io.micrometer:micrometer-core'
