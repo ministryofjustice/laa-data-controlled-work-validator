@@ -39,7 +39,7 @@
     - **ClaimValidationService:**
       - Fetches claims in batches (`DataClaimsRestClient.getClaims`). **[External Call]**
       - For each claim:
-        - Runs external validations (category of law, duplicate, fee calculation, etc.).
+        - Runs internal and external validations (category of law, duplicate, fee calculation, etc.).
         - May call Fee Scheme Platform API via `FeeSchemePlatformRestClient.calculateFee`. **[External Call]**
       - Updates claims via `BulkClaimUpdater.updateClaims` (calls `DataClaimsRestClient.updateClaim`). **[External Call, per claim]**
   - Updates submission and bulk submission status (`DataClaimsRestClient.updateSubmission`, `updateBulkSubmission`). **[External Calls]**
@@ -68,58 +68,88 @@ The `ClaimValidationService` is responsible for orchestrating the validation of 
 
 2. **Per-Claim Processing:**
    - For each claim in the batch, the following occurs:
-    ```mermaid
-    flowchart TD
-      %% Internal Service Logic
-      A1([1. SQS Event Received])
-      A2([2. Extract Event Type])
-      A3{3. Event Type}
-      A4([4a. Parse Bulk Submission])
-      A5([5a. For each submissionId])
-      A6([6a. BulkParsingService.parseData])
-      A7([4b. Validate Submission])
-      A8([5b. SubmissionValidationService.validateSubmission])
-      A9{6b. Submission-level errors?}
-      A10([7b. ClaimValidationService.validateAndUpdateClaims])
-      A11([8b. For each claim in batch])
-      A12([9b. Call Fee Scheme Platform API])
-      A13([10b. Call Claims Validation API - with fee data])
-      A14{11b. Claim Valid?}
-      A15([12b. Mark as Valid, Update Claim])
-      A16([13b. Mark as Invalid, Record Errors, Update Claim])
-      A17([14b. Next Claim / Batch])
-      A18([15b. BulkClaimUpdater.updateClaims])
-      A19([16b. Update submission/bulk status])
+     - **Fee Calculation:**
+       - The Fee Scheme Platform API is called for the claim to obtain fee calculation data (`FeeSchemePlatformRestClient.calculateFee`).
+       - If the fee API returns an error or null, a technical or business error is recorded for the claim and the claim is marked as invalid.
+     - **External Validation (Claims Validation API):**
+       - The claim, along with the fee data, is sent to the Claims Validation API (`ClaimsValidationRestClient.validateClaim`).
+       - The Claims Validation API performs all business rule checks and returns a list of issues (errors/warnings) for the claim.
+       - This API is now the single source of business validation for claims.
+     - **Claim Validity Decision:**
+       - If the claim has no errors after external validation, it is marked as valid and its status is updated accordingly.
+       - If the claim has errors, it is marked as invalid and the errors are recorded and sent to the Data Claims API.
+     - **Metrics Recording:**
+       - Timers and counters are updated for each claim, tracking validation duration, errors, and warnings.
 
-      %% External Services (inline)
-      E1([Data Claims API])
-      E2([Fee Scheme Platform API])
-      E3([Claims Validation API])
+3. **Claim Status Update:**
+   - After all claims in a batch are processed, `BulkClaimUpdater.updateClaims` is called to update claim statuses and results in the Data Claims API.
 
-      %% Main flow
-      A1 --> A2 --> A3
-      A3 -- PARSE_BULK_SUBMISSION --> A4 --> A5 --> A6
-      A6 -- getBulkSubmission, createSubmission, createClaim, createMatterStart, updateSubmission, updateBulkSubmission --> E1
-      A3 -- VALIDATE_SUBMISSION --> A7 --> A8 --> A9
-      A9 -- No errors --> A10 --> A11
-      A11 --> A12 --> E2
-      A12 --> A13 --> E3
-      A13 --> A14
-      A14 -- Yes --> A15 --> A17
-      A14 -- No --> A16 --> A17
-      A17 -- Next claim/batch --> A11
-      A11 -. End of batch .-> A18
-      A18 --> A19 --> E1
-      A9 -- Errors --> A19 --> E1
+4. **Error and Warning Handling:**
+   - All errors and warnings are recorded in the validation context and reported back to the Data Claims API. Metrics are updated for reporting and monitoring.
 
-      %% Color coding
-      classDef internal fill:#e0f7fa,stroke:#00796b;
-      classDef external fill:#fff3e0,stroke:#e65100;
-      classDef decision fill:#fffde7,stroke:#fbc02d;
-      class A1,A2,A3,A4,A5,A6,A7,A8,A9,A10,A11,A12,A13,A14,A15,A16,A17,A18,A19 internal;
-      class E1,E2,E3 external;
-      class A3,A9,A14 decision;
-    ```
+### Example: Per-Claim Processing (Current Flow)
+
+- **1. Fee Calculation:**
+  - Call Fee Scheme Platform API for the claim to obtain fee calculation data.
+  - If the call fails, record an error and mark the claim as invalid.
+- **2. External Validation (Claims Validation API):**
+  - Send the claim and the fee data to the Claims Validation API for business rule validation.
+  - The API returns a list of errors/warnings for the claim.
+- **3. Validity Decision:**
+  - If valid: mark as valid, update claim in Data Claims API.
+  - If invalid: record errors, update claim in Data Claims API.
+
+### External Interactions in Claim Validation
+
+- **Data Claims API:**
+  - `getClaims` (fetch claims in batches)
+  - `updateClaim` (update claim status and errors)
+- **Fee Scheme Platform API:**
+  - Called for every claim to obtain fee calculation data (`calculateFee`).
+  - If the call fails, the claim is marked as invalid.
+- **Claims Validation API:**
+  - Called for every claim (with fee data) to perform all business rule validation (`validateClaim`).
+  - Returns a list of errors/warnings for the claim.
+  - If errors are returned, the claim is marked as invalid and errors are recorded in Data Claims API.
+
+### Error Handling and Metrics
+- All errors and warnings are collected per claim and per submission.
+- Metrics are recorded for validation duration, error/warning counts, and most common issues.
+- Technical errors (e.g., API failures) are logged and surfaced as claim errors where possible.
+
+### Extensibility
+- The validation logic is now externalized: all business rules are implemented in the Claims Validation API.
+- Changes to validation logic should be made in the Claims Validation API service.
+
+---
+
+## 4. Mermaid Flowchart
+
+```mermaid
+flowchart TD
+  subgraph Internal[Internal Service Logic]
+    A1([1. SQS Event Received])
+    A2([2. Extract Event Type])
+    A3{3. Event Type}
+    A4([4a. Parse Bulk Submission])
+    A5([5a. For each submissionId])
+    A6([6a. BulkParsingService.parseData])
+    A7([4b. Validate Submission])
+    A8([5b. SubmissionValidationService.validateSubmission])
+    A9{6b. Submission-level errors?}
+    A10([7b. ClaimValidationService.validateAndUpdateClaims])
+    A11([8b. For each claim in batch])
+    A12([9b. Call Fee Scheme Platform API])
+    A13([10b. Call Claims Validation API - with fee data])
+    A14{11b. Claim Valid?}
+    A15([12b. Mark as Valid, Update Claim])
+    A16([13b. Mark as Invalid, Record Errors, Update Claim])
+    A17([14b. Next Claim / Batch])
+    A18([15b. BulkClaimUpdater.updateClaims])
+    A19([16b. Update submission/bulk status])
+  end
+
+  subgraph External[External Services]
     E1([Data Claims API])
     E2([Fee Scheme Platform API])
     E3([Claims Validation API])
@@ -169,4 +199,4 @@ The `ClaimValidationService` is responsible for orchestrating the validation of 
 | 6b   | SubmissionValidationService| updateBulkSubmission (PATCH)          | Data Claims API                 | BulkSubmissionPatch                | After validation               |
 
 ---
-*Generated on 2026-03-20.
+*Generated on 2026-03-20.*
