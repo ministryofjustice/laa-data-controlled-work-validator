@@ -87,18 +87,6 @@ The `ClaimValidationService` is responsible for orchestrating the validation of 
 4. **Error and Warning Handling:**
    - All errors and warnings are recorded in the validation context and reported back to the Data Claims API. Metrics are updated for reporting and monitoring.
 
-### Example: Per-Claim Processing (Current Flow)
-
-- **1. Fee Calculation:**
-  - Call Fee Scheme Platform API for the claim to obtain fee calculation data.
-  - If the call fails, record an error and mark the claim as invalid.
-- **2. External Validation (Claims Validation API):**
-  - Send the claim and the fee data to the Claims Validation API for business rule validation.
-  - The API returns a list of errors/warnings for the claim.
-- **3. Validity Decision:**
-  - If valid: mark as valid, update claim in Data Claims API.
-  - If invalid: record errors, update claim in Data Claims API.
-
 ### External Interactions in Claim Validation
 
 - **Data Claims API:**
