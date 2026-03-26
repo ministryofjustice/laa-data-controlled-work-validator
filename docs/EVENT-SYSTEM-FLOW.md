@@ -170,21 +170,21 @@ flowchart TD
 
 ## 5. External Interactions (Details)
 
-| Step | Component                  | External Call (Method)                | Endpoint/Service                | Data Sent/Received                | Condition/Order                |
-|------|---------------------------|---------------------------------------|---------------------------------|-----------------------------------|-------------------------------|
-| 6a   | BulkParsingService        | getBulkSubmission (GET)               | Data Claims API                 | bulkSubmissionId                  | For each bulk submission       |
-| 6a   | BulkParsingService        | createSubmission (POST)               | Data Claims API                 | SubmissionPost                    | For each submissionId          |
-| 6a   | BulkParsingService        | createClaim (POST)                    | Data Claims API                 | ClaimPost                         | For each claim                 |
-| 6a   | BulkParsingService        | createMatterStart (POST)              | Data Claims API                 | MatterStartPost                   | For each matter start          |
-| 6a   | BulkParsingService        | updateSubmission (PATCH)              | Data Claims API                 | SubmissionPatch                    | After claims/matter starts     |
-| 6a   | BulkParsingService        | updateBulkSubmission (PATCH)          | Data Claims API                 | BulkSubmissionPatch                | After all processing           |
-| 6b   | SubmissionValidationService| getSubmission (GET)                   | Data Claims API                 | submissionId                      | For each validation event      |
-| 6b   | ClaimValidationService    | getClaims (GET)                       | Data Claims API                 | submissionId, officeCode          | In batches                     |
-| 6b   | ClaimValidationService    | calculateFee (POST)                   | Fee Scheme Platform API         | FeeCalculationRequest             | For each claim                 |
-| 6b   | ClaimValidationService    | validateClaim (POST)                  | Claims Validation API           | Claim + Fee Data                  | For each claim                 |
-| 6b   | BulkClaimUpdater         | updateClaim (PATCH)                   | Data Claims API                 | ClaimPatch                        | For each claim                 |
-| 6b   | SubmissionValidationService| updateSubmission (PATCH)              | Data Claims API                 | SubmissionPatch                    | After validation               |
-| 6b   | SubmissionValidationService| updateBulkSubmission (PATCH)          | Data Claims API                 | BulkSubmissionPatch                | After validation               |
+| Step (Node) | Component                  | External Call (Method)                | Endpoint/Service                | Data Sent/Received                | Condition/Order                |
+|-------------|---------------------------|---------------------------------------|---------------------------------|-----------------------------------|-------------------------------|
+| A6          | BulkParsingService        | getBulkSubmission (GET)               | Data Claims API (E1)            | bulkSubmissionId                  | For each bulk submission       |
+| A6          | BulkParsingService        | createSubmission (POST)               | Data Claims API (E1)            | SubmissionPost                    | For each submissionId          |
+| A6          | BulkParsingService        | createClaim (POST)                    | Data Claims API (E1)            | ClaimPost                         | For each claim                 |
+| A6          | BulkParsingService        | createMatterStart (POST)              | Data Claims API (E1)            | MatterStartPost                   | For each matter start          |
+| A6          | BulkParsingService        | updateSubmission (PATCH)              | Data Claims API (E1)            | SubmissionPatch                   | After claims/matter starts     |
+| A6          | BulkParsingService        | updateBulkSubmission (PATCH)          | Data Claims API (E1)            | BulkSubmissionPatch               | After all processing           |
+| A8          | SubmissionValidationService| getSubmission (GET)                   | Data Claims API (E1)            | submissionId                      | For each validation event      |
+| A10         | ClaimValidationService    | getClaims (GET)                       | Data Claims API (E1)            | submissionId, officeCode          | In batches                     |
+| A12         | ClaimValidationService    | calculateFee (POST)                   | Fee Scheme Platform API (E2)    | FeeCalculationRequest             | For each claim                 |
+| A13         | ClaimValidationService    | validateClaim (POST)                  | Claims Validation API (E3)      | Claim + Fee Data                  | For each claim                 |
+| A15/A16     | BulkClaimUpdater         | updateClaim (PATCH)                   | Data Claims API (E1)            | ClaimPatch                        | For each claim                 |
+| A19         | SubmissionValidationService| updateSubmission (PATCH)              | Data Claims API (E1)            | SubmissionPatch                   | After validation               |
+| A19         | SubmissionValidationService| updateBulkSubmission (PATCH)          | Data Claims API (E1)            | BulkSubmissionPatch               | After validation               |
 
 ---
 *Generated on 2026-03-20.*

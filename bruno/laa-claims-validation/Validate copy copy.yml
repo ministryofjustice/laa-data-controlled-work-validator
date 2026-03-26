@@ -88,7 +88,7 @@ http:
           "net_profit_costs_amount": 200.00,
           "net_disbursement_amount": 50.00,
           "net_counsel_costs_amount": 0.00,
-          "disbursements_vat_amount": "Phil",
+          "disbursements_vat_amount": 10.00,
           "travel_waiting_costs_amount": 25.00,
           "net_waiting_costs_amount": null,
           "is_vat_applicable": true,

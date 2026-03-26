@@ -49,7 +49,7 @@ http:
           "client_date_of_birth": "1988-10-10",
           "unique_client_number": "10101988/V/REG1",
           "client_postcode": "SW1H 9EA",
-          "gender_code": "F",
+          "gender_code": "M",
           "ethnicity_code": "99",
           "disability_code": "NCD",
           "is_legally_aided": null,
