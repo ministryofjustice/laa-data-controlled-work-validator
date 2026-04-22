@@ -7,7 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.justice.laa.dstew.payments.claims.model.Claim;
 import uk.gov.justice.laa.dstew.payments.claims.model.ValidationIssue;
-import uk.gov.justice.laa.dstew.payments.claims.validation.core.client.DataClaimsClient;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.client.ClaimsDataProvider;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.error.ClaimValidationError;
 
 /** Service responsible for validating whether a Crime Lower claim is a duplicate. */
@@ -16,14 +16,13 @@ import uk.gov.justice.laa.dstew.payments.claims.validation.core.error.ClaimValid
 public final class DuplicateClaimCrimeLowerValidationServiceStrategy
     extends DuplicateClaimValidation implements CrimeLowerDuplicateClaimValidationStrategy {
 
-  public DuplicateClaimCrimeLowerValidationServiceStrategy(DataClaimsClient dataClaimsClient) {
-    super(dataClaimsClient);
+  public DuplicateClaimCrimeLowerValidationServiceStrategy(ClaimsDataProvider claimsDataProvider) {
+    super(claimsDataProvider);
   }
 
   @Override
   public List<ValidationIssue> validateDuplicateClaims(
       Claim claim, List<Claim> submissionClaims, String officeCode, String feeType) {
-
     List<ValidationIssue> issues = new ArrayList<>();
 
     log.debug("Validating duplicates for claim {}", claim.getId());

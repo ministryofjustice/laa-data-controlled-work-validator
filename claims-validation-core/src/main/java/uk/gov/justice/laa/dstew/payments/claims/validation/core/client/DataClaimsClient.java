@@ -34,13 +34,14 @@ import uk.gov.justice.laa.dstew.payments.claimsdata.model.SubmissionsResultSet;
 
 /**
  * REST client interface for fetching claims data. This interface communicates with the Data Claims
- * API.
+ * API. Implements {@link ClaimsDataProvider} so it can be used by validation logic that is agnostic
+ * to the data source (HTTP or DB).
  */
 @HttpExchange(
     value = "/api/v1",
     accept = MediaType.APPLICATION_JSON_VALUE,
     contentType = MediaType.APPLICATION_JSON_VALUE)
-public interface DataClaimsClient {
+public interface DataClaimsClient extends ClaimsDataProvider {
 
   /**
    * Get the raw JSON document of a bulk submission.

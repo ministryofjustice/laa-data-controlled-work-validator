@@ -7,7 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.justice.laa.dstew.payments.claims.model.Claim;
 import uk.gov.justice.laa.dstew.payments.claims.model.ValidationIssue;
-import uk.gov.justice.laa.dstew.payments.claims.validation.core.client.DataClaimsClient;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.client.ClaimsDataProvider;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.error.ClaimValidationError;
 
 /** Validation service for Legal Help duplicate claims within the current submission. */
@@ -17,14 +17,13 @@ public final class DuplicatePreviousClaimLegalHelpValidationServiceStrategy
     extends DuplicateClaimValidation implements LegalHelpDuplicateClaimValidationStrategy {
 
   public DuplicatePreviousClaimLegalHelpValidationServiceStrategy(
-      DataClaimsClient dataClaimsClient) {
-    super(dataClaimsClient);
+      ClaimsDataProvider claimsDataProvider) {
+    super(claimsDataProvider);
   }
 
   @Override
   public List<ValidationIssue> validateDuplicateClaims(
       Claim currentClaim, List<Claim> submissionClaims, String officeCode, String feeType) {
-
     List<ValidationIssue> issues = new ArrayList<>();
 
     List<Claim> otherClaimsWithValidStatus =

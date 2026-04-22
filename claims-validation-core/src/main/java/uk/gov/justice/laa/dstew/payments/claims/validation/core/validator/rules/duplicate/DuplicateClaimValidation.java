@@ -8,7 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import uk.gov.justice.laa.dstew.payments.claims.model.Claim;
 import uk.gov.justice.laa.dstew.payments.claims.model.ValidationIssue;
-import uk.gov.justice.laa.dstew.payments.claims.validation.core.client.DataClaimsClient;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.client.ClaimsDataProvider;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.error.ClaimValidationError;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.util.ClaimMapper;
 import uk.gov.justice.laa.dstew.payments.claimsdata.model.ClaimResultSet;
@@ -17,7 +17,11 @@ import uk.gov.justice.laa.dstew.payments.claimsdata.model.SubmissionStatus;
 
 /**
  * Base class for duplicate claim validation. Provides common methods for checking duplicates in
- * current submission and previous submissions via the DataClaimsClient.
+ * current submission and previous submissions via a {@link ClaimsDataProvider} abstraction.
+ *
+ * <p>
+ * This allows validation logic to be reused regardless of whether data is fetched via HTTP
+ * (DataClaimsClient) or direct DB access.
  */
 @Slf4j
 public abstract class DuplicateClaimValidation {
@@ -35,10 +39,10 @@ public abstract class DuplicateClaimValidation {
   protected static final List<ClaimStatus> CLAIM_STATUSES_FOR_DUPLICATE_CHECK =
       List.of(ClaimStatus.READY_TO_PROCESS, ClaimStatus.VALID);
 
-  protected final DataClaimsClient dataClaimsClient;
+  protected final ClaimsDataProvider claimsDataProvider;
 
-  protected DuplicateClaimValidation(DataClaimsClient dataClaimsClient) {
-    this.dataClaimsClient = dataClaimsClient;
+  protected DuplicateClaimValidation(ClaimsDataProvider claimsDataProvider) {
+    this.claimsDataProvider = claimsDataProvider;
   }
 
   /**
@@ -111,7 +115,7 @@ public abstract class DuplicateClaimValidation {
 
     try {
       ResponseEntity<ClaimResultSet> response =
-          dataClaimsClient.getClaims(
+          claimsDataProvider.getClaims(
               officeCode,
               null, // submissionId - not filtering by submission
               SUBMISSION_STATUSES_FOR_DUPLICATE_CHECK,

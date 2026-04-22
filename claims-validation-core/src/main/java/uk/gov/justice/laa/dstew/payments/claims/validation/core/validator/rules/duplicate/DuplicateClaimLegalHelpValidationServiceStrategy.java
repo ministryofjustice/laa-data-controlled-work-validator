@@ -8,7 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.justice.laa.dstew.payments.claims.model.Claim;
 import uk.gov.justice.laa.dstew.payments.claims.model.ValidationIssue;
-import uk.gov.justice.laa.dstew.payments.claims.validation.core.client.DataClaimsClient;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.client.ClaimsDataProvider;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.error.ClaimValidationError;
 
 /**
@@ -21,14 +21,13 @@ import uk.gov.justice.laa.dstew.payments.claims.validation.core.error.ClaimValid
 public final class DuplicateClaimLegalHelpValidationServiceStrategy extends DuplicateClaimValidation
     implements LegalHelpDuplicateClaimValidationStrategy {
 
-  public DuplicateClaimLegalHelpValidationServiceStrategy(DataClaimsClient dataClaimsClient) {
-    super(dataClaimsClient);
+  public DuplicateClaimLegalHelpValidationServiceStrategy(ClaimsDataProvider claimsDataProvider) {
+    super(claimsDataProvider);
   }
 
   @Override
   public List<ValidationIssue> validateDuplicateClaims(
       Claim currentClaim, List<Claim> submissionClaims, String officeCode, String feeType) {
-
     List<ValidationIssue> issues = new ArrayList<>();
 
     // Disbursement claims are handled exclusively by

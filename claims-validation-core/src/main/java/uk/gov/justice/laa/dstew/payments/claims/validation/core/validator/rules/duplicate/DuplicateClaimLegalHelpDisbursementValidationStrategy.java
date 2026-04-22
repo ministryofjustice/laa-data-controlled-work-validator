@@ -14,7 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.gov.justice.laa.dstew.payments.claims.model.Claim;
 import uk.gov.justice.laa.dstew.payments.claims.model.ValidationIssue;
-import uk.gov.justice.laa.dstew.payments.claims.validation.core.client.DataClaimsClient;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.client.ClaimsDataProvider;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.error.ClaimValidationError;
 
 /**
@@ -29,8 +29,9 @@ public class DuplicateClaimLegalHelpDisbursementValidationStrategy extends Dupli
   private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
   private static final int MAXIMUM_MONTHS_DIFFERENCE = 3;
 
-  public DuplicateClaimLegalHelpDisbursementValidationStrategy(DataClaimsClient dataClaimsClient) {
-    super(dataClaimsClient);
+  public DuplicateClaimLegalHelpDisbursementValidationStrategy(
+      ClaimsDataProvider claimsDataProvider) {
+    super(claimsDataProvider);
   }
 
   @Override
