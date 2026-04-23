@@ -48,26 +48,6 @@ openApiGenerate {
 
 compileJava.dependsOn 'openApiGenerate'
 
-// Ensure Checkstyle that inspects staged/generated sources runs after the OpenAPI generator
-// so generated sources are present. Gradle 9+ requires explicit task relationships when one
-// task consumes the outputs of another to avoid ordering issues.
-// Configure Checkstyle tasks to run after generation but exclude generated sources so
-// the linter does not report style violations for generated code.
-tasks.matching { it.name == 'checkstyleStaged' || it.name == 'checkstyleMain' }.configureEach {
-    dependsOn tasks.named('openApiGenerate')
-    // exclude the generated directory (and its java sources) from Checkstyle
-    exclude 'generated/**'
-    exclude 'generated/src/main/java/**'
-    // ensure Checkstyle only runs on the hand-written sources in src/main/java
-    // some Checkstyle tasks are wired to sourceSets that include generated directories,
-    // so override the task source to the canonical main java folder.
-    try {
-        source = fileTree('src/main/java')
-    } catch (MissingPropertyException ignored) {
-        // some tasks may not expose 'source' directly; ignore in that case
-    }
-}
-
 clean {
     delete "$rootDir/reference-fee-scheme-platform-api/generated"
 }

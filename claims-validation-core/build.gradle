@@ -44,6 +44,33 @@ test {
     finalizedBy jacocoTestReport
 }
 
+tasks.register("checkstyleStaged", Checkstyle) {
+    group = "verification"
+    description = "Runs Checkstyle on staged files only"
+
+    def filesToCheck = project.findProperty("checkstyleFiles")
+    if (filesToCheck != null) {
+        source = files(filesToCheck.split(","))
+    } else {
+        source = sourceSets.main.allJava
+    }
+
+    classpath = sourceSets.main.compileClasspath
+}
+
+publishing {
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/ministryofjustice/laa-data-claims-validation-api-poc")
+            credentials {
+                username = System.getenv("GITHUB_ACTOR")
+                password = System.getenv("GITHUB_TOKEN")
+            }
+        }
+    }
+}
+
 // disable for library module
 tasks.named('bootJar') {
     enabled = false

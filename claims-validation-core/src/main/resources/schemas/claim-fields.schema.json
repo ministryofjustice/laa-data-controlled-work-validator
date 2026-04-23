@@ -1074,9 +1074,9 @@
   "additionalProperties": false,
   "required": [
     "status",
-    "line_number",
-    "net_disbursement_amount",
-    "disbursements_vat_amount",
-    "fee_code"
+    "lineNumber",
+    "netDisbursementAmount",
+    "disbursementsVatAmount",
+    "feeCode"
   ]
 }
