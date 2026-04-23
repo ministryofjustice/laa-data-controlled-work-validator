@@ -187,7 +187,7 @@ public class ClaimSchemaValidator implements ClaimValidator {
    * @param additionalPropertiesErrors the additional properties error messages
    * @return the warning issue
    */
-  private ValidationIssue buildAdditionalPropertiesWarning(
+  ValidationIssue buildAdditionalPropertiesWarning(
       List<ValidationMessage> additionalPropertiesErrors) {
     List<String> missingFields =
         additionalPropertiesErrors.stream()
@@ -220,7 +220,7 @@ public class ClaimSchemaValidator implements ClaimValidator {
    * @param vm the validation message
    * @return true if this is a required field error
    */
-  private boolean isRequiredFieldError(ValidationMessage vm) {
+  boolean isRequiredFieldError(ValidationMessage vm) {
     return REQUIRED_TYPE.equals(vm.getType());
   }
 
@@ -230,7 +230,7 @@ public class ClaimSchemaValidator implements ClaimValidator {
    * @param vm the validation message
    * @return the field name
    */
-  private String extractRequiredFieldName(ValidationMessage vm) {
+  String extractRequiredFieldName(ValidationMessage vm) {
     // The property field contains the missing required field name
     String property = vm.getProperty();
     if (property != null && !property.isEmpty()) {
@@ -257,7 +257,7 @@ public class ClaimSchemaValidator implements ClaimValidator {
    * @param vm the validation message
    * @return true if this is an additional properties error
    */
-  private boolean isAdditionalPropertiesError(ValidationMessage vm) {
+  boolean isAdditionalPropertiesError(ValidationMessage vm) {
     String message = vm.getMessage();
     return message != null && message.contains("is not defined in the schema");
   }
@@ -268,7 +268,7 @@ public class ClaimSchemaValidator implements ClaimValidator {
    * @param vm the validation message
    * @return the property name
    */
-  private String extractPropertyNameFromAdditionalPropertiesError(ValidationMessage vm) {
+  String extractPropertyNameFromAdditionalPropertiesError(ValidationMessage vm) {
     String message = vm.getMessage();
     // Message format: "$: property 'fieldName' is not defined in the schema..."
     int startQuote = message.indexOf("'");
@@ -285,7 +285,7 @@ public class ClaimSchemaValidator implements ClaimValidator {
    * @param vm the validation message
    * @return the field name
    */
-  private String extractFieldName(ValidationMessage vm) {
+  String extractFieldName(ValidationMessage vm) {
     String message = vm.getMessage();
     // Message format is usually "$.fieldName: error details"
     String field = message.split(":")[0].replaceFirst("^\\$\\.", "");
@@ -302,7 +302,7 @@ public class ClaimSchemaValidator implements ClaimValidator {
    * @param areaOfLaw the area of law from the claim
    * @return the display message
    */
-  private String buildDisplayMessage(String fieldName, AreaOfLaw areaOfLaw) {
+  String buildDisplayMessage(String fieldName, AreaOfLaw areaOfLaw) {
 
     // Try to get custom message from schema
     String customMessage = getCustomValidationMessage(fieldName, areaOfLaw);
@@ -321,7 +321,7 @@ public class ClaimSchemaValidator implements ClaimValidator {
    * @param areaOfLaw the area of law
    * @return the custom message, or null if not found
    */
-  private String getCustomValidationMessage(String fieldName, AreaOfLaw areaOfLaw) {
+  String getCustomValidationMessage(String fieldName, AreaOfLaw areaOfLaw) {
     JsonNode propertiesNode = schemaNode.get("properties");
     if (propertiesNode == null) {
       return null;
@@ -367,7 +367,7 @@ public class ClaimSchemaValidator implements ClaimValidator {
    * @param fieldName the field name
    * @return the text value, or null if not found
    */
-  private String getTextValue(JsonNode node, String fieldName) {
+  String getTextValue(JsonNode node, String fieldName) {
     return node.has(fieldName) ? node.get(fieldName).asText() : null;
   }
 
@@ -378,7 +378,7 @@ public class ClaimSchemaValidator implements ClaimValidator {
    * @param claimJson the claim as JSON
    * @return the technical message
    */
-  private String buildTechnicalMessage(ValidationMessage vm, JsonNode claimJson) {
+  String buildTechnicalMessage(ValidationMessage vm, JsonNode claimJson) {
     String message = vm.getMessage();
     String fieldName = extractFieldName(vm);
 
@@ -400,7 +400,7 @@ public class ClaimSchemaValidator implements ClaimValidator {
    * @param claimJson the claim as JSON
    * @return map of field name to combined technical message
    */
-  private Map<String, String> groupTechnicalMessagesByField(
+  Map<String, String> groupTechnicalMessagesByField(
       Set<ValidationMessage> validationMessages, JsonNode claimJson) {
 
     Map<String, String> fieldToTechnicalMessage = new HashMap<>();
@@ -422,7 +422,7 @@ public class ClaimSchemaValidator implements ClaimValidator {
    * @param input the input string
    * @return the title case string
    */
-  private String toTitleCase(String input) {
+  String toTitleCase(String input) {
     if (input == null || input.isEmpty()) {
       return input;
     }

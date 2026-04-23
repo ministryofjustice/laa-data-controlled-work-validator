@@ -1,7 +1,6 @@
 package uk.gov.justice.laa.dstew.payments.claims.validation.core.util;
 
-import java.util.HashSet;
-import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -9,6 +8,11 @@ import lombok.NoArgsConstructor;
 /** Utility class for string case conversions. */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class StringCaseUtil {
+
+  private static final Set<String> STOP_WORDS =
+      Set.of("of", "and", "the", "in", "on", "at", "for", "to", "with");
+
+  private static final Set<String> ALWAYS_UPPERCASE = Set.of("NIL");
 
   /**
    * Converts a string to Title Case.
@@ -18,38 +22,44 @@ public final class StringCaseUtil {
    */
   public static String toTitleCase(String input) {
     if (input == null || input.isEmpty()) {
-      return input;
+      return "";
     }
 
-    // Words to keep lowercase unless they're the first word
-    Set<String> stopWords =
-        new HashSet<>(List.of("of", "and", "the", "in", "on", "at", "for", "to", "with"));
+    // Normalize snake_case and camelCase, trim whitespace and collapse multiple spaces
+    String normalized = input.replace("_", " ").replaceAll("([a-z])([A-Z])", "$1 $2").trim();
+    if (normalized.isEmpty()) {
+      return "";
+    }
 
-    // Words to always keep uppercase
-    Set<String> alwaysUppercase = new HashSet<>(List.of("NIL"));
-
-    // Normalize snake_case and camelCase
-    String normalized = input.replace("_", " ");
-    normalized = normalized.replaceAll("([a-z])([A-Z])", "$1 $2");
-
-    // Build the result
     StringBuilder result = new StringBuilder();
-    String[] words = normalized.split(" ");
-    for (int i = 0; i < words.length; i++) {
-      String word = words[i];
-      String lowerWord = word.toLowerCase();
+    String[] words = normalized.split("\\s+"); // split on one or more whitespace
+    boolean first = true;
 
-      if (alwaysUppercase.contains(word.toUpperCase())) {
-        result.append(word.toUpperCase());
-      } else if (i == 0 || !stopWords.contains(lowerWord)) {
+    for (String word : words) {
+      if (word == null || word.isEmpty()) {
+        continue;
+      }
+
+      String lowerWord = word.toLowerCase(Locale.ENGLISH);
+
+      if (ALWAYS_UPPERCASE.contains(word.toUpperCase(Locale.ENGLISH))) {
+        if (!first) {
+          result.append(" ");
+        }
+        result.append(word.toUpperCase(Locale.ENGLISH));
+      } else if (first || !STOP_WORDS.contains(lowerWord)) {
+        if (!first) {
+          result.append(" ");
+        }
         result.append(Character.toUpperCase(lowerWord.charAt(0))).append(lowerWord.substring(1));
       } else {
+        result.append(" ");
         result.append(lowerWord);
       }
 
-      result.append(" ");
+      first = false;
     }
 
-    return result.toString().trim();
+    return result.toString();
   }
 }
