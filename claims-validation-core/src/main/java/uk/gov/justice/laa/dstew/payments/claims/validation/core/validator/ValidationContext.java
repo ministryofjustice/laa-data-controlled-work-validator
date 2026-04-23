@@ -27,5 +27,5 @@ public class ValidationContext {
 
   /** Other claims in the same submission (for duplicate checking). */
   @Builder.Default private final List<Claim> relatedClaims = List.of();
-  
+
 }
