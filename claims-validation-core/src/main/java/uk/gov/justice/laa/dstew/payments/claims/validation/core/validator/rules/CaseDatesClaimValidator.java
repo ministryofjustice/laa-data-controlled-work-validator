@@ -9,10 +9,10 @@ import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
-import uk.gov.justice.laa.dstew.payments.claims.model.AreaOfLaw;
-import uk.gov.justice.laa.dstew.payments.claims.model.Claim;
-import uk.gov.justice.laa.dstew.payments.claims.model.ValidationIssue;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationIssue;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.ValidationContext;
+import uk.gov.justice.laa.dstew.payments.claimsdata.model.AreaOfLaw;
 
 /**
  * Validator for case-related dates. Validates case start date, case concluded date, transfer date,

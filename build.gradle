@@ -45,9 +45,10 @@ subprojects {
     }
 }
 
-// Configure spotless and checkstyleStaged for core and service modules
-configure(subprojects.findAll { it.name in ['claims-validation-core', 'claims-validation-service'] }) {
+// Configure spotless, publishing and checkstyleStaged for all subprojects
+configure(subprojects) {
     apply plugin: 'com.diffplug.spotless'
+    apply plugin: 'maven-publish'
 
     spotless {
         java {
@@ -73,11 +74,6 @@ configure(subprojects.findAll { it.name in ['claims-validation-core', 'claims-va
 
         classpath = sourceSets.main.compileClasspath
     }
-}
-
-// Configure publishing for library modules only
-configure(subprojects.findAll { it.name in ['claims-validation-api', 'claims-validation-core'] }) {
-    apply plugin: 'maven-publish'
 
     publishing {
         repositories {

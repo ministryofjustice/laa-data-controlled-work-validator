@@ -6,13 +6,9 @@ build/
 .DS_Store
 
 reference-fee-scheme-platform-api/generated
-claims-validation-api/generated
 
 # Ignore bin directories in subprojects
-claims-validation-api/bin/
 claims-validation-core/bin/
-claims-validation-grpc/bin/
-claims-validation-service/bin/
 reference-fee-scheme-platform-api/bin/
 
 ### IntelliJ IDEA ###

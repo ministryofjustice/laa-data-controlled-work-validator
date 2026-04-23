@@ -3,9 +3,9 @@ package uk.gov.justice.laa.dstew.payments.claims.validation.core.util;
 import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import uk.gov.justice.laa.dstew.payments.claims.model.Claim;
-import uk.gov.justice.laa.dstew.payments.claims.model.ClaimStatus;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
 import uk.gov.justice.laa.dstew.payments.claimsdata.model.ClaimResponse;
+import uk.gov.justice.laa.dstew.payments.claimsdata.model.ClaimStatus;
 
 /** Utility class for mapping between different claim model representations. */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)

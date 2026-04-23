@@ -5,9 +5,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import uk.gov.justice.laa.dstew.payments.claims.model.AreaOfLaw;
-import uk.gov.justice.laa.dstew.payments.claims.model.Claim;
-import uk.gov.justice.laa.dstew.payments.claims.model.ValidationIssue;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationIssue;
+import uk.gov.justice.laa.dstew.payments.claimsdata.model.AreaOfLaw;
 
 /**
  * Strategy interface for validating duplicate claims. Implementations handle specific area-of-law

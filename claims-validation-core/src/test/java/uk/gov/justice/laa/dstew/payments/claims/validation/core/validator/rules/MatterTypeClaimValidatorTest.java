@@ -2,16 +2,19 @@ package uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.rules
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
-import uk.gov.justice.laa.dstew.payments.claims.model.AreaOfLaw;
-import uk.gov.justice.laa.dstew.payments.claims.model.Claim;
-import uk.gov.justice.laa.dstew.payments.claims.model.ClaimStatus;
-import uk.gov.justice.laa.dstew.payments.claims.model.ValidationIssue;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationIssue;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.ValidationContext;
+import uk.gov.justice.laa.dstew.payments.claimsdata.model.AreaOfLaw;
+import uk.gov.justice.laa.dstew.payments.claimsdata.model.ClaimStatus;
 
 @DisplayName("Matter type claim with area of law validator test")
 class MatterTypeClaimValidatorTest {
@@ -40,12 +43,12 @@ class MatterTypeClaimValidatorTest {
       String regex,
       boolean expectError,
       String expectedDisplayMessage) {
-    java.util.UUID claimId = new java.util.UUID(claimIdBit, claimIdBit);
-    Claim claim = new Claim().id(claimId).matterTypeCode(matterTypeCode).areaOfLaw(areaOfLaw);
+    UUID claimId = new UUID(claimIdBit, claimIdBit);
+    Claim claim = Claim.builder().id(claimId).matterTypeCode(matterTypeCode).areaOfLaw(areaOfLaw).build();
     ValidationContext context = ValidationContext.builder().build();
 
     // Run validation
-    java.util.List<ValidationIssue> issues = validator.validate(claim, context);
+    List<ValidationIssue> issues = validator.validate(claim, context);
 
     if (expectError) {
       String expectedMessage =
@@ -63,28 +66,29 @@ class MatterTypeClaimValidatorTest {
 
   @Test
   void shouldNotAddDuplicateRegexValidationError() {
-    java.util.UUID claimId = new java.util.UUID(1, 1);
+    UUID claimId = new UUID(1, 1);
     Claim claim =
-        new Claim()
+        Claim.builder()
             .id(claimId)
             .feeCode("feeCode1")
             .caseStartDate("2025-08-14")
             .status(ClaimStatus.READY_TO_PROCESS)
             .uniqueFileNumber("010101/123")
             .matterTypeCode("ABCDE:ABCDE") // invalid matter type code
-            .areaOfLaw(AreaOfLaw.LEGAL_HELP);
+            .areaOfLaw(AreaOfLaw.LEGAL_HELP)
+            .build();
 
     ValidationContext context = ValidationContext.builder().build();
     // Simulate a pre-existing error (if needed, but the validator should not add a duplicate)
-    java.util.List<ValidationIssue> issues = new java.util.ArrayList<>();
+    List<ValidationIssue> issues = new ArrayList<>();
     issues.add(
-        new ValidationIssue()
-            .code(null)
+        ValidationIssue.builder()
             .message("Each Matter Type Code 1 and 2 must be 4 characters")
-            .technicalMessage("matter_type_code: does not match regex pattern"));
+            .technicalMessage("matter_type_code: does not match regex pattern")
+            .build());
 
     // Run validation
-    java.util.List<ValidationIssue> newIssues = validator.validate(claim, context);
+    List<ValidationIssue> newIssues = validator.validate(claim, context);
 
     // Only one error should exist (no duplicate)
     assertThat(newIssues.size()).isLessThanOrEqualTo(1);

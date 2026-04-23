@@ -6,12 +6,12 @@ import java.math.BigDecimal;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import uk.gov.justice.laa.dstew.payments.claims.model.AreaOfLaw;
-import uk.gov.justice.laa.dstew.payments.claims.model.Claim;
-import uk.gov.justice.laa.dstew.payments.claims.model.ClaimStatus;
-import uk.gov.justice.laa.dstew.payments.claims.model.ValidationIssue;
-import uk.gov.justice.laa.dstew.payments.claims.model.ValidationSeverity;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationIssue;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationSeverity;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.ValidationContext;
+import uk.gov.justice.laa.dstew.payments.claimsdata.model.AreaOfLaw;
+import uk.gov.justice.laa.dstew.payments.claimsdata.model.ClaimStatus;
 
 /** Unit tests for {@link ClaimSchemaValidator}. */
 class ClaimSchemaValidatorTest {
@@ -40,13 +40,13 @@ class ClaimSchemaValidatorTest {
    * lineNumber, netDisbursementAmount, disbursementsVatAmount, feeCode
    */
   private Claim createClaimWithRequiredFields() {
-    Claim claim = new Claim();
-    claim.setStatus(ClaimStatus.READY_TO_PROCESS);
-    claim.setLineNumber(1);
-    claim.setNetDisbursementAmount(BigDecimal.ZERO);
-    claim.setDisbursementsVatAmount(BigDecimal.ZERO);
-    claim.setFeeCode("ABC123");
-    return claim;
+    return Claim.builder()
+        .status(ClaimStatus.READY_TO_PROCESS)
+        .lineNumber(1)
+        .netDisbursementAmount(BigDecimal.ZERO)
+        .disbursementsVatAmount(BigDecimal.ZERO)
+        .feeCode("ABC123")
+        .build();
   }
 
   @Test
@@ -190,7 +190,7 @@ class ClaimSchemaValidatorTest {
 
   @Test
   void validate_returnsSeparateErrors_forEachMissingRequiredField() {
-    Claim claim = new Claim();
+    Claim claim = Claim.builder().build();
     // Don't set any required fields
 
     List<ValidationIssue> issues = validator.validate(claim, context);

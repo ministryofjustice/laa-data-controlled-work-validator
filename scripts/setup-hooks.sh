@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Setup script for Git hooks
-echo "Setting up Pre-commit for LAA Data Claims API..."
+echo "Setting up Pre-commit for LAA Data Claims Validation Core..."
 
 # Install prek globally
 echo "\nInstalling prek globally"

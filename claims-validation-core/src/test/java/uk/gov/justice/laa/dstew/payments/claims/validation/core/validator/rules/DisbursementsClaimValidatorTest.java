@@ -8,10 +8,10 @@ import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
-import uk.gov.justice.laa.dstew.payments.claims.model.AreaOfLaw;
-import uk.gov.justice.laa.dstew.payments.claims.model.Claim;
-import uk.gov.justice.laa.dstew.payments.claims.model.ValidationIssue;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationIssue;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.ValidationContext;
+import uk.gov.justice.laa.dstew.payments.claimsdata.model.AreaOfLaw;
 
 @DisplayName("Disbursements claim validator test")
 class DisbursementsClaimValidatorTest {
@@ -37,11 +37,11 @@ class DisbursementsClaimValidatorTest {
       BigDecimal maxAllowed, // unused, but kept for parameterization compatibility
       boolean expectError) {
     UUID claimId = new UUID(claimIdBit, claimIdBit);
-    Claim claim =
-        new Claim().id(claimId).disbursementsVatAmount(disbursementsVatAmount).areaOfLaw(areaOfLaw);
+    Claim.ClaimBuilder claimBuilder = Claim.builder().id(claimId).disbursementsVatAmount(disbursementsVatAmount).areaOfLaw(areaOfLaw);
     if (AreaOfLaw.CRIME_LOWER.equals(areaOfLaw)) {
-      claim.stageReachedCode("ABCD");
+      claimBuilder.stageReachedCode("ABCD");
     }
+    Claim claim = claimBuilder.build();
 
     ValidationContext context = ValidationContext.builder().build();
 
@@ -52,7 +52,7 @@ class DisbursementsClaimValidatorTest {
       String expectedMessage = "Disbursements VAT Amount has exceeded the maximum accepted value";
       assertThat(issues.getFirst().getMessage()).isEqualTo(expectedMessage);
     } else {
-      assertThat(issues.size()).isEqualTo(0);
+      assertThat(issues.size()).isZero();
     }
   }
 }

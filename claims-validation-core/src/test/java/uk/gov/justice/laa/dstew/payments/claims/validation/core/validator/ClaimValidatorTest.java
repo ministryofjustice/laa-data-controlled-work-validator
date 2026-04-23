@@ -5,14 +5,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import uk.gov.justice.laa.dstew.payments.claims.model.AreaOfLaw;
-import uk.gov.justice.laa.dstew.payments.claims.model.Claim;
-import uk.gov.justice.laa.dstew.payments.claims.model.ValidationIssue;
-import uk.gov.justice.laa.dstew.payments.claims.model.ValidationSeverity;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.config.ExclusionsRegistry;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.config.MandatoryFieldsRegistry;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationIssue;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationSeverity;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.rules.MandatoryFieldClaimValidator;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.rules.UniqueFileNumberClaimValidator;
+import uk.gov.justice.laa.dstew.payments.claimsdata.model.AreaOfLaw;
 
 class ClaimValidatorTest {
 
@@ -30,8 +30,9 @@ class ClaimValidatorTest {
 
   @Test
   void mandatoryFieldValidator_returnsErrorWhenMandatoryFieldsMissing() {
-    Claim claim = new Claim();
-    claim.setAreaOfLaw(AreaOfLaw.CRIME_LOWER);
+    Claim claim = Claim.builder()
+        .areaOfLaw(AreaOfLaw.CRIME_LOWER)
+        .build();
     // Missing mandatory fields for CRIME_LOWER: caseConcludedDate, stageReachedCode, etc.
     ValidationContext context = ValidationContext.builder().scope("fee").build();
 
@@ -44,12 +45,13 @@ class ClaimValidatorTest {
 
   @Test
   void mandatoryFieldValidator_returnsNoErrorsWhenAllMandatoryFieldsPresent() {
-    Claim claim = new Claim();
-    claim.setAreaOfLaw(AreaOfLaw.CRIME_LOWER);
-    claim.setCaseConcludedDate("2025-01-15");
-    claim.setStageReachedCode("PROA");
-    claim.setNetProfitCostsAmount(new java.math.BigDecimal("100.00"));
-    claim.setDisbursementsVatAmount(new java.math.BigDecimal("20.00"));
+    Claim claim = Claim.builder()
+        .areaOfLaw(AreaOfLaw.CRIME_LOWER)
+        .caseConcludedDate("2025-01-15")
+        .stageReachedCode("PROA")
+        .netProfitCostsAmount(new java.math.BigDecimal("100.00"))
+        .disbursementsVatAmount(new java.math.BigDecimal("20.00"))
+        .build();
     ValidationContext context = ValidationContext.builder().scope("fee").build();
 
     List<ValidationIssue> issues = mandatoryFieldClaimValidator.validate(claim, context);
@@ -59,7 +61,7 @@ class ClaimValidatorTest {
 
   @Test
   void mandatoryFieldValidator_returnsNoErrorsWhenNoAreaOfLaw() {
-    Claim claim = new Claim();
+    Claim claim = Claim.builder().build();
     // No area of law set - no mandatory fields to check
     ValidationContext context = ValidationContext.builder().scope("fee").build();
 
@@ -70,8 +72,9 @@ class ClaimValidatorTest {
 
   @Test
   void uniqueFileNumberValidator_returnsNoErrorsWhenUfnValid() {
-    Claim claim = new Claim();
-    claim.setUniqueFileNumber("010120/001");
+    Claim claim = Claim.builder()
+        .uniqueFileNumber("010120/001")
+        .build();
     ValidationContext context = ValidationContext.builder().build();
 
     List<ValidationIssue> issues = uniqueFileNumberClaimValidator.validate(claim, context);
@@ -81,8 +84,9 @@ class ClaimValidatorTest {
 
   @Test
   void uniqueFileNumberValidator_returnsErrorWhenUfnFormatInvalid() {
-    Claim claim = new Claim();
-    claim.setUniqueFileNumber("invalid-format");
+    Claim claim = Claim.builder()
+        .uniqueFileNumber("invalid-format")
+        .build();
     ValidationContext context = ValidationContext.builder().build();
 
     List<ValidationIssue> issues = uniqueFileNumberClaimValidator.validate(claim, context);
@@ -93,9 +97,9 @@ class ClaimValidatorTest {
 
   @Test
   void uniqueFileNumberValidator_returnsErrorWhenUfnDateInFuture() {
-    Claim claim = new Claim();
-    // Use a date far in the future (49 = 2049 which is in the future)
-    claim.setUniqueFileNumber("010149/001");
+    Claim claim = Claim.builder()
+        .uniqueFileNumber("010149/001")
+        .build();
     ValidationContext context = ValidationContext.builder().build();
 
     List<ValidationIssue> issues = uniqueFileNumberClaimValidator.validate(claim, context);
@@ -106,7 +110,7 @@ class ClaimValidatorTest {
 
   @Test
   void uniqueFileNumberValidator_returnsNoErrorsWhenUfnMissing() {
-    Claim claim = new Claim();
+    Claim claim = Claim.builder().build();
     ValidationContext context = ValidationContext.builder().build();
 
     List<ValidationIssue> issues = uniqueFileNumberClaimValidator.validate(claim, context);

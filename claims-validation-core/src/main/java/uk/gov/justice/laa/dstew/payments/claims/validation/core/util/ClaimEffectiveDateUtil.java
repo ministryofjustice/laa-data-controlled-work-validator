@@ -7,7 +7,7 @@ import java.util.Objects;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.springframework.util.StringUtils;
-import uk.gov.justice.laa.dstew.payments.claims.model.Claim;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
 
 /** Utility class for calculating the effective date of a claim. */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)

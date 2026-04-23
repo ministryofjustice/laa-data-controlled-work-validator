@@ -11,9 +11,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
-import uk.gov.justice.laa.dstew.payments.claims.model.Claim;
-import uk.gov.justice.laa.dstew.payments.claims.model.ValidationIssue;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.error.ClaimValidationError;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationIssue;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.ValidationContext;
 
 @DisplayName("Unique file number claim validator test")
@@ -26,7 +26,7 @@ class UniqueFileNumberClaimValidatorTest {
   void shouldHaveNoErrors() {
     // Given
     String uniqueFileNumber = "010101/123";
-    Claim claim = new Claim().uniqueFileNumber(uniqueFileNumber);
+    Claim claim = Claim.builder().uniqueFileNumber(uniqueFileNumber).build();
     ValidationContext context = ValidationContext.builder().build();
 
     // When
@@ -43,7 +43,7 @@ class UniqueFileNumberClaimValidatorTest {
           + "MandatoryFieldClaimValidator)")
   void shouldHaveErrorsIfUfnIsEmpty(String ufn) {
     // Given
-    Claim claim = new Claim().uniqueFileNumber(ufn);
+    Claim claim = Claim.builder().uniqueFileNumber(ufn).build();
     ValidationContext context = ValidationContext.builder().build();
 
     // When
@@ -67,7 +67,7 @@ class UniqueFileNumberClaimValidatorTest {
   @DisplayName("Should have errors if UFN is not in correct format")
   void shouldHaveAnErrorIfUfnIsNotInCorrectFormat(String ufn) {
     // Given
-    Claim claim = new Claim().uniqueFileNumber(ufn);
+    Claim claim = Claim.builder().uniqueFileNumber(ufn).build();
     ValidationContext context = ValidationContext.builder().build();
 
     // When
@@ -86,7 +86,7 @@ class UniqueFileNumberClaimValidatorTest {
     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("ddMMyy");
     String format = formatter.format(LocalDate.now().plusDays(1));
     String ufn = format + "/123";
-    Claim claim = new Claim().uniqueFileNumber(ufn);
+    Claim claim = Claim.builder().uniqueFileNumber(ufn).build();
     ValidationContext context = ValidationContext.builder().build();
 
     // When
@@ -106,7 +106,7 @@ class UniqueFileNumberClaimValidatorTest {
   @DisplayName("Should not add duplicate errors if the field is already in error")
   void shouldNotAddDuplicateErrorsIfTheFieldIsAlreadyInError() {
     // Given
-    Claim claim = new Claim().uniqueFileNumber("01010124/123"); // invalid date
+    Claim claim = Claim.builder().uniqueFileNumber("01010124/123").build(); // invalid date
     ValidationContext context = ValidationContext.builder().build();
 
     // When
@@ -123,7 +123,7 @@ class UniqueFileNumberClaimValidatorTest {
   @DisplayName("Should have errors if date is not correct")
   void shouldHaveErrorsIfDateCantBeParsed(String ufn) {
     // Given
-    Claim claim = new Claim().uniqueFileNumber(ufn);
+    Claim claim = Claim.builder().uniqueFileNumber(ufn).build();
     ValidationContext context = ValidationContext.builder().build();
 
     // When

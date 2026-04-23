@@ -8,11 +8,11 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
-import uk.gov.justice.laa.dstew.payments.claims.model.AreaOfLaw;
-import uk.gov.justice.laa.dstew.payments.claims.model.Claim;
-import uk.gov.justice.laa.dstew.payments.claims.model.ClaimStatus;
-import uk.gov.justice.laa.dstew.payments.claims.model.ValidationIssue;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationIssue;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.ValidationContext;
+import uk.gov.justice.laa.dstew.payments.claimsdata.model.AreaOfLaw;
+import uk.gov.justice.laa.dstew.payments.claimsdata.model.ClaimStatus;
 
 @DisplayName("Schedule reference claim validator test")
 class ScheduleReferenceClaimValidatorTest {
@@ -43,7 +43,7 @@ class ScheduleReferenceClaimValidatorTest {
       boolean expectError) {
     UUID claimId = new UUID(claimIdBit, claimIdBit);
     Claim claim =
-        new Claim()
+        Claim.builder()
             .id(claimId)
             .feeCode("feeCode1")
             .caseStartDate("2025-08-14")
@@ -53,7 +53,8 @@ class ScheduleReferenceClaimValidatorTest {
             .status(ClaimStatus.READY_TO_PROCESS)
             .uniqueFileNumber("010101/123")
             .matterTypeCode(matterTypeCode)
-            .areaOfLaw(AreaOfLaw.valueOf(areaOfLaw.replace(' ', '_')));
+            .areaOfLaw(AreaOfLaw.valueOf(areaOfLaw.replace(' ', '_')))
+            .build();
     ValidationContext context = ValidationContext.builder().build();
     List<ValidationIssue> issues = validator.validate(claim, context);
     if (expectError) {

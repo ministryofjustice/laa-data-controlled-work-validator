@@ -12,10 +12,10 @@ import java.util.Comparator;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import uk.gov.justice.laa.dstew.payments.claims.model.Claim;
-import uk.gov.justice.laa.dstew.payments.claims.model.ValidationIssue;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.client.ClaimsDataProvider;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.error.ClaimValidationError;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationIssue;
 
 /**
  * Duplicate-claim validation strategy for Legal Help disbursement claims. Implements Rule B - Case

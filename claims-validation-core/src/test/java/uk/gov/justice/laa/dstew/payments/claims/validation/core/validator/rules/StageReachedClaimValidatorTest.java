@@ -10,11 +10,11 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
-import uk.gov.justice.laa.dstew.payments.claims.model.AreaOfLaw;
-import uk.gov.justice.laa.dstew.payments.claims.model.Claim;
-import uk.gov.justice.laa.dstew.payments.claims.model.ClaimStatus;
-import uk.gov.justice.laa.dstew.payments.claims.model.ValidationIssue;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationIssue;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.ValidationContext;
+import uk.gov.justice.laa.dstew.payments.claimsdata.model.AreaOfLaw;
+import uk.gov.justice.laa.dstew.payments.claimsdata.model.ClaimStatus;
 
 @DisplayName("Stage reached claim validator test")
 class StageReachedClaimValidatorTest {
@@ -45,23 +45,24 @@ class StageReachedClaimValidatorTest {
       String expectedTechnical) {
     UUID claimId = new UUID(claimIdBit, claimIdBit);
     Claim claim =
-        new Claim()
+        Claim.builder()
             .id(claimId)
             .feeCode("feeCode1")
             .caseStartDate("2025-08-14")
             .status(ClaimStatus.READY_TO_PROCESS)
             .uniqueFileNumber("010101/123")
             .stageReachedCode(stageReachedCode)
-            .areaOfLaw(areaOfLaw);
+            .areaOfLaw(areaOfLaw)
+            .build();
 
     ValidationContext context = ValidationContext.builder().build();
     List<ValidationIssue> issues = validator.validate(claim, context);
 
     if (expectError) {
       assertThat(issues).hasSize(1);
-      assertThat(issues.get(0).getCode()).isEqualTo(expectedCode);
-      assertThat(issues.get(0).getMessage()).isEqualTo(expectedMessage);
-      assertThat(issues.get(0).getTechnicalMessage()).isEqualTo(expectedTechnical);
+      assertThat(issues.getFirst().getCode()).isEqualTo(expectedCode);
+      assertThat(issues.getFirst().getMessage()).isEqualTo(expectedMessage);
+      assertThat(issues.getFirst().getTechnicalMessage()).isEqualTo(expectedTechnical);
     } else {
       assertThat(issues).isEmpty();
     }
@@ -79,14 +80,15 @@ class StageReachedClaimValidatorTest {
   void checkStageReachedCodeForAllAllowedCodesForCrimeLower(String stageReachedCode) {
     UUID claimId = new UUID(1, 1);
     Claim claim =
-        new Claim()
+        Claim.builder()
             .id(claimId)
             .feeCode("feeCode1")
             .caseStartDate("2025-08-14")
             .status(ClaimStatus.READY_TO_PROCESS)
             .uniqueFileNumber("010101/123")
             .stageReachedCode(stageReachedCode)
-            .areaOfLaw(AreaOfLaw.CRIME_LOWER);
+            .areaOfLaw(AreaOfLaw.CRIME_LOWER)
+            .build();
 
     ValidationContext context = ValidationContext.builder().build();
     List<ValidationIssue> issues = validator.validate(claim, context);

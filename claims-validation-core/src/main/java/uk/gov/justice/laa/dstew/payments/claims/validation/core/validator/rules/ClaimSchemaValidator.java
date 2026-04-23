@@ -3,6 +3,7 @@ package uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.rules
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.networknt.schema.JsonSchema;
 import com.networknt.schema.JsonSchemaFactory;
 import com.networknt.schema.SpecVersion;
@@ -16,11 +17,11 @@ import java.util.Map;
 import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import uk.gov.justice.laa.dstew.payments.claims.model.AreaOfLaw;
-import uk.gov.justice.laa.dstew.payments.claims.model.Claim;
-import uk.gov.justice.laa.dstew.payments.claims.model.ValidationIssue;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.error.ClaimValidationError;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationIssue;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.ValidationContext;
+import uk.gov.justice.laa.dstew.payments.claimsdata.model.AreaOfLaw;
 
 /**
  * Validator that validates claims against a JSON schema.
@@ -64,6 +65,9 @@ public class ClaimSchemaValidator implements ClaimValidator {
     // This prevents pattern/format validation errors for optional fields that are null.
     // Required fields will still fail validation if missing MandatoryFieldClaimValidator.
     this.objectMapper.setDefaultPropertyInclusion(JsonInclude.Include.NON_NULL);
+
+    // Use snake_case to match the JSON schema property names (e.g. feeCode -> fee_code).
+    this.objectMapper.setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
   }
 
   /** Initializes the JSON schema from the classpath resource. */
@@ -111,7 +115,7 @@ public class ClaimSchemaValidator implements ClaimValidator {
       return issues;
     }
 
-    log.debug("Schema validation found {} issues", validationMessages.size());
+    log.info("Schema validation found {} issues", validationMessages.size());
 
     // Separate different types of validation errors
     List<ValidationMessage> additionalPropertiesErrors = new ArrayList<>();

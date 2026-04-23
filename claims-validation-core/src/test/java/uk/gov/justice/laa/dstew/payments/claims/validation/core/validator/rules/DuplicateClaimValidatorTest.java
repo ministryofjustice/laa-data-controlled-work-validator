@@ -14,12 +14,12 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.gov.justice.laa.dstew.payments.claims.model.AreaOfLaw;
-import uk.gov.justice.laa.dstew.payments.claims.model.Claim;
-import uk.gov.justice.laa.dstew.payments.claims.model.ValidationIssue;
-import uk.gov.justice.laa.dstew.payments.claims.model.ValidationSeverity;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationIssue;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationSeverity;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.ValidationContext;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.rules.duplicate.DuplicateClaimValidationStrategy;
+import uk.gov.justice.laa.dstew.payments.claimsdata.model.AreaOfLaw;
 
 @ExtendWith(MockitoExtension.class)
 class DuplicateClaimValidatorTest {
@@ -65,10 +65,11 @@ class DuplicateClaimValidatorTest {
     ValidationContext context = ValidationContext.builder().build();
 
     ValidationIssue duplicateIssue =
-        new ValidationIssue(
-            "INVALID_CLAIM_HAS_DUPLICATE_IN_ANOTHER_SUBMISSION",
-            "Duplicate claim found",
-            ValidationSeverity.ERROR);
+        ValidationIssue.builder()
+            .code("INVALID_CLAIM_HAS_DUPLICATE_IN_ANOTHER_SUBMISSION")
+            .message("Duplicate claim found")
+            .severity(ValidationSeverity.ERROR)
+            .build();
 
     when(mockStrategy.validateDuplicateClaims(any(), any(), anyString(), any()))
         .thenReturn(List.of(duplicateIssue));

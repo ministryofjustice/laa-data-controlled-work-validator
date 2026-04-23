@@ -10,14 +10,14 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.gov.justice.laa.dstew.payments.claims.model.AreaOfLaw;
-import uk.gov.justice.laa.dstew.payments.claims.model.Claim;
-import uk.gov.justice.laa.dstew.payments.claims.model.ClaimValidationRequest;
-import uk.gov.justice.laa.dstew.payments.claims.model.ValidationIssue;
-import uk.gov.justice.laa.dstew.payments.claims.model.ValidationResult;
-import uk.gov.justice.laa.dstew.payments.claims.model.ValidationSeverity;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ClaimValidationRequest;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationIssue;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationResult;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationSeverity;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.ValidationContext;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.rules.ClaimValidator;
+import uk.gov.justice.laa.dstew.payments.claimsdata.model.AreaOfLaw;
 
 @ExtendWith(MockitoExtension.class)
 class ValidationServiceTest {
@@ -58,7 +58,12 @@ class ValidationServiceTest {
           @Override
           public List<ValidationIssue> validate(Claim claim, ValidationContext ctx) {
             return List.of(
-                new ValidationIssue("TEST_ERROR", "Test error message", ValidationSeverity.ERROR));
+                ValidationIssue.builder()
+                    .code("TEST_ERROR")
+                    .message("Test error message")
+                    .severity(ValidationSeverity.ERROR)
+                    .build()
+            );
           }
 
           @Override
@@ -86,8 +91,12 @@ class ValidationServiceTest {
           @Override
           public List<ValidationIssue> validate(Claim claim, ValidationContext ctx) {
             return List.of(
-                new ValidationIssue(
-                    "TEST_WARNING", "Test warning message", ValidationSeverity.WARNING));
+                ValidationIssue.builder()
+                    .code("TEST_WARNING")
+                    .message("Test warning message")
+                    .severity(ValidationSeverity.WARNING)
+                    .build()
+            );
           }
 
           @Override

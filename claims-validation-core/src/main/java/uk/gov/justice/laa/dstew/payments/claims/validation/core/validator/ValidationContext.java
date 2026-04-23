@@ -3,7 +3,7 @@ package uk.gov.justice.laa.dstew.payments.claims.validation.core.validator;
 import java.util.List;
 import lombok.Builder;
 import lombok.Getter;
-import uk.gov.justice.laa.dstew.payments.claims.model.Claim;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
 
 /**
  * Context object containing request-level data needed for claim validation. This provides

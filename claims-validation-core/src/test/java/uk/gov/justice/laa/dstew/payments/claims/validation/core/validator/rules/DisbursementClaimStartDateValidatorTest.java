@@ -10,9 +10,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
-import uk.gov.justice.laa.dstew.payments.claims.model.Claim;
-import uk.gov.justice.laa.dstew.payments.claims.model.ValidationIssue;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.FeeCalculationType;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationIssue;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.ValidationContext;
 
 class DisbursementClaimStartDateValidatorTest {
@@ -33,8 +33,7 @@ class DisbursementClaimStartDateValidatorTest {
         ValidationContext.builder()
             .feeCalculationType(FeeCalculationType.DISB_ONLY.getValue())
             .build();
-    claim = new Claim();
-    claim.id(claimId);
+    claim = Claim.builder().id(claimId).build();
   }
 
   @ParameterizedTest
@@ -57,8 +56,7 @@ class DisbursementClaimStartDateValidatorTest {
       "Should pass validation when claimStartDate is greater than or equals to 3 months of submission period")
   void shouldPassValidationWhenClaimStartDateIsGreaterThanOrEqualTo3MonthsOfSubmissionPeriod(
       String caseStartDate, String submissionPeriod) {
-    claim.caseStartDate(caseStartDate);
-    claim.submissionPeriod(submissionPeriod);
+    claim = claim.toBuilder().caseStartDate(caseStartDate).submissionPeriod(submissionPeriod).build();
 
     List<ValidationIssue> issues = validator.validate(claim, context);
 
@@ -81,8 +79,7 @@ class DisbursementClaimStartDateValidatorTest {
       "Should fail validation when claimStartDate is less than 3 months of submission period end date (which is 20th of following month)")
   void shouldFailValidationWhenClaimStartDateIsLessThan3MonthsOfSubmissionPeriod(
       String caseStartDate, String submissionPeriod) {
-    claim.caseStartDate(caseStartDate);
-    claim.submissionPeriod(submissionPeriod);
+    claim = claim.toBuilder().caseStartDate(caseStartDate).submissionPeriod(submissionPeriod).build();
     LocalDate startDate = LocalDate.parse(caseStartDate, DATE_FORMATTER_YYYY_MM_DD);
 
     List<ValidationIssue> issues = validator.validate(claim, context);

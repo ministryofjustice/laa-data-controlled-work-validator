@@ -21,13 +21,13 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
-import uk.gov.justice.laa.dstew.payments.claims.model.AreaOfLaw;
-import uk.gov.justice.laa.dstew.payments.claims.model.Claim;
-import uk.gov.justice.laa.dstew.payments.claims.model.ClaimStatus;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.client.FeeSchemeClient;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.client.ProviderDetailsClient;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.error.ClaimValidationError;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.ValidationContext;
+import uk.gov.justice.laa.dstew.payments.claimsdata.model.AreaOfLaw;
+import uk.gov.justice.laa.dstew.payments.claimsdata.model.ClaimStatus;
 import uk.gov.justice.laa.fee.scheme.model.FeeDetailsResponse;
 import uk.gov.justice.laadata.providers.model.FirmOfficeContractAndScheduleDetails;
 import uk.gov.justice.laadata.providers.model.FirmOfficeContractAndScheduleLine;
@@ -51,13 +51,14 @@ class EffectiveCategoryOfLawClaimValidatorTest {
   @DisplayName("Validates category of law with provider and fee scheme clients")
   void validatesCategoryOfLawWithProviderAndFeeSchemeClients() {
     UUID claimId = new UUID(1, 1);
-    Claim claim = new Claim();
-    claim.setId(claimId);
-    claim.setFeeCode("feeCode1");
-    claim.setCaseStartDate("2025-08-14");
-    claim.setStatus(ClaimStatus.READY_TO_PROCESS);
-    claim.setOfficeAccountNumber("officeAccountNumber");
-    claim.setAreaOfLaw(AreaOfLaw.LEGAL_HELP);
+    Claim claim = Claim.builder()
+        .id(claimId)
+        .feeCode("feeCode1")
+        .caseStartDate("2025-08-14")
+        .status(ClaimStatus.READY_TO_PROCESS)
+        .officeAccountNumber("officeAccountNumber")
+        .areaOfLaw(AreaOfLaw.LEGAL_HELP)
+        .build();
 
     ProviderFirmOfficeContractAndScheduleDto data =
         new ProviderFirmOfficeContractAndScheduleDto()
@@ -70,7 +71,7 @@ class EffectiveCategoryOfLawClaimValidatorTest {
         .thenReturn(Mono.just(data));
     FeeDetailsResponse feeDetailsResponse = new FeeDetailsResponse();
     feeDetailsResponse.setCategoryOfLawCode("categoryOfLaw1");
-    when(feeSchemeClient.getFeeDetails(eq("feeCode1")))
+    when(feeSchemeClient.getFeeDetails("feeCode1"))
         .thenReturn(ResponseEntity.ok(feeDetailsResponse));
     ValidationContext context = ValidationContext.builder().build();
     List<?> issues = validator.validate(claim, context);
@@ -90,13 +91,14 @@ class EffectiveCategoryOfLawClaimValidatorTest {
   @DisplayName("Should handle exceptions by adding error message")
   void shouldHandleExceptions(Exception exception) {
     UUID claimId = new UUID(1, 1);
-    Claim claim = new Claim();
-    claim.setId(claimId);
-    claim.setFeeCode("feeCode1");
-    claim.setCaseStartDate("2025-08-14");
-    claim.setStatus(ClaimStatus.READY_TO_PROCESS);
-    claim.setOfficeAccountNumber("officeAccountNumber");
-    claim.setAreaOfLaw(AreaOfLaw.LEGAL_HELP);
+    Claim claim = Claim.builder()
+        .id(claimId)
+        .feeCode("feeCode1")
+        .caseStartDate("2025-08-14")
+        .status(ClaimStatus.READY_TO_PROCESS)
+        .officeAccountNumber("officeAccountNumber")
+        .areaOfLaw(AreaOfLaw.LEGAL_HELP)
+        .build();
     when(providerDetailsClient.getProviderFirmSchedules(
             eq("officeAccountNumber"), eq(AreaOfLaw.LEGAL_HELP.getValue()), any(LocalDate.class)))
         .thenReturn(Mono.error(exception));
