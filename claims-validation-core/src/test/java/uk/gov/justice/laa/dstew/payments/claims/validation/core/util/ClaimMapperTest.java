@@ -3,7 +3,6 @@ package uk.gov.justice.laa.dstew.payments.claims.validation.core.util;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 
-import java.lang.reflect.Method;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -19,20 +18,6 @@ class ClaimMapperTest {
   @DisplayName("fromClaimResponse returns null for null input")
   void fromClaimResponse_null() {
     assertThat(ClaimMapper.fromClaimResponse(null)).isNull();
-  }
-
-  @Test
-  @DisplayName("mapClaimStatus maps all external statuses to internal statuses")
-  void mapClaimStatus_all() throws Exception {
-    Method m = ClaimMapper.class.getDeclaredMethod(
-        "mapClaimStatus", ClaimStatus.class);
-    m.setAccessible(true);
-    for (ClaimStatus ext :
-        ClaimStatus.values()) {
-      Object res = m.invoke(null, ext);
-      // ensure no null mapping for known statuses
-      assertThat(res).isNotNull();
-    }
   }
 
   @Test

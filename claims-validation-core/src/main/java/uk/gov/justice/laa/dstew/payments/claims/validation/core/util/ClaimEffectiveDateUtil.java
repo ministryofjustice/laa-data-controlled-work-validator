@@ -86,7 +86,7 @@ public final class ClaimEffectiveDateUtil {
    * @return the parsed LocalDate
    * @throws IllegalArgumentException if the UFN cannot be parsed
    */
-  private static LocalDate parseUniqueFileNumber(String uniqueFileNumber) {
+  public static LocalDate parseUniqueFileNumber(String uniqueFileNumber) {
     if (uniqueFileNumber == null || !uniqueFileNumber.matches("\\d{6}/\\d{3}")) {
       throw new IllegalArgumentException(
           String.format(

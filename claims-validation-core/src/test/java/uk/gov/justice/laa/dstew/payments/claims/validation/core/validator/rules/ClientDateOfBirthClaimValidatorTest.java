@@ -64,7 +64,6 @@ class ClientDateOfBirthClaimValidatorTest {
     ValidationContext context = ValidationContext.builder().build();
 
     List<?> issues = validator.validate(claim, context);
-    System.out.println("validateClientDateOfBirthTwo issues: " + issues);
 
     assertThat(
             issues.stream()

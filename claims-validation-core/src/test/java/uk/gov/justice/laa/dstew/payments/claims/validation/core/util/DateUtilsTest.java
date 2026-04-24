@@ -41,6 +41,136 @@ class DateUtilsTest {
   }
 
   @Nested
+  @DisplayName("range and boundary checks")
+  class RangeAndBoundary {
+
+    @Test
+    @DisplayName("isDateWithinRange returns false when earliest or latest are null")
+    void nullBoundsReturnFalse() {
+      LocalDate date = LocalDate.of(2020, 1, 1);
+      assertThat(DateUtils.isDateWithinRange(date, null, LocalDate.now())).isFalse();
+      assertThat(DateUtils.isDateWithinRange(date, LocalDate.of(1900, 1, 1), null)).isFalse();
+      assertThat(DateUtils.isDateWithinRange(null, LocalDate.of(1900, 1, 1), LocalDate.now())).isFalse();
+    }
+
+    @Test
+    @DisplayName("isValidDateOfBirth accepts MIN_BIRTH_DATE and today's date")
+    void dobBoundaryValues() {
+      assertThat(DateUtils.isValidDateOfBirth(LocalDate.of(1900, 1, 1))).isTrue();
+      assertThat(DateUtils.isValidDateOfBirth(LocalDate.now())).isTrue();
+    }
+
+    @Test
+    @DisplayName("submissionPeriodCutoffDate correctly wraps year-end months")
+    void cutoffWrapsYear() {
+      YearMonth dec = YearMonth.of(2025, 12);
+      assertThat(DateUtils.submissionPeriodCutoffDate(dec)).isEqualTo(LocalDate.of(2026, 1, 20));
+    }
+  }
+
+  @Nested
+  @DisplayName("checkDateNotInFutureAndWithinAllowedPeriod behaviours")
+  class CheckDateBehaviours {
+
+    @Test
+    @DisplayName("when claim has no submissionPeriod the check is a no-op")
+    void noSubmissionPeriodIsNoOp() {
+      Claim c = Claim.builder().submissionPeriod(null).build();
+      String future = LocalDate.now().plusDays(10).format(DateUtils.DATE_FORMATTER_YYYY_MM_DD);
+      List<ValidationIssue> issues =
+          DateUtils.checkDateNotInFutureAndWithinAllowedPeriod(c, "Case Start Date", future, LocalDate.of(1900, 1, 1));
+      assertThat(issues).isEmpty();
+    }
+
+    @Test
+    @DisplayName("blank date value is ignored when submission period present")
+    void blankDateIsIgnored() {
+      Claim c = Claim.builder().submissionPeriod("JAN-2026").build();
+      List<ValidationIssue> issues =
+          DateUtils.checkDateNotInFutureAndWithinAllowedPeriod(c, "Case Start Date", "", LocalDate.of(1900, 1, 1));
+      assertThat(issues).isEmpty();
+    }
+
+    @Test
+    @DisplayName("field name mapping produces appropriate error codes for early date")
+    void fieldNameMappingsProduceCorrectCodes() {
+      String[] fieldNames = {
+        "Case Start Date",
+        "Case Concluded Date",
+        "Transfer Date",
+        "Representation Order Date",
+        "Client Date of Birth",
+        "Client 2 Date of Birth",
+        "Some Other Field"
+      };
+
+      String[] expectedCodes = {
+        "INVALID_CASE_START_DATE",
+        "INVALID_CASE_CONCLUDED_DATE",
+        "INVALID_TRANSFER_DATE",
+        "INVALID_REPRESENTATION_ORDER_DATE",
+        "INVALID_CLIENT_DATE_OF_BIRTH",
+        "INVALID_CLIENT_DATE_OF_BIRTH",
+        "INVALID_DATE_FORMAT"
+      };
+
+      for (int i = 0; i < fieldNames.length; i++) {
+        Claim c = Claim.builder().submissionPeriod("JAN-2020").build();
+        // pick a date earlier than the earliest allowed to trigger the early-date branch
+        String early = LocalDate.of(1900, 1, 1).minusDays(1).format(DateUtils.DATE_FORMATTER_YYYY_MM_DD);
+        List<ValidationIssue> issues =
+            DateUtils.checkDateNotInFutureAndWithinAllowedPeriod(c, fieldNames[i], early, LocalDate.of(1900, 1, 1));
+        assertThat(issues).isNotEmpty();
+        assertThat(issues.get(0).getCode()).isEqualTo(expectedCodes[i]);
+      }
+    }
+  }
+
+  @Nested
+  @DisplayName("validateDateBetween edge cases")
+  class ValidateBetween {
+
+    @Test
+    @DisplayName("when earliest and latest are equal only that date is allowed")
+    void earliestEqualsLatest() {
+      try {
+        LocalDate day = LocalDate.of(2022, 2, 2);
+        // call private validateDateBetween via reflection so we can pass earliest==latest
+        java.lang.reflect.Method m =
+            DateUtils.class.getDeclaredMethod(
+                "validateDateBetween", String.class, String.class, LocalDate.class, LocalDate.class);
+        m.setAccessible(true);
+
+        // exact day should be allowed
+        @SuppressWarnings("unchecked")
+        java.util.List<ValidationIssue> ok =
+            (java.util.List<ValidationIssue>)
+                m.invoke(
+                    null,
+                    "field",
+                    day.format(DateUtils.DATE_FORMATTER_YYYY_MM_DD),
+                    day,
+                    day);
+        assertThat(ok).isEmpty();
+
+        // day + 1 should be rejected
+        @SuppressWarnings("unchecked")
+        java.util.List<ValidationIssue> bad =
+            (java.util.List<ValidationIssue>)
+                m.invoke(
+                    null,
+                    "field",
+                    day.plusDays(1).format(DateUtils.DATE_FORMATTER_YYYY_MM_DD),
+                    day,
+                    day);
+        assertThat(bad).hasSize(1);
+      } catch (Exception e) {
+        throw new RuntimeException(e);
+      }
+    }
+  }
+
+  @Nested
   @DisplayName("parsing helpers")
   class Parsing {
 
@@ -113,21 +243,21 @@ class DateUtilsTest {
       String future = LocalDate.now().plusDays(1).format(DateUtils.DATE_FORMATTER_YYYY_MM_DD);
       var issues = DateUtils.checkDateNotInFutureAndWithinAllowedPeriod(c, "field", future, LocalDate.of(1900, 1, 1));
       assertThat(issues).hasSize(1);
-      assertThat(issues.get(0).getTechnicalMessage()).contains("cannot be a future date");
+      assertThat(issues.getFirst().getTechnicalMessage()).contains("cannot be a future date");
 
       // early date
       Claim c2 = Claim.builder().submissionPeriod("JAN-2026").build();
       String early = LocalDate.of(1900, 1, 1).minusDays(1).format(DateUtils.DATE_FORMATTER_YYYY_MM_DD);
       var eIssues = DateUtils.checkDateNotInFutureAndWithinAllowedPeriod(c2, "field", early, LocalDate.of(1900, 1, 1));
       assertThat(eIssues).hasSize(1);
-      assertThat(eIssues.get(0).getTechnicalMessage()).contains("cannot be before");
+      assertThat(eIssues.getFirst().getTechnicalMessage()).contains("cannot be before");
 
       // late date - pick a submission period and a date after 20th of next month
       Claim c3 = Claim.builder().submissionPeriod("JAN-2020").build();
       String late = LocalDate.of(2020, 3, 21).format(DateUtils.DATE_FORMATTER_YYYY_MM_DD);
       var lIssues = DateUtils.checkDateNotInFutureAndWithinAllowedPeriod(c3, "field", late, LocalDate.of(1900, 1, 1));
       assertThat(lIssues).hasSize(1);
-      assertThat(lIssues.get(0).getTechnicalMessage()).contains("20th of the month following the submission period");
+      assertThat(lIssues.getFirst().getTechnicalMessage()).contains("20th of the month following the submission period");
     }
   }
 }

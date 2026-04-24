@@ -5,7 +5,6 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
 import uk.gov.justice.laa.dstew.payments.claimsdata.model.ClaimResponse;
-import uk.gov.justice.laa.dstew.payments.claimsdata.model.ClaimStatus;
 
 /** Utility class for mapping between different claim model representations. */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -33,11 +32,10 @@ public final class ClaimMapper {
     }
 
     // Status
-    if (response.getStatus() != null) {
-      claim.setStatus(mapClaimStatus(response.getStatus()));
-    }
+    claim.setStatus(response.getStatus());
 
     // Basic fields
+    claim.setSubmissionPeriod(response.getSubmissionPeriod());
     claim.setLineNumber(response.getLineNumber());
     claim.setScheduleReference(response.getScheduleReference());
     claim.setCaseReferenceNumber(response.getCaseReferenceNumber());
@@ -100,24 +98,5 @@ public final class ClaimMapper {
     claim.setWaitingTime(response.getWaitingTime());
 
     return claim;
-  }
-
-  /**
-   * Maps ClaimStatus from Data Claims API to our internal ClaimStatus.
-   *
-   * @param status the status from Data Claims API
-   * @return the mapped ClaimStatus
-   */
-  private static ClaimStatus mapClaimStatus(
-      uk.gov.justice.laa.dstew.payments.claimsdata.model.ClaimStatus status) {
-    if (status == null) {
-      return null;
-    }
-    return switch (status) {
-      case READY_TO_PROCESS -> ClaimStatus.READY_TO_PROCESS;
-      case VALID -> ClaimStatus.VALID;
-      case INVALID -> ClaimStatus.INVALID;
-      case VOID -> ClaimStatus.VOID;
-    };
   }
 }

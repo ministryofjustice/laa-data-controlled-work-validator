@@ -36,10 +36,6 @@ public final class StringCaseUtil {
     boolean first = true;
 
     for (String word : words) {
-      if (word == null || word.isEmpty()) {
-        continue;
-      }
-
       String lowerWord = word.toLowerCase(Locale.ENGLISH);
 
       if (ALWAYS_UPPERCASE.contains(word.toUpperCase(Locale.ENGLISH))) {

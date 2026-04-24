@@ -3,10 +3,14 @@ package uk.gov.justice.laa.dstew.payments.claims.validation.core.util;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.time.DateTimeException;
 import java.time.LocalDate;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
 
 @DisplayName("ClaimEffectiveDateUtil")
@@ -87,6 +91,47 @@ class ClaimEffectiveDateUtilTest {
       Claim c = new Claim();
       c.setCaseStartDate("not-a-date");
       assertThatThrownBy(() -> ClaimEffectiveDateUtil.getEffectiveDate(c)).isInstanceOf(IllegalArgumentException.class);
+    }
+  }
+
+  @Nested
+  @DisplayName("parseUniqueFileNumber direct tests")
+  class ParseUniqueFileNumberTests {
+
+    @ParameterizedTest(name = "valid UFN {0} -> {1}")
+    @DisplayName("parses valid UFNs to expected dates")
+    @CsvSource({
+      "010160/001,1960-01-01",
+      "010120/001,2020-01-01",
+      "311299/001,1999-12-31",
+      "290200/001,2000-02-29"
+    })
+    void parsesValidUfns(String ufn, String expectedIso) {
+      LocalDate res = ClaimEffectiveDateUtil.parseUniqueFileNumber(ufn);
+      assertThat(res).isEqualTo(LocalDate.parse(expectedIso));
+    }
+
+    @ParameterizedTest(name = "invalid format: {0}")
+    @DisplayName("throws IllegalArgumentException for malformed UFNs")
+    @ValueSource(strings = {"bad-ufn", "123", "12/123", "", "abc_def/ghi"})
+    void malformedUfnsThrow(String ufn) {
+      assertThatThrownBy(() -> ClaimEffectiveDateUtil.parseUniqueFileNumber(ufn))
+          .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @ParameterizedTest(name = "invalid date part: {0}")
+    @DisplayName("throws DateTimeException for UFNs with invalid date portion")
+    @ValueSource(strings = {"320120/001", "310299/001"})
+    void invalidDatePortionThrows(String ufn) {
+      assertThatThrownBy(() -> ClaimEffectiveDateUtil.parseUniqueFileNumber(ufn))
+          .isInstanceOf(DateTimeException.class);
+    }
+
+    @Test
+    @DisplayName("null UFN throws IllegalArgumentException")
+    void nullUfnThrows() {
+      assertThatThrownBy(() -> ClaimEffectiveDateUtil.parseUniqueFileNumber(null))
+          .isInstanceOf(IllegalArgumentException.class);
     }
   }
 }

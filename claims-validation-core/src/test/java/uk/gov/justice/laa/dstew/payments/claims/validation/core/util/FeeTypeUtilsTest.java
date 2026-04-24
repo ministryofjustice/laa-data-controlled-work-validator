@@ -6,7 +6,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.FeeCalculationType;
 
-@DisplayName("FeeTypeUtils")
+@DisplayName("FeeTypeUtils tests")
 class FeeTypeUtilsTest {
 
   @Test
