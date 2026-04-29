@@ -17,10 +17,10 @@ import java.util.Map;
 import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import uk.gov.justice.laa.dstew.payments.claims.validation.core.error.ClaimValidationError;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationIssue;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidationContext;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidationError;
 import uk.gov.justice.laa.dstew.payments.claimsdata.model.AreaOfLaw;
 
 /**
@@ -61,8 +61,8 @@ public class ClaimSchemaValidator implements ClaimValidator {
     this.objectMapper.findAndRegisterModules();
 
     // Exclude null fields from serialization so the schema only validates fields with actual
-    // values.
-    // This prevents pattern/format validation errors for optional fields that are null.
+    // values. This prevents pattern/format validation errors for optional fields that are
+    // null.
     // Required fields will still fail validation if missing MandatoryFieldClaimValidator.
     this.objectMapper.setDefaultPropertyInclusion(JsonInclude.Include.NON_NULL);
 

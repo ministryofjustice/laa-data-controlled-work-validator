@@ -1,10 +1,9 @@
 
-package uk.gov.justice.laa.dstew.payments.claims.validation.core.error;
+package uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim;
 
-import java.util.List;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationIssue;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.error.ValidationError;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationSeverity;
 
 
@@ -14,7 +13,7 @@ import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Validation
  */
 @Getter
 @RequiredArgsConstructor
-public enum ClaimValidationError {
+public enum ClaimValidationError implements ValidationError {
 
   // JSON/HTTP parsing errors (used by REST controller advice)
   INVALID_JSON_SYNTAX(
@@ -221,53 +220,4 @@ public enum ClaimValidationError {
   private final String displayMessage;
   private final String technicalMessage;
   private final ValidationSeverity severity;
-
-  /**
-   * Converts this error to a ValidationIssue.
-   *
-   * @param params optional parameters to format into the display message
-   * @return a ValidationIssue representing this error
-   */
-  public ValidationIssue toValidationIssue(Object... params) {
-    return ValidationIssue.builder()
-        .code(this.name())
-        .message(String.format(displayMessage, params))
-        .severity(severity)
-        .technicalMessage(technicalMessage)
-        .build();
-  }
-
-  /**
-   * Converts this error to a ValidationIssue with a custom technical message.
-   *
-   * @param technicalMsg the technical message to include
-   * @param params optional parameters to format into the display message
-   * @return a ValidationIssue representing this error with technical message
-   */
-  public ValidationIssue toValidationIssueWithTechnicalMessage(
-      String technicalMsg, Object... params) {
-    return ValidationIssue.builder()
-        .code(this.name())
-        .message(String.format(displayMessage, params))
-        .severity(severity)
-        .technicalMessage(technicalMsg)
-        .build();
-  }
-
-  /**
-   * Converts this error to a ValidationIssue with a specific path.
-   *
-   * @param path the JSON path to the field causing the error
-   * @param params optional parameters to format into the display message
-   * @return a ValidationIssue representing this error with path
-   */
-  public ValidationIssue toValidationIssueWithPath(List<Object> path, Object... params) {
-    // TODO: Handle path conversion to ValidationIssuePathInner list if needed
-    return ValidationIssue.builder()
-        .code(this.name())
-        .message(String.format(displayMessage, params))
-        .severity(severity)
-        .technicalMessage(technicalMessage)
-        .build();
-  }
 }

@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import uk.gov.justice.laa.dstew.payments.claims.validation.core.error.ClaimValidationError;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationIssue;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationResult;
@@ -128,11 +127,9 @@ public class ClaimValidation {
    * @return validation result with MISSING_CLAIM error
    */
   private ValidationResult buildMissingClaimResult() {
-    ValidationIssue issue = ClaimValidationError.MISSING_CLAIM.toValidationIssue();
-
     ValidationResult result = new ValidationResult();
     result.setIsValid(false);
-    result.setIssues(List.of(issue));
+    result.setIssues(List.of(ClaimValidationError.MISSING_CLAIM.toValidationIssue()));
     return result;
   }
 

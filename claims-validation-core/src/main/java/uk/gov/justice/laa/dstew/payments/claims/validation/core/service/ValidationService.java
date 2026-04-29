@@ -10,7 +10,6 @@ import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationResult;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidation;
 
-
 /**
  * Service for orchestrating claim validation. This is a stateless service that receives claim data,
  * runs all applicable validators, and returns the validation results.
