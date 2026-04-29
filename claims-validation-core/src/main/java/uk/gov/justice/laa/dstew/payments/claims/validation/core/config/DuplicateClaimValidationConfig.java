@@ -3,10 +3,10 @@ package uk.gov.justice.laa.dstew.payments.claims.validation.core.config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.client.ClaimsDataProvider;
-import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.rules.duplicate.DuplicateClaimCrimeLowerValidationServiceStrategy;
-import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.rules.duplicate.DuplicateClaimLegalHelpDisbursementValidationStrategy;
-import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.rules.duplicate.DuplicateClaimLegalHelpValidationServiceStrategy;
-import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.rules.duplicate.DuplicatePreviousClaimLegalHelpValidationServiceStrategy;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.rules.duplicate.DuplicateClaimCrimeLowerValidationServiceStrategy;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.rules.duplicate.DuplicateClaimLegalHelpDisbursementValidationStrategy;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.rules.duplicate.DuplicateClaimLegalHelpValidationServiceStrategy;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.rules.duplicate.DuplicatePreviousClaimLegalHelpValidationServiceStrategy;
 
 /**
  * Explicit configuration for duplicate claim validation strategies, wiring in the

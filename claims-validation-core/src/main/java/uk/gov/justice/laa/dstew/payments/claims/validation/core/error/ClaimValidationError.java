@@ -34,13 +34,11 @@ public enum ClaimValidationError {
       "JSON schema validation failed",
       ValidationSeverity.ERROR
   ),
-
   SCHEMA_VALIDATION_ERROR(
       "%s",
       "%s",
       ValidationSeverity.ERROR
   ),
-
   SCHEMA_CONFIG_WARNING(
       "Schema configuration warning: field(s) not defined in schema",
       "Update claim-fields.schema.json to add validation rules for these fields",

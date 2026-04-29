@@ -1,33 +1,23 @@
 package uk.gov.justice.laa.dstew.payments.claims.validation.core.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.error.ClaimValidationError;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
-import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ClaimValidationRequest;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationIssue;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationResult;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationSeverity;
-import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.ValidationContext;
-import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.rules.ClaimValidator;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidation;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidationContext;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.rules.ClaimValidator;
 import uk.gov.justice.laa.dstew.payments.claimsdata.model.AreaOfLaw;
 
-@ExtendWith(MockitoExtension.class)
 class ValidationServiceTest {
-
-  @Mock private List<ClaimValidator> mockValidators;
-
-  @InjectMocks private ValidationService validationService;
 
   private Claim createTestClaim() {
     Claim claim = new Claim();
@@ -38,13 +28,9 @@ class ValidationServiceTest {
 
   @Test
   void validateClaim_returnsValidResultWhenNoIssues() {
-    ClaimValidationRequest request = new ClaimValidationRequest();
-    request.setClaim(createTestClaim());
-    request.setScope("fee");
+    ValidationService service = new ValidationService(new ClaimValidation(Collections.emptyList()));
 
-    when(mockValidators.stream()).thenReturn(Collections.<ClaimValidator>emptyList().stream());
-
-    ValidationResult result = validationService.validateClaim(request);
+    ValidationResult result = service.validateClaim(createTestClaim(), "fee");
 
     assertThat(result.getIsValid()).isTrue();
     assertThat(result.getIssues()).isEmpty();
@@ -52,14 +38,11 @@ class ValidationServiceTest {
 
   @Test
   void validateClaim_returnsInvalidResultWhenErrorIssuesFound() {
-    ClaimValidationRequest request = new ClaimValidationRequest();
-    request.setClaim(createTestClaim());
-    request.setScope("fee");
 
     ClaimValidator mockValidator =
         new ClaimValidator() {
           @Override
-          public List<ValidationIssue> validate(Claim claim, ValidationContext ctx) {
+          public List<ValidationIssue> validate(Claim claim, ClaimValidationContext ctx) {
             return List.of(
                 ValidationIssue.builder()
                     .code("TEST_ERROR")
@@ -75,9 +58,9 @@ class ValidationServiceTest {
           }
         };
 
-    when(mockValidators.stream()).thenReturn(List.of(mockValidator).stream());
+    ValidationService service = new ValidationService(new uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidation(List.of(mockValidator)));
 
-    ValidationResult result = validationService.validateClaim(request);
+    ValidationResult result = service.validateClaim(createTestClaim(), "fee");
 
     assertThat(result.getIsValid()).isFalse();
     assertThat(result.getIssues()).hasSize(1);
@@ -86,13 +69,11 @@ class ValidationServiceTest {
 
   @Test
   void validateClaim_returnsValidResultWithWarningsOnly() {
-    ClaimValidationRequest request = new ClaimValidationRequest();
-    request.setClaim(createTestClaim());
 
     ClaimValidator mockValidator =
         new ClaimValidator() {
           @Override
-          public List<ValidationIssue> validate(Claim claim, ValidationContext ctx) {
+          public List<ValidationIssue> validate(Claim claim, ClaimValidationContext ctx) {
             return List.of(
                 ValidationIssue.builder()
                     .code("TEST_WARNING")
@@ -108,9 +89,9 @@ class ValidationServiceTest {
           }
         };
 
-    when(mockValidators.stream()).thenReturn(List.of(mockValidator).stream());
+    ValidationService service = new ValidationService(new uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidation(List.of(mockValidator)));
 
-    ValidationResult result = validationService.validateClaim(request);
+    ValidationResult result = service.validateClaim(createTestClaim(), null);
 
     assertThat(result.getIsValid()).isTrue();
     assertThat(result.getIssues()).hasSize(1);
@@ -130,7 +111,7 @@ class ValidationServiceTest {
 
     ClaimValidator lowPriority = new ClaimValidator() {
       @Override
-      public List<ValidationIssue> validate(Claim claim, ValidationContext context) {
+      public List<ValidationIssue> validate(Claim claim, ClaimValidationContext context) {
         callOrder.add("low");
         return List.of(sharedIssue);
       }
@@ -153,7 +134,7 @@ class ValidationServiceTest {
 
     ClaimValidator highPriority = new ClaimValidator() {
       @Override
-      public List<ValidationIssue> validate(Claim claim, ValidationContext context) {
+      public List<ValidationIssue> validate(Claim claim, ClaimValidationContext context) {
         callOrder.add("high");
         return List.of(sharedIssue);
       }
@@ -176,7 +157,7 @@ class ValidationServiceTest {
 
     ClaimValidator excluded = new ClaimValidator() {
       @Override
-      public List<ValidationIssue> validate(Claim claim, ValidationContext context) {
+      public List<ValidationIssue> validate(Claim claim, ClaimValidationContext context) {
         callOrder.add("excluded");
         return List.of(ClaimValidationError.CLAIM_DATA_INCOMPLETE.toValidationIssue());
       }
@@ -192,14 +173,9 @@ class ValidationServiceTest {
       }
     };
 
-    ValidationService service = new ValidationService(List.of(lowPriority, highPriority, excluded));
+    ValidationService service = new ValidationService(new uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidation(List.of(lowPriority, highPriority, excluded)));
 
-    ClaimValidationRequest request = ClaimValidationRequest.builder()
-        .claim(Claim.builder().build())
-        .scope("fee")
-        .build();
-
-    var result = service.validateClaim(request);
+    var result = service.validateClaim(Claim.builder().build(), "fee");
 
     // Both validators that apply should have been called in priority order (high then low)
     assertThat(callOrder).containsExactly("high", "low");
@@ -213,11 +189,11 @@ class ValidationServiceTest {
 
   @Test
   void buildValidationContext_passesRelatedClaims_and_handlesNullRelatedClaims() {
-    AtomicReference<ValidationContext> captured = new AtomicReference<>();
+    AtomicReference<ClaimValidationContext> captured = new AtomicReference<>();
 
     ClaimValidator capturingValidator = new ClaimValidator() {
       @Override
-      public List<ValidationIssue> validate(Claim claim, ValidationContext context) {
+      public List<ValidationIssue> validate(Claim claim, ClaimValidationContext context) {
         captured.set(context);
         return List.of();
       }
@@ -228,31 +204,22 @@ class ValidationServiceTest {
       }
     };
 
-    ValidationService service = new ValidationService(List.of(capturingValidator));
+    ValidationService service = new ValidationService(new uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidation(List.of(capturingValidator)));
 
     List<Claim> related = List.of(Claim.builder().uniqueFileNumber("010101/001").build());
 
-    ClaimValidationRequest requestWithRelated = new ClaimValidationRequest();
-    requestWithRelated.setClaim(Claim.builder().build());
-    requestWithRelated.setScope("fee");
-    requestWithRelated.setRelatedClaims(related);
+    service.validateClaim(Claim.builder().build(),"fee", related);
 
-    service.validateClaim(requestWithRelated);
-
-    ValidationContext ctx = captured.get();
+    ClaimValidationContext ctx = captured.get();
     assertThat(ctx).isNotNull();
     assertThat(ctx.getRelatedClaims()).isEqualTo(related);
 
     // Now test when relatedClaims is null on the request object
     captured.set(null);
-    ClaimValidationRequest requestWithNullRelated = new ClaimValidationRequest();
-    requestWithNullRelated.setClaim(Claim.builder().build());
-    requestWithNullRelated.setScope("fee");
-    requestWithNullRelated.setRelatedClaims(null);
 
-    service.validateClaim(requestWithNullRelated);
+    service.validateClaim(Claim.builder().build(), "fee", null);
 
-    ValidationContext ctx2 = captured.get();
+    ClaimValidationContext ctx2 = captured.get();
     assertThat(ctx2).isNotNull();
     // Should be converted to an empty list (List.of()) when null
     assertThat(ctx2.getRelatedClaims()).isEmpty();
@@ -260,23 +227,13 @@ class ValidationServiceTest {
 
   @Test
   void privateBuildValidationContext_invokedViaReflection_coversBothBranches() throws Exception {
-    ValidationService service = new ValidationService(List.of());
+    uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidation service = new uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidation(List.of());
 
-    ClaimValidationRequest withRelated = new ClaimValidationRequest();
-    withRelated.setClaim(Claim.builder().build());
-    withRelated.setScope("fee");
-    withRelated.setRelatedClaims(List.of(Claim.builder().build()));
-
-    ClaimValidationRequest withNullRelated = new ClaimValidationRequest();
-    withNullRelated.setClaim(Claim.builder().build());
-    withNullRelated.setScope("fee");
-    withNullRelated.setRelatedClaims(null);
-
-    var method = ValidationService.class.getDeclaredMethod("buildValidationContext", ClaimValidationRequest.class);
+    var method = uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidation.class.getDeclaredMethod("buildValidationContext", String.class, List.class);
     method.setAccessible(true);
 
-    ValidationContext ctx1 = (ValidationContext) method.invoke(service, withRelated);
-    ValidationContext ctx2 = (ValidationContext) method.invoke(service, withNullRelated);
+    ClaimValidationContext ctx1 = (ClaimValidationContext) method.invoke(service, "fee", List.of(Claim.builder().build()));
+    ClaimValidationContext ctx2 = (ClaimValidationContext) method.invoke(service, "fee", null);
 
     assertThat(ctx1.getRelatedClaims()).isNotEmpty();
     assertThat(ctx2.getRelatedClaims()).isEmpty();
@@ -284,11 +241,10 @@ class ValidationServiceTest {
 
   @Test
   void validateClaim_returnsMissingClaimResultWhenClaimIsNull() {
-    ClaimValidationRequest request = new ClaimValidationRequest();
-    request.setClaim(null);
-    request.setScope("fee");
 
-    ValidationResult result = validationService.validateClaim(request);
+    ValidationService service = new ValidationService(new uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidation(List.of()));
+
+    ValidationResult result = service.validateClaim(null, "fee");
 
     assertThat(result.getIsValid()).isFalse();
     assertThat(result.getIssues()).hasSize(1);
