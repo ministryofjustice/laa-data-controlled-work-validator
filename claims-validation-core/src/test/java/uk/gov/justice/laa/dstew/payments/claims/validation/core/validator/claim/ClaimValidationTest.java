@@ -2,126 +2,331 @@ package uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.config.ExclusionsRegistry;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.config.MandatoryFieldsRegistry;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationIssue;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationSeverity;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.rules.ClaimValidator;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.rules.MandatoryFieldClaimValidator;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.rules.UniqueFileNumberClaimValidator;
 import uk.gov.justice.laa.dstew.payments.claimsdata.model.AreaOfLaw;
 
+/**
+ * Tests for {@link ClaimValidation} and the individual {@link ClaimValidator} implementations it
+ * orchestrates.
+ *
+ * <p>Pipeline-level behaviour — scope filtering, priority ordering, issue deduplication, null
+ * claim handling, and validation context construction — is covered by
+ * {@link ClaimValidationPipeline}. Individual validator behaviour is covered by
+ * {@link MandatoryFieldValidation} and {@link UniqueFileNumberValidation}.
+ */
+@DisplayName("ClaimValidation")
 class ClaimValidationTest {
 
-  private MandatoryFieldClaimValidator mandatoryFieldClaimValidator;
-  private UniqueFileNumberClaimValidator uniqueFileNumberClaimValidator;
+  // ─────────────────────────────────────────────────────────────────────────
+  // Pipeline tests
+  // ─────────────────────────────────────────────────────────────────────────
 
-  @BeforeEach
-  void setUp() {
-    MandatoryFieldsRegistry mandatoryFieldsRegistry = new MandatoryFieldsRegistry();
-    ExclusionsRegistry exclusionsRegistry = new ExclusionsRegistry();
-    mandatoryFieldClaimValidator =
-        new MandatoryFieldClaimValidator(mandatoryFieldsRegistry, exclusionsRegistry);
-    uniqueFileNumberClaimValidator = new UniqueFileNumberClaimValidator();
+  @Nested
+  @DisplayName("Pipeline — scope filtering, priority ordering, and deduplication")
+  class ClaimValidationPipeline {
+
+    @Test
+    @DisplayName("Runs validators in priority order and deduplicates identical issues")
+    void runValidatorsInPriorityOrderAndDeduplicateIssues() {
+      List<String> callOrder = new ArrayList<>();
+
+      ValidationIssue sharedIssue = ValidationIssue.builder()
+          .code("DUPLICATE_CODE")
+          .message("duplicate")
+          .severity(ValidationSeverity.WARNING)
+          .technicalMessage(null)
+          .build();
+
+      ClaimValidator lowPriority = new ClaimValidator() {
+        @Override
+        public List<ValidationIssue> validate(Claim claim, ClaimValidationContext context) {
+          callOrder.add("low");
+          return List.of(sharedIssue);
+        }
+
+        @Override
+        public int priority() { return 20; }
+
+        @Override
+        public boolean appliesTo(String scope) { return true; }
+
+        @Override
+        public String getValidatorCode() { return "LOW"; }
+      };
+
+      ClaimValidator highPriority = new ClaimValidator() {
+        @Override
+        public List<ValidationIssue> validate(Claim claim, ClaimValidationContext context) {
+          callOrder.add("high");
+          return List.of(sharedIssue);
+        }
+
+        @Override
+        public int priority() { return 10; }
+
+        @Override
+        public boolean appliesTo(String scope) { return true; }
+
+        @Override
+        public String getValidatorCode() { return "HIGH"; }
+      };
+
+      ClaimValidation pipeline = new ClaimValidation(List.of(lowPriority, highPriority));
+      pipeline.validateClaim(Claim.builder().build(), "fee", List.of());
+
+      assertThat(callOrder).containsExactly("high", "low");
+    }
+
+    @Test
+    @DisplayName("Excludes validators whose appliesTo returns false for the given scope")
+    void excludesValidatorsNotApplicableToScope() {
+      List<String> called = new ArrayList<>();
+
+      ClaimValidator excluded = new ClaimValidator() {
+        @Override
+        public List<ValidationIssue> validate(Claim claim, ClaimValidationContext context) {
+          called.add("excluded");
+          return List.of();
+        }
+
+        @Override
+        public boolean appliesTo(String scope) { return false; }
+
+        @Override
+        public String getValidatorCode() { return "EXCLUDED"; }
+      };
+
+      ClaimValidation pipeline = new ClaimValidation(List.of(excluded));
+      pipeline.validateClaim(Claim.builder().build(), "fee", List.of());
+
+      assertThat(called).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Deduplicates identical issues across validators, preserving insertion order")
+    void deduplicatesIdenticalIssuesPreservingOrder() {
+      ValidationIssue sharedIssue = ValidationIssue.builder()
+          .code("DUPLICATE_CODE").message("duplicate").severity(ValidationSeverity.WARNING)
+          .technicalMessage(null).build();
+
+      ClaimValidator v1 = new ClaimValidator() {
+        @Override
+        public List<ValidationIssue> validate(Claim c, ClaimValidationContext ctx) {
+          return List.of(sharedIssue);
+        }
+        @Override public String getValidatorCode() { return "V1"; }
+      };
+      ClaimValidator v2 = new ClaimValidator() {
+        @Override
+        public List<ValidationIssue> validate(Claim c, ClaimValidationContext ctx) {
+          return List.of(sharedIssue);
+        }
+        @Override public String getValidatorCode() { return "V2"; }
+      };
+
+      ClaimValidation pipeline = new ClaimValidation(List.of(v1, v2));
+      var result = pipeline.validateClaim(Claim.builder().build(), "fee", List.of());
+
+      assertThat(result.getIssues()).hasSize(1);
+      assertThat(result.getIsValid()).isTrue(); // WARNING only → still valid
+    }
+
+    @Test
+    @DisplayName("Returns MISSING_CLAIM error result when claim is null")
+    void returnsMissingClaimErrorWhenClaimIsNull() {
+      ClaimValidation pipeline = new ClaimValidation(List.of());
+
+      var result = pipeline.validateClaim(null, "fee", List.of());
+
+      assertThat(result.getIsValid()).isFalse();
+      assertThat(result.getIssues()).hasSize(1);
+      assertThat(result.getIssues().getFirst().getCode()).isEqualTo("MISSING_CLAIM");
+    }
   }
 
-  @Test
-  void mandatoryFieldValidator_returnsErrorWhenMandatoryFieldsMissing() {
-    Claim claim = Claim.builder()
-        .areaOfLaw(AreaOfLaw.CRIME_LOWER)
-        .build();
-    // Missing mandatory fields for CRIME_LOWER: caseConcludedDate, stageReachedCode, etc.
-    ClaimValidationContext context = ClaimValidationContext.builder().scope("fee").build();
+  // ─────────────────────────────────────────────────────────────────────────
+  // Validation context construction
+  // ─────────────────────────────────────────────────────────────────────────
 
-    List<ValidationIssue> issues = mandatoryFieldClaimValidator.validate(claim, context);
+  @Nested
+  @DisplayName("Validation context construction")
+  class ValidationContextConstruction {
 
-    assertThat(issues).isNotEmpty();
-    assertThat(issues.getFirst().getCode()).isEqualTo("MISSING_MANDATORY_FIELD");
-    assertThat(issues.getFirst().getSeverity()).isEqualTo(ValidationSeverity.ERROR);
+    @Test
+    @DisplayName("Passes related claims to validators via the context")
+    void passesRelatedClaimsToValidators() {
+      AtomicReference<ClaimValidationContext> captured = new AtomicReference<>();
+
+      ClaimValidator capturingValidator = new ClaimValidator() {
+        @Override
+        public List<ValidationIssue> validate(Claim claim, ClaimValidationContext context) {
+          captured.set(context);
+          return List.of();
+        }
+        @Override public String getValidatorCode() { return "CAPTURE"; }
+      };
+
+      List<Claim> related = List.of(Claim.builder().uniqueFileNumber("010101/001").build());
+      new ClaimValidation(List.of(capturingValidator))
+          .validateClaim(Claim.builder().build(), "fee", related);
+
+      assertThat(captured.get()).isNotNull();
+      assertThat(captured.get().getRelatedClaims()).isEqualTo(related);
+    }
+
+    @Test
+    @DisplayName("Converts null relatedClaims to an empty list in the context")
+    void convertsNullRelatedClaimsToEmptyList() {
+      AtomicReference<ClaimValidationContext> captured = new AtomicReference<>();
+
+      ClaimValidator capturingValidator = new ClaimValidator() {
+        @Override
+        public List<ValidationIssue> validate(Claim claim, ClaimValidationContext context) {
+          captured.set(context);
+          return List.of();
+        }
+        @Override public String getValidatorCode() { return "CAPTURE"; }
+      };
+
+      new ClaimValidation(List.of(capturingValidator))
+          .validateClaim(Claim.builder().build(), "fee", null);
+
+      assertThat(captured.get()).isNotNull();
+      assertThat(captured.get().getRelatedClaims()).isEmpty();
+    }
   }
 
-  @Test
-  void mandatoryFieldValidator_returnsNoErrorsWhenAllMandatoryFieldsPresent() {
-    Claim claim = Claim.builder()
-        .areaOfLaw(AreaOfLaw.CRIME_LOWER)
-        .caseConcludedDate("2025-01-15")
-        .stageReachedCode("PROA")
-        .netProfitCostsAmount(new java.math.BigDecimal("100.00"))
-        .disbursementsVatAmount(new java.math.BigDecimal("20.00"))
-        .build();
-    ClaimValidationContext context = ClaimValidationContext.builder().scope("fee").build();
+  // ─────────────────────────────────────────────────────────────────────────
+  // Individual validator tests
+  // ─────────────────────────────────────────────────────────────────────────
 
-    List<ValidationIssue> issues = mandatoryFieldClaimValidator.validate(claim, context);
+  @Nested
+  @DisplayName("MandatoryFieldClaimValidator")
+  class MandatoryFieldValidation {
 
-    assertThat(issues).isEmpty();
+    private MandatoryFieldClaimValidator validator;
+
+    @BeforeEach
+    void setUp() {
+      validator = new MandatoryFieldClaimValidator(
+          new MandatoryFieldsRegistry(), new ExclusionsRegistry());
+    }
+
+    @Test
+    @DisplayName("Returns MISSING_MANDATORY_FIELD errors when mandatory fields are absent")
+    void returnsErrorWhenMandatoryFieldsMissing() {
+      Claim claim = Claim.builder().areaOfLaw(AreaOfLaw.CRIME_LOWER).build();
+      ClaimValidationContext context = ClaimValidationContext.builder().scope("fee").build();
+
+      List<ValidationIssue> issues = validator.validate(claim, context);
+
+      assertThat(issues).isNotEmpty();
+      assertThat(issues.getFirst().getCode()).isEqualTo("MISSING_MANDATORY_FIELD");
+      assertThat(issues.getFirst().getSeverity()).isEqualTo(ValidationSeverity.ERROR);
+    }
+
+    @Test
+    @DisplayName("Returns no errors when all mandatory fields are present")
+    void returnsNoErrorsWhenAllMandatoryFieldsPresent() {
+      Claim claim = Claim.builder()
+          .areaOfLaw(AreaOfLaw.CRIME_LOWER)
+          .caseConcludedDate("2025-01-15")
+          .stageReachedCode("PROA")
+          .netProfitCostsAmount(new java.math.BigDecimal("100.00"))
+          .disbursementsVatAmount(new java.math.BigDecimal("20.00"))
+          .build();
+      ClaimValidationContext context = ClaimValidationContext.builder().scope("fee").build();
+
+      assertThat(validator.validate(claim, context)).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Returns no errors when no area of law is set — nothing to check")
+    void returnsNoErrorsWhenNoAreaOfLaw() {
+      Claim claim = Claim.builder().build();
+      ClaimValidationContext context = ClaimValidationContext.builder().scope("fee").build();
+
+      assertThat(validator.validate(claim, context)).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Has validator code MANDATORY_FIELD")
+    void hasCorrectValidatorCode() {
+      assertThat(validator.getValidatorCode()).isEqualTo("MANDATORY_FIELD");
+    }
   }
 
-  @Test
-  void mandatoryFieldValidator_returnsNoErrorsWhenNoAreaOfLaw() {
-    Claim claim = Claim.builder().build();
-    // No area of law set - no mandatory fields to check
-    ClaimValidationContext context = ClaimValidationContext.builder().scope("fee").build();
+  @Nested
+  @DisplayName("UniqueFileNumberClaimValidator")
+  class UniqueFileNumberValidation {
 
-    List<ValidationIssue> issues = mandatoryFieldClaimValidator.validate(claim, context);
+    private UniqueFileNumberClaimValidator validator;
 
-    assertThat(issues).isEmpty();
-  }
+    @BeforeEach
+    void setUp() {
+      validator = new UniqueFileNumberClaimValidator();
+    }
 
-  @Test
-  void uniqueFileNumberValidator_returnsNoErrorsWhenUfnValid() {
-    Claim claim = Claim.builder()
-        .uniqueFileNumber("010120/001")
-        .build();
-    ClaimValidationContext context = ClaimValidationContext.builder().build();
+    @Test
+    @DisplayName("Returns no errors when UFN format is valid")
+    void returnsNoErrorsWhenUfnValid() {
+      Claim claim = Claim.builder().uniqueFileNumber("010120/001").build();
+      ClaimValidationContext context = ClaimValidationContext.builder().build();
 
-    List<ValidationIssue> issues = uniqueFileNumberClaimValidator.validate(claim, context);
+      assertThat(validator.validate(claim, context)).isEmpty();
+    }
 
-    assertThat(issues).isEmpty();
-  }
+    @Test
+    @DisplayName("Returns INVALID_DATE_IN_UNIQUE_FILE_NUMBER when UFN format is invalid")
+    void returnsErrorWhenUfnFormatInvalid() {
+      Claim claim = Claim.builder().uniqueFileNumber("invalid-format").build();
+      ClaimValidationContext context = ClaimValidationContext.builder().build();
 
-  @Test
-  void uniqueFileNumberValidator_returnsErrorWhenUfnFormatInvalid() {
-    Claim claim = Claim.builder()
-        .uniqueFileNumber("invalid-format")
-        .build();
-    ClaimValidationContext context = ClaimValidationContext.builder().build();
+      List<ValidationIssue> issues = validator.validate(claim, context);
 
-    List<ValidationIssue> issues = uniqueFileNumberClaimValidator.validate(claim, context);
+      assertThat(issues).hasSize(1);
+      assertThat(issues.getFirst().getCode()).isEqualTo("INVALID_DATE_IN_UNIQUE_FILE_NUMBER");
+    }
 
-    assertThat(issues).hasSize(1);
-    assertThat(issues.getFirst().getCode()).isEqualTo("INVALID_DATE_IN_UNIQUE_FILE_NUMBER");
-  }
+    @Test
+    @DisplayName("Returns INVALID_DATE_IN_UNIQUE_FILE_NUMBER when UFN date is in the future")
+    void returnsErrorWhenUfnDateInFuture() {
+      Claim claim = Claim.builder().uniqueFileNumber("010149/001").build();
+      ClaimValidationContext context = ClaimValidationContext.builder().build();
 
-  @Test
-  void uniqueFileNumberValidator_returnsErrorWhenUfnDateInFuture() {
-    Claim claim = Claim.builder()
-        .uniqueFileNumber("010149/001")
-        .build();
-    ClaimValidationContext context = ClaimValidationContext.builder().build();
+      List<ValidationIssue> issues = validator.validate(claim, context);
 
-    List<ValidationIssue> issues = uniqueFileNumberClaimValidator.validate(claim, context);
+      assertThat(issues).hasSize(1);
+      assertThat(issues.getFirst().getCode()).isEqualTo("INVALID_DATE_IN_UNIQUE_FILE_NUMBER");
+    }
 
-    assertThat(issues).hasSize(1);
-    assertThat(issues.getFirst().getCode()).isEqualTo("INVALID_DATE_IN_UNIQUE_FILE_NUMBER");
-  }
+    @Test
+    @DisplayName("Returns no errors when UFN is absent — mandatory check is handled elsewhere")
+    void returnsNoErrorsWhenUfnMissing() {
+      Claim claim = Claim.builder().build();
+      ClaimValidationContext context = ClaimValidationContext.builder().build();
 
-  @Test
-  void uniqueFileNumberValidator_returnsNoErrorsWhenUfnMissing() {
-    Claim claim = Claim.builder().build();
-    ClaimValidationContext context = ClaimValidationContext.builder().build();
+      assertThat(validator.validate(claim, context)).isEmpty();
+    }
 
-    List<ValidationIssue> issues = uniqueFileNumberClaimValidator.validate(claim, context);
-
-    // UFN is optional - MandatoryFieldValidator handles required check
-    assertThat(issues).isEmpty();
-  }
-
-  @Test
-  void validators_haveUniqueValidatorCodes() {
-    assertThat(mandatoryFieldClaimValidator.getValidatorCode()).isEqualTo("MANDATORY_FIELD");
-    assertThat(uniqueFileNumberClaimValidator.getValidatorCode()).isEqualTo("UNIQUE_FILE_NUMBER");
+    @Test
+    @DisplayName("Has validator code UNIQUE_FILE_NUMBER")
+    void hasCorrectValidatorCode() {
+      assertThat(validator.getValidatorCode()).isEqualTo("UNIQUE_FILE_NUMBER");
+    }
   }
 }

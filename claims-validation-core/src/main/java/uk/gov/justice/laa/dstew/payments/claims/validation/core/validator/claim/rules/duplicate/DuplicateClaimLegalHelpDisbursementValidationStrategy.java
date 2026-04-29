@@ -13,16 +13,13 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-import uk.gov.justice.laa.dstew.payments.claims.validation.core.client.ClaimsDataProvider;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationIssue;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.provider.ClaimsDataProvider;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidationError;
 
 /** Duplicate-claim validation strategy for Legal Help disbursement claims. */
 @Slf4j
-@Component
 public class DuplicateClaimLegalHelpDisbursementValidationStrategy extends DuplicateClaimValidation
         implements LegalHelpDuplicateClaimValidationStrategy {
 
@@ -66,7 +63,6 @@ public class DuplicateClaimLegalHelpDisbursementValidationStrategy extends Dupli
    *
    * @param dataClaimsRestClient the REST client used to retrieve claims from the data store
    */
-  @Autowired
   public DuplicateClaimLegalHelpDisbursementValidationStrategy(
           final ClaimsDataProvider dataClaimsRestClient) {
     super(dataClaimsRestClient);

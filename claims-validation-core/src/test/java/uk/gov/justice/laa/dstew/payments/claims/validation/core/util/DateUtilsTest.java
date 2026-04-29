@@ -2,262 +2,378 @@ package uk.gov.justice.laa.dstew.payments.claims.validation.core.util;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.List;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
+import org.junit.jupiter.params.provider.ValueSource;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationIssue;
 
 @DisplayName("DateUtils")
 class DateUtilsTest {
 
+  // ─────────────────────────────────────────────────────────────────────────
+  // isValidDate
+  // ─────────────────────────────────────────────────────────────────────────
+
   @Nested
-  @DisplayName("basic date checks")
-  class Basic {
+  @DisplayName("isValidDate")
+  class IsValidDate {
 
     @Test
-    @DisplayName("isValidDate and isValidDateOfBirth behave correctly")
-    void validDateChecks() {
+    @DisplayName("Returns false for null")
+    void returnsFalseForNull() {
       assertThat(DateUtils.isValidDate(null)).isFalse();
+    }
+
+    @Test
+    @DisplayName("Returns true for a non-null date")
+    void returnsTrueForNonNullDate() {
       assertThat(DateUtils.isValidDate(LocalDate.now())).isTrue();
-
-      assertThat(DateUtils.isValidDateOfBirth(LocalDate.of(1899, 12, 31))).isFalse();
-      assertThat(DateUtils.isValidDateOfBirth(LocalDate.now().minusYears(30))).isTrue();
-    }
-
-    @Test
-    @DisplayName("isDateWithinRange respects inclusive bounds")
-    void dateWithinRange() {
-      LocalDate start = LocalDate.of(2020, 1, 1);
-      LocalDate end = LocalDate.of(2020, 1, 31);
-      assertThat(DateUtils.isDateWithinRange(start, start, end)).isTrue();
-      assertThat(DateUtils.isDateWithinRange(end, start, end)).isTrue();
-      assertThat(DateUtils.isDateWithinRange(start.minusDays(1), start, end)).isFalse();
     }
   }
 
+  // ─────────────────────────────────────────────────────────────────────────
+  // isValidDateOfBirth
+  // ─────────────────────────────────────────────────────────────────────────
+
   @Nested
-  @DisplayName("range and boundary checks")
-  class RangeAndBoundary {
+  @DisplayName("isValidDateOfBirth")
+  class IsValidDateOfBirth {
 
-    @Test
-    @DisplayName("isDateWithinRange returns false when earliest or latest are null")
-    void nullBoundsReturnFalse() {
-      LocalDate date = LocalDate.of(2020, 1, 1);
-      assertThat(DateUtils.isDateWithinRange(date, null, LocalDate.now())).isFalse();
-      assertThat(DateUtils.isDateWithinRange(date, LocalDate.of(1900, 1, 1), null)).isFalse();
-      assertThat(DateUtils.isDateWithinRange(null, LocalDate.of(1900, 1, 1), LocalDate.now())).isFalse();
+    static Stream<Arguments> cases() {
+      return Stream.of(
+          Arguments.of(null, false, "null date"),
+          Arguments.of(LocalDate.of(1899, 12, 31), false, "one day before MIN_BIRTH_DATE"),
+          Arguments.of(LocalDate.now().plusDays(1), false, "future date"),
+          Arguments.of(LocalDate.of(1900, 1, 1), true, "exactly MIN_BIRTH_DATE"),
+          Arguments.of(LocalDate.now(), true, "today"),
+          Arguments.of(LocalDate.now().minusYears(30), true, "valid past date")
+      );
     }
 
-    @Test
-    @DisplayName("isValidDateOfBirth accepts MIN_BIRTH_DATE and today's date")
-    void dobBoundaryValues() {
-      assertThat(DateUtils.isValidDateOfBirth(LocalDate.of(1900, 1, 1))).isTrue();
-      assertThat(DateUtils.isValidDateOfBirth(LocalDate.now())).isTrue();
-    }
-
-    @Test
-    @DisplayName("submissionPeriodCutoffDate correctly wraps year-end months")
-    void cutoffWrapsYear() {
-      YearMonth dec = YearMonth.of(2025, 12);
-      assertThat(DateUtils.submissionPeriodCutoffDate(dec)).isEqualTo(LocalDate.of(2026, 1, 20));
+    @ParameterizedTest(name = "{2}")
+    @MethodSource("cases")
+    @DisplayName("Returns correct result for")
+    @SuppressWarnings("unused")
+    void returnsCorrectResult(LocalDate date, boolean expected, String description) {
+      assertThat(DateUtils.isValidDateOfBirth(date)).isEqualTo(expected);
     }
   }
 
+  // ─────────────────────────────────────────────────────────────────────────
+  // isDateWithinRange
+  // ─────────────────────────────────────────────────────────────────────────
+
   @Nested
-  @DisplayName("checkDateNotInFutureAndWithinAllowedPeriod behaviours")
-  class CheckDateBehaviours {
+  @DisplayName("isDateWithinRange")
+  class IsDateWithinRange {
+
+    private static final LocalDate START = LocalDate.of(2020, 1, 1);
+    private static final LocalDate END   = LocalDate.of(2020, 1, 31);
+
+    static Stream<Arguments> cases() {
+      return Stream.of(
+          Arguments.of(START,                START, END,  true,  "exactly at start boundary"),
+          Arguments.of(END,                  START, END,  true,  "exactly at end boundary"),
+          Arguments.of(LocalDate.of(2020,1,15), START, END, true, "midpoint"),
+          Arguments.of(START.minusDays(1),   START, END,  false, "one day before start"),
+          Arguments.of(END.plusDays(1),      START, END,  false, "one day after end"),
+          Arguments.of(null,                 START, END,  false, "null date"),
+          Arguments.of(START,                null,  END,  false, "null earliest"),
+          Arguments.of(START,                START, null, false, "null latest")
+      );
+    }
+
+    @ParameterizedTest(name = "{4}")
+    @MethodSource("cases")
+    @DisplayName("Returns correct result for")
+    @SuppressWarnings("unused")
+    void returnsCorrectResult(
+        LocalDate date, LocalDate earliest, LocalDate latest,
+        boolean expected, String description) {
+      assertThat(DateUtils.isDateWithinRange(date, earliest, latest)).isEqualTo(expected);
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // submissionPeriodCutoffDate
+  // ─────────────────────────────────────────────────────────────────────────
+
+  @Nested
+  @DisplayName("submissionPeriodCutoffDate")
+  class SubmissionPeriodCutoffDate {
 
     @Test
-    @DisplayName("when claim has no submissionPeriod the check is a no-op")
-    void noSubmissionPeriodIsNoOp() {
-      Claim c = Claim.builder().submissionPeriod(null).build();
+    @DisplayName("Returns 20th of the following month")
+    void returnsTwentiethOfFollowingMonth() {
+      assertThat(DateUtils.submissionPeriodCutoffDate(YearMonth.of(2025, 5)))
+          .isEqualTo(LocalDate.of(2025, 6, 20));
+    }
+
+    @Test
+    @DisplayName("Correctly wraps into the next year at December")
+    void wrapsIntoNextYearAtDecember() {
+      assertThat(DateUtils.submissionPeriodCutoffDate(YearMonth.of(2025, 12)))
+          .isEqualTo(LocalDate.of(2026, 1, 20));
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // checkDateNotInFutureAndWithinAllowedPeriod
+  // ─────────────────────────────────────────────────────────────────────────
+
+  @Nested
+  @DisplayName("checkDateNotInFutureAndWithinAllowedPeriod")
+  class CheckDateNotInFutureAndWithinAllowedPeriod {
+
+    private static final LocalDate EARLIEST = LocalDate.of(1900, 1, 1);
+
+    @Test
+    @DisplayName("Returns empty when claim has no submission period — no-op")
+    void returnsEmptyWhenNoSubmissionPeriod() {
+      Claim claim = Claim.builder().submissionPeriod(null).build();
       String future = LocalDate.now().plusDays(10).format(DateUtils.DATE_FORMATTER_YYYY_MM_DD);
-      List<ValidationIssue> issues =
-          DateUtils.checkDateNotInFutureAndWithinAllowedPeriod(c, "Case Start Date", future, LocalDate.of(1900, 1, 1));
-      assertThat(issues).isEmpty();
+
+      assertThat(DateUtils.checkDateNotInFutureAndWithinAllowedPeriod(
+          claim, "Case Start Date", future, EARLIEST)).isEmpty();
     }
 
     @Test
-    @DisplayName("blank date value is ignored when submission period present")
-    void blankDateIsIgnored() {
-      Claim c = Claim.builder().submissionPeriod("JAN-2026").build();
-      List<ValidationIssue> issues =
-          DateUtils.checkDateNotInFutureAndWithinAllowedPeriod(c, "Case Start Date", "", LocalDate.of(1900, 1, 1));
-      assertThat(issues).isEmpty();
+    @DisplayName("Returns empty when date value is blank — no-op")
+    void returnsEmptyWhenDateIsBlank() {
+      Claim claim = Claim.builder().submissionPeriod("JAN-2026").build();
+
+      assertThat(DateUtils.checkDateNotInFutureAndWithinAllowedPeriod(
+          claim, "Case Start Date", "", EARLIEST)).isEmpty();
     }
 
     @Test
-    @DisplayName("field name mapping produces appropriate error codes for early date")
-    void fieldNameMappingsProduceCorrectCodes() {
-      String[] fieldNames = {
-        "Case Start Date",
-        "Case Concluded Date",
-        "Transfer Date",
-        "Representation Order Date",
-        "Client Date of Birth",
-        "Client 2 Date of Birth",
-        "Some Other Field"
-      };
+    @DisplayName("Returns error containing 'cannot be a future date' when date is in the future")
+    void returnsErrorWhenDateIsInFuture() {
+      Claim claim = Claim.builder().submissionPeriod("JAN-2026").build();
+      String future = LocalDate.now().plusDays(1).format(DateUtils.DATE_FORMATTER_YYYY_MM_DD);
 
-      String[] expectedCodes = {
-        "INVALID_CASE_START_DATE",
-        "INVALID_CASE_CONCLUDED_DATE",
-        "INVALID_TRANSFER_DATE",
-        "INVALID_REPRESENTATION_ORDER_DATE",
-        "INVALID_CLIENT_DATE_OF_BIRTH",
-        "INVALID_CLIENT_DATE_OF_BIRTH",
-        "INVALID_DATE_FORMAT"
-      };
+      List<ValidationIssue> issues = DateUtils.checkDateNotInFutureAndWithinAllowedPeriod(
+          claim, "Case Start Date", future, EARLIEST);
 
-      for (int i = 0; i < fieldNames.length; i++) {
-        Claim c = Claim.builder().submissionPeriod("JAN-2020").build();
-        // pick a date earlier than the earliest allowed to trigger the early-date branch
-        String early = LocalDate.of(1900, 1, 1).minusDays(1).format(DateUtils.DATE_FORMATTER_YYYY_MM_DD);
-        List<ValidationIssue> issues =
-            DateUtils.checkDateNotInFutureAndWithinAllowedPeriod(c, fieldNames[i], early, LocalDate.of(1900, 1, 1));
-        assertThat(issues).isNotEmpty();
-        assertThat(issues.get(0).getCode()).isEqualTo(expectedCodes[i]);
-      }
+      assertThat(issues).hasSize(1);
+      assertThat(issues.getFirst().getTechnicalMessage()).contains("cannot be a future date");
     }
-  }
-
-  @Nested
-  @DisplayName("validateDateBetween edge cases")
-  class ValidateBetween {
 
     @Test
-    @DisplayName("when earliest and latest are equal only that date is allowed")
-    void earliestEqualsLatest() {
-      try {
-        LocalDate day = LocalDate.of(2022, 2, 2);
-        // call private validateDateBetween via reflection so we can pass earliest==latest
-        java.lang.reflect.Method m =
-            DateUtils.class.getDeclaredMethod(
-                "validateDateBetween", String.class, String.class, LocalDate.class, LocalDate.class);
-        m.setAccessible(true);
+    @DisplayName("Returns error containing 'cannot be before' when date is before earliest allowed")
+    void returnsErrorWhenDateIsBeforeEarliest() {
+      Claim claim = Claim.builder().submissionPeriod("JAN-2026").build();
+      String early = EARLIEST.minusDays(1).format(DateUtils.DATE_FORMATTER_YYYY_MM_DD);
 
-        // exact day should be allowed
-        @SuppressWarnings("unchecked")
-        java.util.List<ValidationIssue> ok =
-            (java.util.List<ValidationIssue>)
-                m.invoke(
-                    null,
-                    "field",
-                    day.format(DateUtils.DATE_FORMATTER_YYYY_MM_DD),
-                    day,
-                    day);
-        assertThat(ok).isEmpty();
+      List<ValidationIssue> issues = DateUtils.checkDateNotInFutureAndWithinAllowedPeriod(
+          claim, "Case Start Date", early, EARLIEST);
 
-        // day + 1 should be rejected
-        @SuppressWarnings("unchecked")
-        java.util.List<ValidationIssue> bad =
-            (java.util.List<ValidationIssue>)
-                m.invoke(
-                    null,
-                    "field",
-                    day.plusDays(1).format(DateUtils.DATE_FORMATTER_YYYY_MM_DD),
-                    day,
-                    day);
-        assertThat(bad).hasSize(1);
-      } catch (Exception e) {
-        throw new RuntimeException(e);
-      }
+      assertThat(issues).hasSize(1);
+      assertThat(issues.getFirst().getTechnicalMessage()).contains("cannot be before");
+    }
+
+    @Test
+    @DisplayName("Returns error containing '20th of the month' when date exceeds submission period cutoff")
+    void returnsErrorWhenDateExceedsSubmissionCutoff() {
+      Claim claim = Claim.builder().submissionPeriod("JAN-2020").build();
+      String late = LocalDate.of(2020, 3, 21).format(DateUtils.DATE_FORMATTER_YYYY_MM_DD);
+
+      List<ValidationIssue> issues = DateUtils.checkDateNotInFutureAndWithinAllowedPeriod(
+          claim, "Case Start Date", late, EARLIEST);
+
+      assertThat(issues).hasSize(1);
+      assertThat(issues.getFirst().getTechnicalMessage())
+          .contains("20th of the month following the submission period");
+    }
+
+    @Test
+    @DisplayName("Returns error when date value cannot be parsed")
+    void returnsErrorWhenDateIsUnparseable() {
+      Claim claim = Claim.builder().submissionPeriod("JAN-2026").build();
+
+      List<ValidationIssue> issues = DateUtils.checkDateNotInFutureAndWithinAllowedPeriod(
+          claim, "Case Start Date", "not-a-date", EARLIEST);
+
+      assertThat(issues).hasSize(1);
+      assertThat(issues.getFirst().getCode()).isEqualTo("INVALID_CASE_START_DATE");
+    }
+
+    @ParameterizedTest(name = "Field ''{0}'' maps to error code ''{1}''")
+    @CsvSource({
+        "Case Start Date,             INVALID_CASE_START_DATE",
+        "Case Concluded Date,         INVALID_CASE_CONCLUDED_DATE",
+        "Transfer Date,               INVALID_TRANSFER_DATE",
+        "Representation Order Date,   INVALID_REPRESENTATION_ORDER_DATE",
+        "Client Date of Birth,        INVALID_CLIENT_DATE_OF_BIRTH",
+        "Client 2 Date of Birth,      INVALID_CLIENT_DATE_OF_BIRTH",
+        "Some Other Field,            INVALID_DATE_FORMAT"
+    })
+    @DisplayName("Maps field name to correct error code for an early date")
+    void mapsFieldNameToCorrectErrorCode(String fieldName, String expectedCode) {
+      Claim claim = Claim.builder().submissionPeriod("JAN-2020").build();
+      String early = EARLIEST.minusDays(1).format(DateUtils.DATE_FORMATTER_YYYY_MM_DD);
+
+      List<ValidationIssue> issues = DateUtils.checkDateNotInFutureAndWithinAllowedPeriod(
+          claim, fieldName.trim(), early, EARLIEST);
+
+      assertThat(issues).isNotEmpty();
+      assertThat(issues.getFirst().getCode()).isEqualTo(expectedCode.trim());
     }
   }
 
+  // ─────────────────────────────────────────────────────────────────────────
+  // validateDateBetween (private — tested via reflection)
+  // ─────────────────────────────────────────────────────────────────────────
+
   @Nested
-  @DisplayName("parsing helpers")
-  class Parsing {
+  @DisplayName("validateDateBetween")
+  class ValidateDateBetween {
+
+    private static final LocalDate BOUNDARY = LocalDate.of(2022, 2, 2);
+
+    private static List<ValidationIssue> invokeDateBetween(
+        String fieldName, LocalDate date, LocalDate earliest, LocalDate latest) throws Exception {
+      Method m = DateUtils.class.getDeclaredMethod(
+          "validateDateBetween", String.class, String.class, LocalDate.class, LocalDate.class);
+      m.setAccessible(true);
+      @SuppressWarnings("unchecked")
+      List<ValidationIssue> result = (List<ValidationIssue>) m.invoke(
+          null, fieldName, date.format(DateUtils.DATE_FORMATTER_YYYY_MM_DD), earliest, latest);
+      return result;
+    }
 
     @Test
-    @DisplayName("parseSubmissionPeriod handles case-insensitivity and invalid input")
-    void parseSubmissionPeriodCases() {
-      assertThat(DateUtils.parseSubmissionPeriod(null)).isNull();
-      assertThat(DateUtils.parseSubmissionPeriod("")).isNull();
-      assertThat(DateUtils.parseSubmissionPeriod("Jan-2026")).isEqualTo(YearMonth.of(2026, 1));
+    @DisplayName("Returns no issues when date falls exactly on the boundary")
+    void returnsNoIssuesForDateExactlyOnBoundary() throws Exception {
+      assertThat(invokeDateBetween("field", BOUNDARY, BOUNDARY, BOUNDARY)).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Returns an issue when date is one day outside the boundary")
+    void returnsIssueWhenDateIsOneDayOutsideBoundary() throws Exception {
+      assertThat(invokeDateBetween("field", BOUNDARY.plusDays(1), BOUNDARY, BOUNDARY)).hasSize(1);
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // validateDateInPast
+  // ─────────────────────────────────────────────────────────────────────────
+
+  @Nested
+  @DisplayName("validateDateInPast")
+  class ValidateDateInPast {
+
+    @Test
+    @DisplayName("Returns no issues for a valid past date")
+    void returnsNoIssuesForValidPastDate() {
+      assertThat(DateUtils.validateDateInPast("someField", "2020-01-01", LocalDate.of(1900, 1, 1)))
+          .isEmpty();
+    }
+
+    @Test
+    @DisplayName("Returns INVALID_DATE_FORMAT for an unparseable date string")
+    void returnsErrorForUnparseableDateString() {
+      List<ValidationIssue> issues =
+          DateUtils.validateDateInPast("someField", "bad", LocalDate.of(1900, 1, 1));
+
+      assertThat(issues).hasSize(1);
+      assertThat(issues.getFirst().getCode()).isEqualTo("INVALID_DATE_FORMAT");
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Parsing helpers
+  // ─────────────────────────────────────────────────────────────────────────
+
+  @Nested
+  @DisplayName("parseSubmissionPeriod")
+  class ParseSubmissionPeriod {
+
+    @ParameterizedTest(name = "Returns null for blank input [{0}]")
+    @NullAndEmptySource
+    @DisplayName("Returns null for null or empty input")
+    void returnsNullForBlankInput(String input) {
+      assertThat(DateUtils.parseSubmissionPeriod(input)).isNull();
+    }
+
+    @Test
+    @DisplayName("Returns null for an unparseable value")
+    void returnsNullForUnparseableValue() {
       assertThat(DateUtils.parseSubmissionPeriod("bad-format")).isNull();
     }
 
+    @ParameterizedTest(name = "Parses ''{0}'' to JAN-2026")
+    @ValueSource(strings = {"JAN-2026", "jan-2026", "Jan-2026"})
+    @DisplayName("Parses case-insensitively to the correct YearMonth")
+    void parsesCaseInsensitively(String input) {
+      assertThat(DateUtils.parseSubmissionPeriod(input)).isEqualTo(YearMonth.of(2026, 1));
+    }
+  }
+
+  @Nested
+  @DisplayName("parseDate")
+  class ParseDate {
+
+    @ParameterizedTest(name = "Returns null for blank input [{0}]")
+    @NullAndEmptySource
+    @DisplayName("Returns null for null or empty input")
+    void returnsNullForBlankInput(String input) {
+      assertThat(DateUtils.parseDate(input)).isNull();
+    }
+
     @Test
-    @DisplayName("parseDate returns null for blank/invalid and parses valid")
-    void parseDateCases() {
-      assertThat(DateUtils.parseDate(null)).isNull();
-      assertThat(DateUtils.parseDate("")).isNull();
-      assertThat(DateUtils.parseDate("2020-02-29")).isEqualTo(LocalDate.of(2020, 2, 29));
+    @DisplayName("Returns null for an unparseable value")
+    void returnsNullForUnparseableValue() {
       assertThat(DateUtils.parseDate("not-a-date")).isNull();
     }
 
     @Test
-    @DisplayName("getTwentiethOfNextMonth via reflection throws for blank and parses valid")
-    void getTwentiethOfNextMonth_reflection() throws Exception {
-      Method m = DateUtils.class.getDeclaredMethod("getTwentiethOfNextMonth", String.class);
-      m.setAccessible(true);
-
-      // valid
-      Object res = m.invoke(null, "Jan-2026");
-      assertThat(res).isEqualTo(LocalDate.of(2026, 2, 20));
-
-      // blank should throw IllegalArgumentException
-      try {
-        m.invoke(null, "");
-      } catch (java.lang.reflect.InvocationTargetException ite) {
-        assertThat(ite.getCause()).isInstanceOf(IllegalArgumentException.class);
-      }
-    }
-
-    @Test
-    @DisplayName("submissionPeriodCutoffDate returns 20th of following month")
-    void submissionPeriodCutoff() {
-      YearMonth period = YearMonth.of(2025, 5);
-      assertThat(DateUtils.submissionPeriodCutoffDate(period)).isEqualTo(LocalDate.of(2025, 6, 20));
+    @DisplayName("Parses a valid date string to the correct LocalDate")
+    void parsesValidDateString() {
+      assertThat(DateUtils.parseDate("2020-02-29")).isEqualTo(LocalDate.of(2020, 2, 29));
     }
   }
 
   @Nested
-  @DisplayName("validation behaviours")
-  class ValidationBehaviours {
+  @DisplayName("getTwentiethOfNextMonth (private)")
+  class GetTwentiethOfNextMonth {
 
-    @Test
-    @DisplayName("validateDateInPast returns error for invalid format and empty for valid")
-    void validateDateInPastCases() {
-      List<ValidationIssue> issues =
-          DateUtils.validateDateInPast("someField", "2020-01-01", LocalDate.of(1900, 1, 1));
-      assertThat(issues).isEmpty();
-
-      List<ValidationIssue> bad = DateUtils.validateDateInPast("someField", "bad", LocalDate.of(1900, 1, 1));
-      assertThat(bad).hasSize(1);
-      assertThat(bad.get(0).getCode()).isEqualTo("INVALID_DATE_FORMAT");
+    private static LocalDate invoke(String input) throws Exception {
+      Method m = DateUtils.class.getDeclaredMethod("getTwentiethOfNextMonth", String.class);
+      m.setAccessible(true);
+      return (LocalDate) m.invoke(null, input);
     }
 
     @Test
-    @DisplayName("checkDateNotInFutureAndWithinAllowedPeriod checks future, early and late dates")
-    void checkDateNotInFutureAndWithinAllowedPeriod() {
-      Claim c = Claim.builder().submissionPeriod("JAN-2026").build();
+    @DisplayName("Returns the 20th of the following month for a valid submission period")
+    void returnsTwentiethOfFollowingMonth() throws Exception {
+      assertThat(invoke("Jan-2026")).isEqualTo(LocalDate.of(2026, 2, 20));
+    }
 
-      // future date
-      String future = LocalDate.now().plusDays(1).format(DateUtils.DATE_FORMATTER_YYYY_MM_DD);
-      var issues = DateUtils.checkDateNotInFutureAndWithinAllowedPeriod(c, "field", future, LocalDate.of(1900, 1, 1));
-      assertThat(issues).hasSize(1);
-      assertThat(issues.getFirst().getTechnicalMessage()).contains("cannot be a future date");
-
-      // early date
-      Claim c2 = Claim.builder().submissionPeriod("JAN-2026").build();
-      String early = LocalDate.of(1900, 1, 1).minusDays(1).format(DateUtils.DATE_FORMATTER_YYYY_MM_DD);
-      var eIssues = DateUtils.checkDateNotInFutureAndWithinAllowedPeriod(c2, "field", early, LocalDate.of(1900, 1, 1));
-      assertThat(eIssues).hasSize(1);
-      assertThat(eIssues.getFirst().getTechnicalMessage()).contains("cannot be before");
-
-      // late date - pick a submission period and a date after 20th of next month
-      Claim c3 = Claim.builder().submissionPeriod("JAN-2020").build();
-      String late = LocalDate.of(2020, 3, 21).format(DateUtils.DATE_FORMATTER_YYYY_MM_DD);
-      var lIssues = DateUtils.checkDateNotInFutureAndWithinAllowedPeriod(c3, "field", late, LocalDate.of(1900, 1, 1));
-      assertThat(lIssues).hasSize(1);
-      assertThat(lIssues.getFirst().getTechnicalMessage()).contains("20th of the month following the submission period");
+    @ParameterizedTest(name = "Throws IllegalArgumentException for blank input [{0}]")
+    @NullAndEmptySource
+    @DisplayName("Throws IllegalArgumentException for null or empty input")
+    void throwsForBlankInput(String input) throws Exception {
+      Method m = DateUtils.class.getDeclaredMethod("getTwentiethOfNextMonth", String.class);
+      m.setAccessible(true);
+      try {
+        m.invoke(null, input);
+      } catch (InvocationTargetException ite) {
+        assertThat(ite.getCause()).isInstanceOf(IllegalArgumentException.class);
+      }
     }
   }
 }

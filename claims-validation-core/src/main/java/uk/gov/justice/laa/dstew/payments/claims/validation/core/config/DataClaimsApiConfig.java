@@ -5,14 +5,14 @@ import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
-/** Configuration properties for the Fee Scheme Platform API. */
+/** Configuration properties for the Data Claims API. */
 @Configuration
-@ConfigurationProperties(prefix = "laa.fee-scheme-platform-api")
+@ConfigurationProperties(prefix = "laa.data-claims-api")
 @Getter
 @Setter
-public class FeeSchemePlatformApiProperties implements ApiProperties {
+public class DataClaimsApiConfig implements ApiProperties {
 
-  /** The base URL for the Fee Scheme Platform API. */
+  /** The base URL for the Data Claims API. */
   private String url;
 
   /** The access token for API authentication. */

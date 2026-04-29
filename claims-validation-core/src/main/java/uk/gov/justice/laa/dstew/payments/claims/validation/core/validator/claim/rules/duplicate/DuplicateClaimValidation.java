@@ -5,10 +5,9 @@ import java.util.List;
 import java.util.UUID;
 import java.util.function.Predicate;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
-import uk.gov.justice.laa.dstew.payments.claims.validation.core.client.ClaimsDataProvider;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationIssue;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.provider.ClaimsDataProvider;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.util.ClaimMapper;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidationError;
 import uk.gov.justice.laa.dstew.payments.claimsdata.model.ClaimResultSet;
@@ -114,7 +113,7 @@ public abstract class DuplicateClaimValidation {
       UUID submissionId) {
 
     try {
-      ResponseEntity<ClaimResultSet> response =
+      ClaimResultSet resultSet =
           claimsDataProvider.getClaims(
               officeCode,
               null, // submissionId - not filtering by submission
@@ -128,9 +127,7 @@ public abstract class DuplicateClaimValidation {
               null, // size
               null); // sort
 
-      if (response == null
-          || response.getBody() == null
-          || response.getBody().getContent() == null) {
+      if (resultSet == null || resultSet.getContent() == null) {
         return new DuplicateCheckResult(Collections.emptyList(), null);
       }
 
@@ -138,7 +135,7 @@ public abstract class DuplicateClaimValidation {
       String currentSubmissionId = submissionId == null ? null : submissionId.toString();
 
       List<Claim> duplicates =
-          response.getBody().getContent().stream()
+          resultSet.getContent().stream()
               // Filter out claims from the current submission
               .filter(
                   prevClaim ->

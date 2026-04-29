@@ -5,14 +5,14 @@ import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
-/** Configuration properties for the Data Claims API. */
+/** Configuration properties for the Provider Details API. */
 @Configuration
-@ConfigurationProperties(prefix = "laa.data-claims-api")
+@ConfigurationProperties(prefix = "laa.provider-details-api")
 @Getter
 @Setter
-public class DataClaimsApiProperties implements ApiProperties {
+public class ProviderDetailsApiConfig implements ApiProperties {
 
-  /** The base URL for the Data Claims API. */
+  /** The base URL for the Provider Details API. */
   private String url;
 
   /** The access token for API authentication. */

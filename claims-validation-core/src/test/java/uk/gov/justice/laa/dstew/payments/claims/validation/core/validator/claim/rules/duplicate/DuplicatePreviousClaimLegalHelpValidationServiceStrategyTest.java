@@ -10,8 +10,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.gov.justice.laa.dstew.payments.claims.validation.core.client.DataClaimsClient;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationIssue;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.provider.ClaimsDataProvider;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidationError;
 import uk.gov.justice.laa.dstew.payments.claimsdata.model.ClaimStatus;
 import uk.gov.justice.laa.dstew.payments.claimsdata.model.FeeCalculationType;
@@ -20,7 +20,7 @@ import uk.gov.justice.laa.dstew.payments.claimsdata.model.FeeCalculationType;
 class DuplicatePreviousClaimLegalHelpValidationServiceStrategyTest
     extends AbstractDuplicateClaimValidatorStrategy {
 
-  @Mock private DataClaimsClient mockDataClaimsRestClient;
+  @Mock private ClaimsDataProvider mockDataClaimsRestClient;
 
   private DuplicatePreviousClaimLegalHelpValidationServiceStrategy
       duplicateClaimLegalHelpValidation;

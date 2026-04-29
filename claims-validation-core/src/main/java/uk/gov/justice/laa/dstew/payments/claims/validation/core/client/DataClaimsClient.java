@@ -14,6 +14,7 @@ import org.springframework.web.service.annotation.GetExchange;
 import org.springframework.web.service.annotation.HttpExchange;
 import org.springframework.web.service.annotation.PatchExchange;
 import org.springframework.web.service.annotation.PostExchange;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.provider.ClaimsDataProvider;
 import uk.gov.justice.laa.dstew.payments.claimsdata.model.AreaOfLaw;
 import uk.gov.justice.laa.dstew.payments.claimsdata.model.BulkSubmissionPatch;
 import uk.gov.justice.laa.dstew.payments.claimsdata.model.ClaimPatch;
@@ -33,15 +34,18 @@ import uk.gov.justice.laa.dstew.payments.claimsdata.model.SubmissionStatus;
 import uk.gov.justice.laa.dstew.payments.claimsdata.model.SubmissionsResultSet;
 
 /**
- * REST client interface for fetching claims data. This interface communicates with the Data Claims
- * API. Implements {@link ClaimsDataProvider} so it can be used by validation logic that is agnostic
- * to the data source (HTTP or DB).
+ * REST client interface for the Data Claims API. Covers the full API surface including bulk
+ * submissions, submissions, claims, and matter starts.
+ *
+ * <p>This interface is purely a transport concern. Validation logic should depend on {@link
+ * ClaimsDataProvider} instead, with {@code HttpClaimsDataProvider} providing the HTTP-backed
+ * implementation that delegates to this client.
  */
 @HttpExchange(
     value = "/api/v1",
     accept = MediaType.APPLICATION_JSON_VALUE,
     contentType = MediaType.APPLICATION_JSON_VALUE)
-public interface DataClaimsClient extends ClaimsDataProvider {
+public interface DataClaimsClient {
 
   /**
    * Get the raw JSON document of a bulk submission.
@@ -163,7 +167,7 @@ public interface DataClaimsClient extends ClaimsDataProvider {
         claimStatuses,
         pageNumber,
         pageSize,
-        sort != null ? sort.toString() : null);
+        sort != null && sort.isSorted() ? sort.toString() : null);
   }
 
   /**

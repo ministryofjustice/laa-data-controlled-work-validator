@@ -2,10 +2,12 @@ package uk.gov.justice.laa.dstew.payments.claims.validation.core.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationIssue;
@@ -13,241 +15,212 @@ import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Validation
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationSeverity;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidation;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidationContext;
-import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidationError;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.rules.ClaimValidator;
 import uk.gov.justice.laa.dstew.payments.claimsdata.model.AreaOfLaw;
 
+/**
+ * Tests for {@link ValidationService}.
+ *
+ * <p>These tests verify that {@link ValidationService} correctly delegates to the
+ * {@link ClaimValidation} pipeline and surfaces results to callers. Each overload is tested
+ * independently to confirm default argument values are applied correctly. The pipeline's own
+ * behaviour — scope filtering, priority ordering, deduplication, and context construction — is
+ * tested in ClaimValidationTest.
+ */
+@DisplayName("ValidationService")
 class ValidationServiceTest {
 
-  private Claim createTestClaim() {
-    Claim claim = new Claim();
-    claim.setAreaOfLaw(AreaOfLaw.LEGAL_HELP);
-    claim.setOfficeAccountNumber("1A234B");
-    return claim;
+  private Claim testClaim;
+
+  @BeforeEach
+  void setUp() {
+    testClaim = new Claim();
+    testClaim.setAreaOfLaw(AreaOfLaw.LEGAL_HELP);
+    testClaim.setOfficeAccountNumber("1A234B");
   }
 
-  @Test
-  void validateClaim_returnsValidResultWhenNoIssues() {
-    ValidationService service = new ValidationService(new ClaimValidation(Collections.emptyList()));
+  // ─────────────────────────────────────────────────────────────────────────
+  // validateClaim(Claim)
+  // ─────────────────────────────────────────────────────────────────────────
 
-    ValidationResult result = service.validateClaim(createTestClaim(), "fee");
+  @Nested
+  @DisplayName("validateClaim(Claim) — single-arg overload")
+  class SingleArgOverload {
 
-    assertThat(result.getIsValid()).isTrue();
-    assertThat(result.getIssues()).isEmpty();
+    @Test
+    @DisplayName("Returns valid result when claim is valid and no validators raise errors")
+    void returnsValidResultForValidClaim() {
+      ValidationService service =
+          new ValidationService(new ClaimValidation(Collections.emptyList()));
+
+      ValidationResult result = service.validateClaim(testClaim);
+
+      assertThat(result.getIsValid()).isTrue();
+      assertThat(result.getIssues()).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Returns MISSING_CLAIM error when claim is null")
+    void returnsMissingClaimWhenClaimIsNull() {
+      ValidationService service =
+          new ValidationService(new ClaimValidation(Collections.emptyList()));
+
+      ValidationResult result = service.validateClaim((Claim) null);
+
+      assertThat(result.getIsValid()).isFalse();
+      assertThat(result.getIssues()).hasSize(1);
+      assertThat(result.getIssues().getFirst().getCode()).isEqualTo("MISSING_CLAIM");
+    }
+
+    @Test
+    @DisplayName("Runs all scope-agnostic validators (scope defaults to null)")
+    void runsScopeAgnosticValidators() {
+      AtomicReference<String> capturedScope = new AtomicReference<>("NOT_SET");
+
+      ClaimValidator scopeCaptor = new ClaimValidator() {
+        @Override
+        public List<ValidationIssue> validate(Claim claim, ClaimValidationContext ctx) {
+          capturedScope.set(ctx.getScope());
+          return List.of();
+        }
+        @Override public String getValidatorCode() { return "SCOPE_CAPTOR"; }
+      };
+
+      new ValidationService(new ClaimValidation(List.of(scopeCaptor)))
+          .validateClaim(testClaim);
+
+      assertThat(capturedScope.get()).isNull();
+    }
   }
 
-  @Test
-  void validateClaim_returnsInvalidResultWhenErrorIssuesFound() {
+  // ─────────────────────────────────────────────────────────────────────────
+  // validateClaim(Claim, String)
+  // ─────────────────────────────────────────────────────────────────────────
 
-    ClaimValidator mockValidator =
-        new ClaimValidator() {
-          @Override
-          public List<ValidationIssue> validate(Claim claim, ClaimValidationContext ctx) {
-            return List.of(
-                ValidationIssue.builder()
-                    .code("TEST_ERROR")
-                    .message("Test error message")
-                    .severity(ValidationSeverity.ERROR)
-                    .build()
-            );
-          }
+  @Nested
+  @DisplayName("validateClaim(Claim, String) — two-arg overload")
+  class TwoArgOverload {
 
-          @Override
-          public String getValidatorCode() {
-            return "TEST";
-          }
-        };
+    @Test
+    @DisplayName("Passes scope through to the pipeline")
+    void passesScopeToPipeline() {
+      AtomicReference<String> capturedScope = new AtomicReference<>();
 
-    ValidationService service = new ValidationService(new uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidation(List.of(mockValidator)));
+      ClaimValidator scopeCaptor = new ClaimValidator() {
+        @Override
+        public List<ValidationIssue> validate(Claim claim, ClaimValidationContext ctx) {
+          capturedScope.set(ctx.getScope());
+          return List.of();
+        }
+        @Override public String getValidatorCode() { return "SCOPE_CAPTOR"; }
+      };
 
-    ValidationResult result = service.validateClaim(createTestClaim(), "fee");
+      new ValidationService(new ClaimValidation(List.of(scopeCaptor)))
+          .validateClaim(testClaim, "submission");
 
-    assertThat(result.getIsValid()).isFalse();
-    assertThat(result.getIssues()).hasSize(1);
-    assertThat(result.getIssues().getFirst().getCode()).isEqualTo("TEST_ERROR");
+      assertThat(capturedScope.get()).isEqualTo("submission");
+    }
+
+    @Test
+    @DisplayName("Passes empty related claims list to the pipeline")
+    void passesEmptyRelatedClaimsToPipeline() {
+      AtomicReference<List<Claim>> capturedRelated = new AtomicReference<>();
+
+      ClaimValidator relatedCaptor = new ClaimValidator() {
+        @Override
+        public List<ValidationIssue> validate(Claim claim, ClaimValidationContext ctx) {
+          capturedRelated.set(ctx.getRelatedClaims());
+          return List.of();
+        }
+        @Override public String getValidatorCode() { return "RELATED_CAPTOR"; }
+      };
+
+      new ValidationService(new ClaimValidation(List.of(relatedCaptor)))
+          .validateClaim(testClaim, "fee");
+
+      assertThat(capturedRelated.get()).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Returns MISSING_CLAIM error when claim is null")
+    void returnsMissingClaimWhenClaimIsNull() {
+      ValidationService service =
+          new ValidationService(new ClaimValidation(Collections.emptyList()));
+
+      ValidationResult result = service.validateClaim(null, "fee");
+
+      assertThat(result.getIsValid()).isFalse();
+      assertThat(result.getIssues()).hasSize(1);
+      assertThat(result.getIssues().getFirst().getCode()).isEqualTo("MISSING_CLAIM");
+    }
   }
 
-  @Test
-  void validateClaim_returnsValidResultWithWarningsOnly() {
+  // ─────────────────────────────────────────────────────────────────────────
+  // validateClaim(Claim, String, List<Claim>)
+  // ─────────────────────────────────────────────────────────────────────────
 
-    ClaimValidator mockValidator =
-        new ClaimValidator() {
-          @Override
-          public List<ValidationIssue> validate(Claim claim, ClaimValidationContext ctx) {
-            return List.of(
-                ValidationIssue.builder()
-                    .code("TEST_WARNING")
-                    .message("Test warning message")
-                    .severity(ValidationSeverity.WARNING)
-                    .build()
-            );
-          }
+  @Nested
+  @DisplayName("validateClaim(Claim, String, List) — full three-arg overload")
+  class ThreeArgOverload {
 
-          @Override
-          public String getValidatorCode() {
-            return "TEST";
-          }
-        };
+    @Test
+    @DisplayName("Returns valid result with no issues when no validators raise errors")
+    void returnsValidResultWhenNoIssues() {
+      ValidationService service =
+          new ValidationService(new ClaimValidation(Collections.emptyList()));
 
-    ValidationService service = new ValidationService(new uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidation(List.of(mockValidator)));
+      assertThat(service.validateClaim(testClaim, "fee", List.of()).getIsValid()).isTrue();
+    }
 
-    ValidationResult result = service.validateClaim(createTestClaim(), null);
+    @Test
+    @DisplayName("Returns invalid result when a validator raises an ERROR issue")
+    void returnsInvalidResultWhenErrorIssueFound() {
+      ClaimValidator errorValidator = new ClaimValidator() {
+        @Override
+        public List<ValidationIssue> validate(Claim claim, ClaimValidationContext ctx) {
+          return List.of(ValidationIssue.builder()
+              .code("TEST_ERROR").message("error").severity(ValidationSeverity.ERROR).build());
+        }
+        @Override public String getValidatorCode() { return "TEST_ERROR_VALIDATOR"; }
+      };
 
-    assertThat(result.getIsValid()).isTrue();
-    assertThat(result.getIssues()).hasSize(1);
-    assertThat(result.getIssues().getFirst().getSeverity()).isEqualTo(ValidationSeverity.WARNING);
-  }
+      ValidationResult result = new ValidationService(new ClaimValidation(List.of(errorValidator)))
+          .validateClaim(testClaim, "fee", List.of());
 
-  @Test
-  void validatorsFilteredByScope_sortedByPriority_and_duplicatesRemoved_preserveOrder() {
-    List<String> callOrder = new ArrayList<>();
+      assertThat(result.getIsValid()).isFalse();
+      assertThat(result.getIssues().getFirst().getCode()).isEqualTo("TEST_ERROR");
+    }
 
-    ValidationIssue sharedIssue = ValidationIssue.builder()
-        .code("DUPLICATE_CODE")
-        .message("duplicate")
-        .severity(ValidationSeverity.WARNING)
-        .technicalMessage(null)
-        .build();
+    @Test
+    @DisplayName("Returns valid result when validators raise only WARNING issues")
+    void returnsValidResultWithWarningsOnly() {
+      ClaimValidator warningValidator = new ClaimValidator() {
+        @Override
+        public List<ValidationIssue> validate(Claim claim, ClaimValidationContext ctx) {
+          return List.of(ValidationIssue.builder()
+              .code("TEST_WARNING").message("warn").severity(ValidationSeverity.WARNING).build());
+        }
+        @Override public String getValidatorCode() { return "TEST_WARNING_VALIDATOR"; }
+      };
 
-    ClaimValidator lowPriority = new ClaimValidator() {
-      @Override
-      public List<ValidationIssue> validate(Claim claim, ClaimValidationContext context) {
-        callOrder.add("low");
-        return List.of(sharedIssue);
-      }
+      ValidationResult result =
+          new ValidationService(new ClaimValidation(List.of(warningValidator)))
+              .validateClaim(testClaim, null, List.of());
 
-      @Override
-      public int priority() {
-        return 20;
-      }
+      assertThat(result.getIsValid()).isTrue();
+      assertThat(result.getIssues().getFirst().getSeverity()).isEqualTo(ValidationSeverity.WARNING);
+    }
 
-      @Override
-      public boolean appliesTo(String scope) {
-        return true;
-      }
+    @Test
+    @DisplayName("Returns MISSING_CLAIM error when claim is null")
+    void returnsMissingClaimWhenClaimIsNull() {
+      ValidationService service =
+          new ValidationService(new ClaimValidation(Collections.emptyList()));
 
-      @Override
-      public String getValidatorCode() {
-        return "LOW";
-      }
-    };
+      ValidationResult result = service.validateClaim(null, "fee", List.of());
 
-    ClaimValidator highPriority = new ClaimValidator() {
-      @Override
-      public List<ValidationIssue> validate(Claim claim, ClaimValidationContext context) {
-        callOrder.add("high");
-        return List.of(sharedIssue);
-      }
-
-      @Override
-      public int priority() {
-        return 10;
-      }
-
-      @Override
-      public boolean appliesTo(String scope) {
-        return true;
-      }
-
-      @Override
-      public String getValidatorCode() {
-        return "HIGH";
-      }
-    };
-
-    ClaimValidator excluded = new ClaimValidator() {
-      @Override
-      public List<ValidationIssue> validate(Claim claim, ClaimValidationContext context) {
-        callOrder.add("excluded");
-        return List.of(ClaimValidationError.CLAIM_DATA_INCOMPLETE.toValidationIssue());
-      }
-
-      @Override
-      public boolean appliesTo(String scope) {
-        return false;
-      }
-
-      @Override
-      public String getValidatorCode() {
-        return "EXCLUDED";
-      }
-    };
-
-    ValidationService service = new ValidationService(new uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidation(List.of(lowPriority, highPriority, excluded)));
-
-    var result = service.validateClaim(Claim.builder().build(), "fee");
-
-    // Both validators that apply should have been called in priority order (high then low)
-    assertThat(callOrder).containsExactly("high", "low");
-
-    // Shared identical issues should be deduplicated -> only one issue present
-    assertThat(result.getIssues()).hasSize(1);
-
-    // The single issue is a WARNING so overall validation should be considered valid
-    assertThat(result.getIsValid()).isTrue();
-  }
-
-  @Test
-  void buildValidationContext_passesRelatedClaims_and_handlesNullRelatedClaims() {
-    AtomicReference<ClaimValidationContext> captured = new AtomicReference<>();
-
-    ClaimValidator capturingValidator = new ClaimValidator() {
-      @Override
-      public List<ValidationIssue> validate(Claim claim, ClaimValidationContext context) {
-        captured.set(context);
-        return List.of();
-      }
-
-      @Override
-      public String getValidatorCode() {
-        return "CAPTURE";
-      }
-    };
-
-    ValidationService service = new ValidationService(new uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidation(List.of(capturingValidator)));
-
-    List<Claim> related = List.of(Claim.builder().uniqueFileNumber("010101/001").build());
-
-    service.validateClaim(Claim.builder().build(),"fee", related);
-
-    ClaimValidationContext ctx = captured.get();
-    assertThat(ctx).isNotNull();
-    assertThat(ctx.getRelatedClaims()).isEqualTo(related);
-
-    // Now test when relatedClaims is null on the request object
-    captured.set(null);
-
-    service.validateClaim(Claim.builder().build(), "fee", null);
-
-    ClaimValidationContext ctx2 = captured.get();
-    assertThat(ctx2).isNotNull();
-    // Should be converted to an empty list (List.of()) when null
-    assertThat(ctx2.getRelatedClaims()).isEmpty();
-  }
-
-  @Test
-  void privateBuildValidationContext_invokedViaReflection_coversBothBranches() throws Exception {
-    uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidation service = new uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidation(List.of());
-
-    var method = uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidation.class.getDeclaredMethod("buildValidationContext", String.class, List.class);
-    method.setAccessible(true);
-
-    ClaimValidationContext ctx1 = (ClaimValidationContext) method.invoke(service, "fee", List.of(Claim.builder().build()));
-    ClaimValidationContext ctx2 = (ClaimValidationContext) method.invoke(service, "fee", null);
-
-    assertThat(ctx1.getRelatedClaims()).isNotEmpty();
-    assertThat(ctx2.getRelatedClaims()).isEmpty();
-  }
-
-  @Test
-  void validateClaim_returnsMissingClaimResultWhenClaimIsNull() {
-
-    ValidationService service = new ValidationService(new uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidation(List.of()));
-
-    ValidationResult result = service.validateClaim(null, "fee");
-
-    assertThat(result.getIsValid()).isFalse();
-    assertThat(result.getIssues()).hasSize(1);
-    assertThat(result.getIssues().getFirst().getCode()).isEqualTo("MISSING_CLAIM");
+      assertThat(result.getIsValid()).isFalse();
+      assertThat(result.getIssues().getFirst().getCode()).isEqualTo("MISSING_CLAIM");
+    }
   }
 }

@@ -3,6 +3,7 @@ package uk.gov.justice.laa.dstew.payments.claims.validation.core.config;
 import io.netty.channel.ChannelOption;
 import java.time.Duration;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
@@ -18,6 +19,8 @@ import uk.gov.justice.laa.dstew.payments.claims.validation.core.client.CachedFee
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.client.DataClaimsClient;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.client.FeeSchemeClient;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.client.ProviderDetailsClient;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.provider.ClaimsDataProvider;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.provider.impl.HttpClaimsDataProvider;
 
 /**
  * Configuration for WebClient and HTTP service clients used for outbound REST calls to external
@@ -37,7 +40,7 @@ public class WebClientConfig {
    * @return An instance of {@link FeeSchemeClient}
    */
   private FeeSchemeClient createRawFeeSchemeClient(
-      final FeeSchemePlatformApiProperties properties) {
+      final FeeSchemeApiConfig properties) {
     final WebClient webClient = createWebClient(properties);
     final WebClientAdapter webClientAdapter = WebClientAdapter.create(webClient);
     HttpServiceProxyFactory factory = HttpServiceProxyFactory.builderFor(webClientAdapter).build();
@@ -49,7 +52,7 @@ public class WebClientConfig {
    * to 5 minutes for demonstration. TODO move duration to config.
    */
   @Bean
-  public FeeSchemeClient feeSchemeClient(final FeeSchemePlatformApiProperties properties) {
+  public FeeSchemeClient feeSchemeClient(final FeeSchemeApiConfig properties) {
     FeeSchemeClient rawClient = createRawFeeSchemeClient(properties);
     return new CachedFeeSchemeClient(rawClient, 5);
   }
@@ -62,7 +65,7 @@ public class WebClientConfig {
    */
   @Bean
   public ProviderDetailsClient providerDetailsClient(
-      final ProviderDetailsApiProperties properties) {
+      final ProviderDetailsApiConfig properties) {
     final WebClient webClient = createWebClient(properties);
     final WebClientAdapter webClientAdapter = WebClientAdapter.create(webClient);
     HttpServiceProxyFactory factory = HttpServiceProxyFactory.builderFor(webClientAdapter).build();
@@ -76,11 +79,30 @@ public class WebClientConfig {
    * @return An instance of {@link DataClaimsClient}
    */
   @Bean
-  public DataClaimsClient dataClaimsClient(final DataClaimsApiProperties properties) {
+  public DataClaimsClient dataClaimsClient(final DataClaimsApiConfig properties) {
     final WebClient webClient = createWebClient(properties);
     final WebClientAdapter webClientAdapter = WebClientAdapter.create(webClient);
     HttpServiceProxyFactory factory = HttpServiceProxyFactory.builderFor(webClientAdapter).build();
     return factory.createClient(DataClaimsClient.class);
+  }
+
+  /**
+   * Creates a {@link ClaimsDataProvider} bean backed by HTTP, using {@link HttpClaimsDataProvider}
+   * to adapt {@link DataClaimsClient} to the transport-agnostic provider interface.
+   *
+   * <p>This bean is only registered if no other {@link ClaimsDataProvider} bean is present in the
+   * application context. Services that embed this library with direct database access (e.g. the
+   * Claims API itself) should register their own {@link ClaimsDataProvider} implementation (e.g. a
+   * repository-backed one), which will cause this bean to be skipped entirely — preventing any
+   * self-referential HTTP call or unnecessary {@link DataClaimsClient} configuration.
+   *
+   * @param dataClaimsClient the HTTP REST client for the Data Claims API
+   * @return an {@link HttpClaimsDataProvider} wrapping the given client
+   */
+  @Bean
+  @ConditionalOnMissingBean(ClaimsDataProvider.class)
+  public ClaimsDataProvider claimsDataProvider(final DataClaimsClient dataClaimsClient) {
+    return new HttpClaimsDataProvider(dataClaimsClient);
   }
 
   /**

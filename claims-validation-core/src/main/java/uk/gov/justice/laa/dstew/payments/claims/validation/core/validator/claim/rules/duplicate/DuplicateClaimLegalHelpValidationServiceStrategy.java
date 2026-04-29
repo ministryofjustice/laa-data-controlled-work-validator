@@ -5,10 +5,9 @@ import static uk.gov.justice.laa.dstew.payments.claims.validation.core.util.FeeT
 import java.util.ArrayList;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-import uk.gov.justice.laa.dstew.payments.claims.validation.core.client.ClaimsDataProvider;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationIssue;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.provider.ClaimsDataProvider;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidationError;
 
 /**
@@ -17,7 +16,6 @@ import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.
  * DuplicateClaimLegalHelpDisbursementValidationStrategy.
  */
 @Slf4j
-@Service
 public final class DuplicateClaimLegalHelpValidationServiceStrategy extends DuplicateClaimValidation
     implements LegalHelpDuplicateClaimValidationStrategy {
 
