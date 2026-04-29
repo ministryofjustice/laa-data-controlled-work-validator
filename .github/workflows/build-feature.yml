@@ -22,7 +22,6 @@ jobs:
     permissions:
       contents: write
       packages: write
-  
     with:
       java_version: *JAVA_VERSION
       java_distribution: *JDK_DISTRIBUTION
@@ -39,6 +38,8 @@ jobs:
       aws_region: ${{ vars.LAA_DATA_CLAIMS_EVENT_SERVICE_AWS_REGION }}
 
   sca-scan:
+    needs:
+      - build
     uses: ./.github/workflows/sca-analysis.yml
     permissions:
       contents: read
@@ -50,26 +51,3 @@ jobs:
     secrets:
       # requires a pat due to accessing a private github repos packages (data-claims-api)
       gh_token: ${{ secrets.PHILS_PAT_TOKEN }}
-
-  publish-image:
-    needs:
-      - build
-      - sca-scan
-    uses: ministryofjustice/laa-ccms-common-workflows/.github/workflows/ecr-publish-image.yml@dc4173bfc12f714d7e8cbdd9f524d00ef02e25c4 # v2
-    permissions:
-      contents: read
-      id-token: write
-      security-events: write
-    with:
-      jar_subproject: 'claims-validation-core'
-      image_version: ${{ format('{0}-{1}', vars.LAA_DATA_CLAIMS_EVENT_SERVICE_IMAGE_PREFIX, needs.build.outputs.published_artifact_version) }}
-      publish: false
-      java_version: *JAVA_VERSION
-      java_distribution: *JDK_DISTRIBUTION
-    secrets:
-      # requires a pat due to accessing a private github repos packages (data-claims-api)
-      gh_token: ${{ secrets.PHILS_PAT_TOKEN }} 
-      ecr_repository: ""
-      ecr_region: ""
-      ecr_role_to_assume: ""
-      snyk_token: ${{ secrets.SNYK_TOKEN }}

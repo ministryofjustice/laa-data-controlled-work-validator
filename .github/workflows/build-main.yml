@@ -29,6 +29,7 @@ jobs:
       java_distribution: *JDK_DISTRIBUTION
       integration_test_task: "integrationTest"
       create_tag: 'true'
+      publish_package: 'true'
       github_bot_username: 'laa-ccms-caab-service'
       junit_results_path: 'claims-validation-core/build/test-results'
       junit_report_path: 'claims-validation-core/build/reports/tests'
