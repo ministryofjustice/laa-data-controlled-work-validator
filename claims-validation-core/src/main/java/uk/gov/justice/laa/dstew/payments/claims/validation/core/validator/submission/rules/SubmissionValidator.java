@@ -19,6 +19,16 @@ public interface SubmissionValidator {
   void validate(final SubmissionResponse submission, SubmissionValidationContext context);
 
   /**
+   * Returns whether this validator should run for the given scope.
+   *
+   * @param scope the validation scope (e.g., "fee", "disbursement")
+   * @return true if this validator applies to the scope
+   */
+  default boolean appliesTo(String scope) {
+    return true; // By default, validators apply to all scopes
+  }
+
+  /**
    * The priority of the validator. Lower values are run first.
    *
    * @return the priority
