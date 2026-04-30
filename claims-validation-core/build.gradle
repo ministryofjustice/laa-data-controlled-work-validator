@@ -3,6 +3,7 @@ plugins {
     id 'maven-publish'
     id 'io.freefair.lombok'
     id 'uk.gov.laa.springboot.laa-spring-boot-gradle-plugin'
+    id 'net.researchgate.release'
 }
 
 java {
