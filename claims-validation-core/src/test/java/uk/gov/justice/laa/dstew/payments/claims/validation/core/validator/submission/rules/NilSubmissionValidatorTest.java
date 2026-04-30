@@ -50,7 +50,7 @@ class NilSubmissionValidatorTest {
   }
 
   @Test
-  @DisplayName("Should have no errors when marked as NIL Submission and has claims")
+  @DisplayName("Should have no errors when marked as NIL Submission and has no claims") // fixed: was "has claims"
   void shouldHaveNoErrorsWhenMarkedAsNilSubmissionAndHasNoClaims() {
     // Given
     SubmissionValidationContext submissionValidationContext = new SubmissionValidationContext();
@@ -95,5 +95,87 @@ class NilSubmissionValidatorTest {
     assertContextClaimError(
         submissionValidationContext.getIssues(),
         SubmissionValidationError.NON_NIL_SUBMISSION_CONTAINS_NO_CLAIMS);
+  }
+
+  @Test
+  @DisplayName("Should have no errors when marked as NIL submission and claims list is empty")
+  void shouldHaveNoErrors_nilTrue_emptyClaimsList() {
+    // Branch: isNilSubmission=true, claims != null but isEmpty() → inner if is NOT entered
+    SubmissionValidationContext ctx = new SubmissionValidationContext();
+    SubmissionResponse submission = SubmissionResponse.builder()
+        .isNilSubmission(true)
+        .claims(Collections.emptyList())
+        .build();
+
+    nilSubmissionValidator.validate(submission, ctx);
+
+    assertFalse(ctx.hasErrors());
+  }
+
+  @Test
+  @DisplayName("Should have no errors when marked as NIL submission and claims list is null")
+  void shouldHaveNoErrors_nilTrue_nullClaimsList() {
+    // Branch: isNilSubmission=true, claims == null
+    SubmissionValidationContext ctx = new SubmissionValidationContext();
+    SubmissionResponse submission = SubmissionResponse.builder()
+            .isNilSubmission(true)
+            .build();
+
+    nilSubmissionValidator.validate(submission, ctx);
+
+    assertFalse(ctx.hasErrors());
+  }
+
+  @Test
+  @DisplayName("Should have errors when not marked as NIL submission and claims list is empty")
+  void shouldHaveErrors_nilFalse_emptyClaimsList() {
+    // Branch: isNilSubmission=false, claims != null but isEmpty() → satisfies || isEmpty() condition
+    SubmissionValidationContext ctx = new SubmissionValidationContext();
+    SubmissionResponse submission = SubmissionResponse.builder()
+        .isNilSubmission(false)
+        .claims(Collections.emptyList())
+        .build();
+
+    nilSubmissionValidator.validate(submission, ctx);
+
+    assertTrue(ctx.hasErrors());
+    assertContextClaimError(ctx.getIssues(),
+        SubmissionValidationError.NON_NIL_SUBMISSION_CONTAINS_NO_CLAIMS);
+  }
+
+  @Test
+  @DisplayName("Should have errors when not marked as NIL submission and claims list is null")
+  void shouldHaveErrors_nilFalse_nullClaimsList() {
+    // Branch: isNilSubmission=false, claims != null but isEmpty() → satisfies || isEmpty() condition
+    SubmissionValidationContext ctx = new SubmissionValidationContext();
+    SubmissionResponse submission = SubmissionResponse.builder()
+            .isNilSubmission(false)
+            .build();
+
+    nilSubmissionValidator.validate(submission, ctx);
+
+    assertTrue(ctx.hasErrors());
+    assertContextClaimError(ctx.getIssues(),
+            SubmissionValidationError.NON_NIL_SUBMISSION_CONTAINS_NO_CLAIMS);
+  }
+
+  /*
+    * This test covers the branch where isNilSubmission is null, which means neither the if nor the
+    * else if conditions are satisfied, so no errors should be added regardless of the claims
+    * state (claims can be null or not, it doesn't matter for this branch).
+    * TODO: confirm if this is correct behaviour.
+  */
+  @Test
+  @DisplayName("Should have no errors when NIL flag is null and claims is null"
+      + " — neither branch is entered")
+  void shouldHaveNoErrors_nilNull_noClaimsSet() {
+    SubmissionValidationContext ctx = new SubmissionValidationContext();
+    SubmissionResponse submission = SubmissionResponse.builder()
+        .isNilSubmission(null)
+        .build(); // claims null
+
+    nilSubmissionValidator.validate(submission, ctx);
+
+    assertFalse(ctx.hasErrors());
   }
 }

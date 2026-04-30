@@ -98,6 +98,6 @@ public class SubmissionSchemaValidator
    */
   @Override
   public void validate(SubmissionResponse submission, SubmissionValidationContext context) {
-    validateSubject(submission).forEach(context::addValidationError);
+    validateSubject(submission).forEach(context::addValidationIssue);
   }
 }

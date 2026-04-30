@@ -1,7 +1,6 @@
 package uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.rules;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -38,14 +37,13 @@ public class EffectiveCategoryOfLawClaimValidator implements ClaimValidator {
 
   @Override
   public List<ValidationIssue> validate(Claim claim, ClaimValidationContext context) {
-    List<ValidationIssue> issues = new ArrayList<>();
 
     AreaOfLaw areaOfLaw = claim.getAreaOfLaw();
     String officeCode = claim.getOfficeAccountNumber();
     String feeCode = claim.getFeeCode();
 
     if (feeCode == null || feeCode.isBlank()) {
-      return issues; // MandatoryFieldValidator handles this
+      return context.getIssues(); // MandatoryFieldValidator handles this
     }
 
     LocalDate effectiveDate = null;
@@ -55,7 +53,7 @@ public class EffectiveCategoryOfLawClaimValidator implements ClaimValidator {
           getEffectiveCategoriesOfLaw(officeCode, areaOfLaw, effectiveDate);
 
       // Get fee details and validate category of law
-      validateCategoryOfLaw(claim, feeCode, effectiveCategoriesOfLaw, issues);
+      validateCategoryOfLaw(claim, feeCode, effectiveCategoriesOfLaw, context);
 
     } catch (IllegalArgumentException e) {
       log.info(
@@ -72,7 +70,7 @@ public class EffectiveCategoryOfLawClaimValidator implements ClaimValidator {
           officeCode,
           areaOfLaw != null ? areaOfLaw.getValue() : null,
           effectiveDate);
-      handleProviderDetailsApiError(issues, ex);
+      handleProviderDetailsApiError(context, ex);
     } catch (Exception ex) {
       log.error(
           "Unexpected error during category of law validation for officeCode={}, "
@@ -81,10 +79,10 @@ public class EffectiveCategoryOfLawClaimValidator implements ClaimValidator {
           areaOfLaw != null ? areaOfLaw.getValue() : null,
           effectiveDate,
           ex);
-      handleProviderDetailsApiError(issues, ex);
+      handleProviderDetailsApiError(context, ex);
     }
 
-    return issues;
+    return context.getIssues();
   }
 
   private List<String> getEffectiveCategoriesOfLaw(
@@ -123,7 +121,7 @@ public class EffectiveCategoryOfLawClaimValidator implements ClaimValidator {
       Claim claim,
       String feeCode,
       List<String> providerCategoriesOfLaw,
-      List<ValidationIssue> issues) {
+      ClaimValidationContext context) {
 
     log.debug("Validating category of law for claim {}", claim.getId());
 
@@ -131,7 +129,7 @@ public class EffectiveCategoryOfLawClaimValidator implements ClaimValidator {
 
     if (response == null || response.getBody() == null) {
       // Fee details not found - this is an error
-      issues.add(
+      context.addValidationIssue(
           ClaimValidationError.INVALID_CATEGORY_OF_LAW_AND_FEE_CODE.toValidationIssue(feeCode));
       return;
     }
@@ -140,7 +138,7 @@ public class EffectiveCategoryOfLawClaimValidator implements ClaimValidator {
     String categoryOfLaw = feeDetails.getCategoryOfLawCode();
 
     if (categoryOfLaw == null) {
-      issues.add(
+      context.addValidationIssue(
           ClaimValidationError.INVALID_CATEGORY_OF_LAW_AND_FEE_CODE.toValidationIssue(feeCode));
     } else if (!providerCategoriesOfLaw.contains(categoryOfLaw)) {
       log.info(
@@ -149,7 +147,7 @@ public class EffectiveCategoryOfLawClaimValidator implements ClaimValidator {
           categoryOfLaw,
           feeCode,
           providerCategoriesOfLaw);
-      issues.add(
+      context.addValidationIssue(
           ClaimValidationError.INVALID_CATEGORY_OF_LAW_NOT_AUTHORISED_FOR_PROVIDER
               .toValidationIssue());
     }
@@ -157,8 +155,8 @@ public class EffectiveCategoryOfLawClaimValidator implements ClaimValidator {
     log.debug("Category of law validation completed for claim {}", claim.getId());
   }
 
-  private void handleProviderDetailsApiError(List<ValidationIssue> issues, Exception ex) {
-    issues.add(
+  private void handleProviderDetailsApiError(ClaimValidationContext context, Exception ex) {
+    context.addValidationIssue(
         ClaimValidationError.TECHNICAL_ERROR_PROVIDER_DETAILS_API
             .toValidationIssueWithTechnicalMessage(ex.getMessage()));
   }

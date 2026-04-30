@@ -2,13 +2,13 @@ package uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim
 
 import java.time.DateTimeException;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationIssue;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.util.DateUtils;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidationContext;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidationError;
 
@@ -24,24 +24,25 @@ public class UniqueFileNumberClaimValidator implements ClaimValidator {
 
   @Override
   public List<ValidationIssue> validate(Claim claim, ClaimValidationContext context) {
-    List<ValidationIssue> issues = new ArrayList<>();
 
     String uniqueFileNumber = claim.getUniqueFileNumber();
 
     if (!StringUtils.hasText(uniqueFileNumber)) {
-      return issues; // Not present, skip validation
+      return context.getIssues(); // Not present, skip validation
     }
 
     if (!isValidFormat(uniqueFileNumber)) {
-      issues.add(ClaimValidationError.INVALID_DATE_IN_UNIQUE_FILE_NUMBER.toValidationIssue());
-      return issues;
+      context.addValidationIssue(
+              ClaimValidationError.INVALID_DATE_IN_UNIQUE_FILE_NUMBER.toValidationIssue());
+      return context.getIssues();
     }
 
     if (!isValidDateInPast(uniqueFileNumber)) {
-      issues.add(ClaimValidationError.INVALID_DATE_IN_UNIQUE_FILE_NUMBER.toValidationIssue());
+      context.addValidationIssue(
+              ClaimValidationError.INVALID_DATE_IN_UNIQUE_FILE_NUMBER.toValidationIssue());
     }
 
-    return issues;
+    return context.getIssues();
   }
 
   /**
@@ -63,7 +64,7 @@ public class UniqueFileNumberClaimValidator implements ClaimValidator {
   private boolean isValidDateInPast(String uniqueFileNumber) {
     try {
       LocalDate date = parseDate(uniqueFileNumber);
-      return !date.isAfter(LocalDate.now());
+      return !date.isAfter(DateUtils.now());
     } catch (DateTimeException e) {
       return false;
     }
@@ -83,6 +84,8 @@ public class UniqueFileNumberClaimValidator implements ClaimValidator {
     int month = Integer.parseInt(datePart.substring(2, 4));
     int yearTwoDigits = Integer.parseInt(datePart.substring(4, 6));
 
+    // TODO should be fine but this will be a problem in 24 years time
+    // - consider using a more robust approach if this code is expected to be in use for a long time
     int year = (yearTwoDigits > 50) ? 1900 + yearTwoDigits : 2000 + yearTwoDigits;
 
     return LocalDate.of(year, month, day);

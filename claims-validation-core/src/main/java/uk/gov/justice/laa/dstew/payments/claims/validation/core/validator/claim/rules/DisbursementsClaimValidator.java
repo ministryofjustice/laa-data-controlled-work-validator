@@ -1,7 +1,6 @@
 package uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.rules;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -25,24 +24,24 @@ public class DisbursementsClaimValidator implements ClaimValidator {
 
   @Override
   public List<ValidationIssue> validate(Claim claim, ClaimValidationContext context) {
-    List<ValidationIssue> issues = new ArrayList<>();
 
     log.debug("Validating disbursements");
 
     BigDecimal vatAmount = claim.getDisbursementsVatAmount();
     if (vatAmount == null) {
-      return issues; // No VAT amount to validate
+      return context.getIssues(); // No VAT amount to validate
     }
 
     AreaOfLaw areaOfLaw = claim.getAreaOfLaw();
     BigDecimal maxAllowed = getMaxVatAmount(areaOfLaw);
 
     if (vatAmount.compareTo(maxAllowed) > 0) {
-      issues.add(ClaimValidationError.INVALID_DISBURSEMENT_VAT_AMOUNT.toValidationIssue());
+      context.addValidationIssue(
+              ClaimValidationError.INVALID_DISBURSEMENT_VAT_AMOUNT.toValidationIssue());
     }
 
-    log.debug("Disbursements validation completed, found {} issues", issues.size());
-    return issues;
+    log.debug("Disbursements validation completed, found {} issues", context.getIssues().size());
+    return context.getIssues();
   }
 
   private BigDecimal getMaxVatAmount(AreaOfLaw areaOfLaw) {

@@ -1,6 +1,5 @@
 package uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.rules;
 
-import java.util.ArrayList;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -24,18 +23,17 @@ public class MatterTypeClaimValidator implements ClaimValidator {
 
   @Override
   public List<ValidationIssue> validate(Claim claim, ClaimValidationContext context) {
-    List<ValidationIssue> issues = new ArrayList<>();
 
     String matterType = claim.getMatterTypeCode();
     AreaOfLaw areaOfLaw = claim.getAreaOfLaw();
 
     if (matterType == null || areaOfLaw == null) {
-      return issues; // Skip if no matter type or area of law
+      return context.getIssues(); // Skip if no matter type or area of law
     }
 
     String regex = getRegexForAreaOfLaw(areaOfLaw);
     if (regex == null) {
-      return issues; // No regex defined for this area of law
+      return context.getIssues(); // No regex defined for this area of law
     }
 
     log.debug("Validating matter type: {} for area of law: {}", matterType, areaOfLaw);
@@ -58,10 +56,10 @@ public class MatterTypeClaimValidator implements ClaimValidator {
           ClaimValidationError.INVALID_MATTER_TYPE_CODE.toValidationIssueWithTechnicalMessage(
               technicalMessage, matterType);
       issue.setMessage(displayMessage);
-      issues.add(issue);
+      context.addValidationIssue(issue);
     }
 
-    return issues;
+    return context.getIssues();
   }
 
   private String getRegexForAreaOfLaw(AreaOfLaw areaOfLaw) {

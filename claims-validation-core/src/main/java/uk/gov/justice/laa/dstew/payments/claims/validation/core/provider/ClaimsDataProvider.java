@@ -1,8 +1,10 @@
 package uk.gov.justice.laa.dstew.payments.claims.validation.core.provider;
 
 import java.util.List;
+import uk.gov.justice.laa.dstew.payments.claimsdata.model.AreaOfLaw;
 import uk.gov.justice.laa.dstew.payments.claimsdata.model.ClaimResultSet;
 import uk.gov.justice.laa.dstew.payments.claimsdata.model.ClaimStatus;
+import uk.gov.justice.laa.dstew.payments.claimsdata.model.SubmissionBase;
 import uk.gov.justice.laa.dstew.payments.claimsdata.model.SubmissionStatus;
 
 /**
@@ -78,4 +80,23 @@ public interface ClaimsDataProvider {
       Integer page,
       Integer size,
       String sort);
+
+  /**
+   * Retrieve submissions matching the given criteria.
+   *
+   * <p>Only {@code offices} is required; all other parameters are optional and may be {@code null}
+   * to omit a filter.
+   *
+   * @param offices the list of office account numbers to filter by (required, must not be empty)
+   * @param areaOfLaw the area of law to filter by, or {@code null} to return all areas
+   * @param submissionPeriod the submission period to filter by (e.g. {@code "2024-01"}), or
+   *     {@code null} to return all periods
+   * @return the matching submissions; never {@code null} — implementations should return an empty
+   *     list rather than {@code null}
+   */
+  List<SubmissionBase> getSubmissions(
+      List<String> offices,
+      AreaOfLaw areaOfLaw,
+      String submissionPeriod);
+
 }

@@ -1,6 +1,5 @@
 package uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.rules;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
 import lombok.RequiredArgsConstructor;
@@ -25,12 +24,11 @@ public class DuplicateClaimValidator implements ClaimValidator {
 
   @Override
   public List<ValidationIssue> validate(Claim claim, ClaimValidationContext context) {
-    List<ValidationIssue> issues = new ArrayList<>();
 
     AreaOfLaw areaOfLaw = claim.getAreaOfLaw();
     if (areaOfLaw == null) {
       log.debug("No area of law set, skipping duplicate claim validation");
-      return issues;
+      return context.getIssues();
     }
 
     String officeCode = claim.getOfficeAccountNumber();
@@ -48,7 +46,7 @@ public class DuplicateClaimValidator implements ClaimValidator {
 
     if (compatibleStrategies.isEmpty()) {
       log.debug("No duplicate claim validation strategy found for area of law: {}", areaOfLaw);
-      return issues;
+      return context.getIssues();
     }
 
     // Run each compatible strategy and collect validation issues
@@ -56,11 +54,11 @@ public class DuplicateClaimValidator implements ClaimValidator {
       log.debug("Running strategy: {}", strategy.getClass().getSimpleName());
       List<ValidationIssue> strategyIssues =
           strategy.validateDuplicateClaims(claim, submissionClaims, officeCode, feeType);
-      issues.addAll(strategyIssues);
+      context.addValidationIssues(strategyIssues);
     }
 
-    log.debug("Duplicate claim validation completed, found {} issues", issues.size());
-    return issues;
+    log.debug("Duplicate claim validation completed, found {} issues", context.getIssues().size());
+    return context.getIssues();
   }
 
   @Override

@@ -4,7 +4,6 @@ import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -39,11 +38,10 @@ public class MandatoryFieldClaimValidator implements ClaimValidator {
 
   @Override
   public List<ValidationIssue> validate(Claim claim, ClaimValidationContext context) {
-    List<ValidationIssue> issues = new ArrayList<>();
 
     AreaOfLaw areaOfLaw = claim.getAreaOfLaw();
     if (areaOfLaw == null) {
-      return issues; // No area of law - no mandatory fields to check
+      return context.getIssues(); // No area of law - no mandatory fields to check
     }
 
     String feeCalculationType = context.getFeeCalculationType();
@@ -52,7 +50,7 @@ public class MandatoryFieldClaimValidator implements ClaimValidator {
         mandatoryFieldsRegistry.getMandatoryFieldsByAreaOfLaw();
     List<String> mandatoryFields = mandatoryFieldsByAreaOfLaw.get(areaOfLaw);
     if (Objects.isNull(mandatoryFields)) {
-      return issues;
+      return context.getIssues();
     }
     boolean isDisbursementLegalHelpClaim =
         FeeCalculationType.DISB_ONLY.getValue().equals(feeCalculationType)
@@ -77,7 +75,7 @@ public class MandatoryFieldClaimValidator implements ClaimValidator {
         Object value = getter.invoke(claim);
 
         if (value == null || (value instanceof String s && s.trim().isEmpty())) {
-          issues.add(
+          context.addValidationIssue(
               ClaimValidationError.MISSING_MANDATORY_FIELD.toValidationIssue(
                   StringCaseUtil.toTitleCase(fieldName),
                   StringCaseUtil.toTitleCase(areaOfLaw.name())));
@@ -88,7 +86,7 @@ public class MandatoryFieldClaimValidator implements ClaimValidator {
       }
     }
 
-    return issues;
+    return context.getIssues();
   }
 
   @Override

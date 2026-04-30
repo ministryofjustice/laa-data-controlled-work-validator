@@ -48,7 +48,7 @@ public class SubmissionPeriodValidator implements SubmissionValidator {
     log.debug("Validating submission period for submission {}", submission.getSubmissionId());
 
     if (StringUtils.isEmpty(submission.getSubmissionPeriod())) {
-      context.addValidationError(
+      context.addValidationIssue(
               SubmissionValidationError.SUBMISSION_PERIOD_MISSING.toValidationIssue());
       return;
     }
@@ -56,7 +56,7 @@ public class SubmissionPeriodValidator implements SubmissionValidator {
     YearMonth enteredSubmissionPeriod =
             DateUtils.parseSubmissionPeriod(submission.getSubmissionPeriod());
     if (enteredSubmissionPeriod == null) {
-      context.addValidationError(
+      context.addValidationIssue(
               SubmissionValidationError.SUBMISSION_PERIOD_INVALID_FORMAT.toValidationIssue());
       return;
     }
@@ -64,15 +64,15 @@ public class SubmissionPeriodValidator implements SubmissionValidator {
     YearMonth currentMonth = DateUtils.currentYearMonth();
 
     if (Objects.equals(enteredSubmissionPeriod, currentMonth)) {
-      context.addValidationError(
+      context.addValidationIssue(
           SubmissionValidationError.SUBMISSION_PERIOD_SAME_MONTH
                   .toValidationIssue(DateUtils.getReadableCurrentMonth()));
     } else if (enteredSubmissionPeriod.isAfter(currentMonth)) {
-      context.addValidationError(
+      context.addValidationIssue(
           SubmissionValidationError.SUBMISSION_PERIOD_FUTURE_MONTH
                   .toValidationIssue(DateUtils.getReadableCurrentMonth()));
     } else if (enteredSubmissionPeriod.isBefore(this.submissionValidationMinimumPeriodYearMonth)) {
-      context.addValidationError(
+      context.addValidationIssue(
           SubmissionValidationError.SUBMISSION_VALIDATION_MINIMUM_PERIOD
                   .toValidationIssue(submissionValidationMinimumPeriod,
                         submissionValidationMinimumPeriod));

@@ -245,7 +245,7 @@ class ValidationServiceTest {
     void returnsInvalidResultWhenErrorIssueFound() {
       SubmissionValidator errorValidator = new SubmissionValidator() {
         @Override public void validate(SubmissionResponse s, SubmissionValidationContext ctx) {
-          ctx.addValidationError(ValidationIssue.builder()
+          ctx.addValidationIssue(ValidationIssue.builder()
               .code("SUB_ERROR").message("err").severity(ValidationSeverity.ERROR).build());
         }
         @Override public int priority() { return 0; }
@@ -311,7 +311,7 @@ class ValidationServiceTest {
     void returnsValidResultWithWarningsOnly() {
       SubmissionValidator warningValidator = new SubmissionValidator() {
         @Override public void validate(SubmissionResponse s, SubmissionValidationContext ctx) {
-          ctx.addValidationError(ValidationIssue.builder()
+          ctx.addValidationIssue(ValidationIssue.builder()
               .code("SUB_WARN").message("warn").severity(ValidationSeverity.WARNING).build());
         }
         @Override public int priority() { return 0; }
