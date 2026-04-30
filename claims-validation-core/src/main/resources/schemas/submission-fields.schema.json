@@ -1,0 +1,140 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SubmissionFields",
+  "type": "object",
+  "properties": {
+    "submission_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "bulk_submission_id": {
+      "type": ["string"],
+      "format": "uuid"
+    },
+    "office_account_number": {
+      "type": "string",
+      "pattern": "^[A-Z0-9]{6}$",
+      "validationErrorMessages": [
+        {
+          "key": "ALL",
+          "value": "Office Account Number must be exactly 6 characters containing uppercase letters and numbers."
+        }
+      ]
+    },
+    "submission_period": {
+      "type": "string",
+      "pattern": "^(JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)-[0-9]{4}$",
+      "validationErrorMessages": [
+        {
+          "key": "ALL",
+          "value": "Submission period wrong format, should be in the format MMM-YYYY"
+        }
+      ]
+    },
+    "area_of_law": {
+      "type": "string",
+      "enum": ["MEDIATION", "CRIME LOWER", "LEGAL HELP"],
+      "validationErrorMessages": [
+        {
+          "key": "ALL",
+          "value": "Area of Law must be one of: MEDIATION, CRIME LOWER, or LEGAL HELP"
+        }
+      ]
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "CREATED",
+        "READY_FOR_VALIDATION",
+        "VALIDATION_IN_PROGRESS",
+        "VALIDATION_SUCCEEDED",
+        "VALIDATION_FAILED",
+        "REPLACED"
+      ],
+      "validationErrorMessages": [
+        {
+          "key": "ALL",
+          "value": "Status must be one of: CREATED, READY_FOR_VALIDATION, VALIDATION_IN_PROGRESS, VALIDATION_SUCCEEDED, VALIDATION_FAILED, or REPLACED"
+        }
+      ]
+    },
+    "legal_help_submission_reference": {
+      "type": "string",
+      "pattern": "^[a-zA-Z0-9/]+$",
+      "maxLength": 20,
+      "validationErrorMessages": [
+        { "key": "required", "value": "Legal Help Submission Reference is required" },
+        { "key": "ALL", "value": "Legal Help Submission Reference must be a maximum of 20 characters and contain only letters, numbers and forward slashes"}
+      ]
+    },
+    "crime_lower_schedule_number": {
+      "type": "string",
+      "pattern": "^[a-zA-Z0-9/]+$",
+      "maxLength": 20,
+      "validationErrorMessages": [
+        { "key": "required", "value": "Crime Lower Schedule Number is required" },
+        { "key": "ALL", "value": "Crime Lower Schedule Number must be a maximum of 20 characters and contain only letters, numbers and forward slashes"}
+      ]
+    },
+    "mediation_submission_reference": {
+      "type": "string",
+      "pattern": "^[a-zA-Z0-9/]+$",
+      "maxLength": 20,
+      "validationErrorMessages": [
+        { "key": "required", "value": "Mediation Submission Reference is required" },
+        { "key": "ALL", "value": "Mediation Submission Reference must be a maximum of 20 characters and contain only letters, numbers and forward slashes"}
+      ]
+    },
+    "previous_submission_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "is_nil_submission": {
+      "type": "boolean"
+    },
+    "number_of_claims": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "created_by_user_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "office_account_number",
+    "submission_period",
+    "area_of_law",
+    "status",
+    "is_nil_submission",
+    "number_of_claims"
+  ],
+  "allOf": [
+    {
+      "if": {
+        "required": ["area_of_law"],
+        "properties": { "area_of_law": { "const": "CRIME LOWER" } }
+      },
+      "then": {
+        "required": ["crime_lower_schedule_number"]
+      }
+    },
+    {
+      "if": {
+        "required": ["area_of_law"],
+        "properties": { "area_of_law": { "const": "LEGAL HELP" } }
+      },
+      "then": {
+        "required": ["legal_help_submission_reference"]
+      }
+    },
+    {
+      "if": {
+        "required": ["area_of_law"],
+        "properties": { "area_of_law": { "const": "MEDIATION" } }
+      },
+      "then": {
+        "required": ["mediation_submission_reference"]
+      }
+    }
+  ]
+}

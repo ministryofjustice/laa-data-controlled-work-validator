@@ -271,7 +271,7 @@ class ClaimSchemaValidatorTest {
           .orElseThrow();
 
       assertThat(config.getMessage()).startsWith("Schema configuration warning:");
-      assertThat(config.getTechnicalMessage()).contains("These fields exist in the Claim class but are not defined in the JSON schema");
+      assertThat(config.getTechnicalMessage()).contains("These fields exist on the domain object but are not defined in the JSON schema. Update /schemas/");
     }
   }
 
@@ -283,17 +283,15 @@ class ClaimSchemaValidatorTest {
     @DisplayName("getCustomValidationMessage returns area-specific and ALL fallback messages")
     void getCustomValidationMessage_areaSpecificAndFallback() {
       // area-specific message exists for schedule_reference for LEGAL_HELP
-      String msg = validator.getCustomValidationMessage("schedule_reference", AreaOfLaw.LEGAL_HELP);
-      assertThat(msg).isNotNull();
-      assertThat(msg).contains("Schedule Reference must be a maximum of 20 characters");
+      String msg = validator.getCustomValidationMessage("schedule_reference", AreaOfLaw.LEGAL_HELP.toString());
+      assertThat(msg).isNotNull().contains("Schedule Reference must be a maximum of 20 characters");
 
       // fallback ALL message for office_account_number
       String fallback = validator.getCustomValidationMessage("office_account_number", null);
-      assertThat(fallback).isNotNull();
-      assertThat(fallback).contains("Office Account Number must be exactly 6 alphanumeric characters");
+      assertThat(fallback).isNotNull().contains("Office Account Number must be exactly 6 alphanumeric characters");
 
       // field not present returns null
-      String none = validator.getCustomValidationMessage("nonexistent_field", AreaOfLaw.LEGAL_HELP);
+      String none = validator.getCustomValidationMessage("nonexistent_field", AreaOfLaw.LEGAL_HELP.toString());
       assertThat(none).isNull();
     }
 
@@ -308,7 +306,7 @@ class ClaimSchemaValidatorTest {
     @DisplayName("toTitleCase handles null, empty, underscores and camelCase")
     void toTitleCaseVariations() {
       assertThat(validator.toTitleCase(null)).isNull();
-      assertThat(validator.toTitleCase("")).isEqualTo("");
+      assertThat(validator.toTitleCase("")).isEmpty();
       assertThat(validator.toTitleCase("camelCaseField")).isEqualTo("Camel Case Field");
       assertThat(validator.toTitleCase("with_underscore_field")).isEqualTo("With Underscore Field");
     }

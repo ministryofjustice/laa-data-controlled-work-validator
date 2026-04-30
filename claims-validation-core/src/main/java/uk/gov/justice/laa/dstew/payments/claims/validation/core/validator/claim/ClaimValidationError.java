@@ -28,20 +28,12 @@ public enum ClaimValidationError implements ValidationError {
   ),
 
   // Schema validation errors
+  // Note: SCHEMA_VALIDATION_ERROR and SCHEMA_CONFIG_WARNING have been moved to the shared
+  // SchemaValidationError enum in validator/schema/ — use that for all schema validation codes.
   INVALID_JSON_SCHEMA(
       "The claim does not conform to the expected schema",
       "JSON schema validation failed",
       ValidationSeverity.ERROR
-  ),
-  SCHEMA_VALIDATION_ERROR(
-      "%s",
-      "%s",
-      ValidationSeverity.ERROR
-  ),
-  SCHEMA_CONFIG_WARNING(
-      "Schema configuration warning: field(s) not defined in schema",
-      "Update claim-fields.schema.json to add validation rules for these fields",
-      ValidationSeverity.WARNING
   ),
 
   // Date validation errors
