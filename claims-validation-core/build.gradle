@@ -1,0 +1,85 @@
+plugins {
+    id 'java-library'
+    id 'maven-publish'
+    id 'io.freefair.lombok'
+    id 'uk.gov.laa.springboot.laa-spring-boot-gradle-plugin'
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(25)
+    }
+}
+
+// Use Maven Central for resolving dependencies.
+repositories {
+    mavenCentral()
+}
+
+java {
+    withSourcesJar()
+    withJavadocJar()
+}
+
+dependencies {
+
+    implementation project(':reference-fee-scheme-platform-api')
+    
+    implementation 'uk.gov.justice.laa.datastewardship.payments:data-claims-api-models:1.0.46'
+    implementation 'uk.gov.justice.laadata.providers:providers-api:1.36.0'
+
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.springframework.boot:spring-boot-starter-webflux'
+    implementation 'org.springframework.data:spring-data-commons'
+    implementation 'org.apache.commons:commons-lang3:3.20.0'
+    implementation 'com.networknt:json-schema-validator:1.5.8'
+    implementation 'com.github.ben-manes.caffeine:caffeine:3.1.8'
+    implementation 'io.swagger.core.v3:swagger-annotations:2.2.20'
+
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+test {
+    finalizedBy jacocoTestReport
+}
+
+tasks.register("checkstyleStaged", Checkstyle) {
+    group = "verification"
+    description = "Runs Checkstyle on staged files only"
+
+    def filesToCheck = project.findProperty("checkstyleFiles")
+    if (filesToCheck != null) {
+        source = files(filesToCheck.split(","))
+    } else {
+        source = sourceSets.main.allJava
+    }
+
+    classpath = sourceSets.main.compileClasspath
+}
+
+publishing {
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/ministryofjustice/laa-data-claims-validation-api-poc")
+            credentials {
+                username = System.getenv("GITHUB_ACTOR")
+                password = System.getenv("GITHUB_TOKEN")
+            }
+        }
+    }
+}
+
+// disable for library module
+tasks.named('bootJar') {
+    enabled = false
+}
+
+tasks.named('bootRun') {
+    enabled = false
+}
+
+tasks.named('jar') {
+    enabled = true
+}

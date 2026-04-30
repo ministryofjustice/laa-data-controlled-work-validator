@@ -1,3 +1,70 @@
+plugins {
+    id 'com.diffplug.spotless' apply false
+}
+
 subprojects {
-    group = 'uk.gov.justice.laa.springboot.microservice'
+    group = 'uk.gov.justice.laa.dstew.payments.claims.validation'
+
+    repositories {
+        mavenCentral()
+        // GitHub Packages for published API models
+        maven {
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/ministryofjustice/laa-data-claims-api")
+            credentials {
+                username = System.getenv("GITHUB_ACTOR")
+                password = System.getenv("GITHUB_TOKEN")
+            }
+        }
+    }
+
+    // Apply to subprojects that have java plugin
+    plugins.withType(JavaPlugin).configureEach {
+
+        test {
+            useJUnitPlatform()
+        }
+
+        // Suppress Javadoc warnings for Lombok-generated code
+        tasks.withType(Javadoc).configureEach {
+            options.addStringOption('Xdoclint:none', '-quiet')
+        }
+
+        // Suppress deprecation warnings - these come from OpenAPI generated code
+        // which uses deprecated Spring APIs. The generator will update these when needed.
+        tasks.withType(JavaCompile).configureEach {
+            options.compilerArgs << '-Xlint:-deprecation'
+        }
+    }
+
+    // Apply testlogger only if available (comes from laa-spring-boot-gradle-plugin)
+    pluginManager.withPlugin('com.adarshr.test-logger') {
+        testlogger {
+            theme 'mocha'
+        }
+    }
+}
+
+// Configure spotless, publishing and checkstyleStaged for all subprojects
+configure(subprojects) {
+    apply plugin: 'com.diffplug.spotless'
+    apply plugin: 'maven-publish'
+
+    spotless {
+        java {
+            target 'src/*/java/**/*.java'
+            targetExclude 'src/main/java/uk/gov/justice/laa/dstew/payments/claims/validation/core/error/ClaimValidationError.java'
+            importOrder()
+            removeUnusedImports()
+            cleanthat()
+            //googleJavaFormat('1.35')
+        }
+    }
+}
+
+// Root-level task to run checkstyleStaged on all subprojects
+tasks.register("checkstyleStaged") {
+    group = "verification"
+    description = "Runs Checkstyle on staged files across all subprojects"
+    dependsOn subprojects.findAll { it.tasks.findByName('checkstyleStaged') }.collect { it.tasks.checkstyleStaged }
 }
