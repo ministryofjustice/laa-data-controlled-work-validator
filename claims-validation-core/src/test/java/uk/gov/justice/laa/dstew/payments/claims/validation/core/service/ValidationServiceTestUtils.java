@@ -19,4 +19,10 @@ public class ValidationServiceTestUtils {
             .containsExactly(validationIssue.getMessage());
   }
 
+  public static void assertContextClaimError(
+          List<ValidationIssue> issues, String validationMessage) {
+    AssertionsForInterfaceTypes.assertThat(issues).extracting(ValidationIssue::getMessage)
+            .containsExactly(validationMessage);
+  }
+
 }
