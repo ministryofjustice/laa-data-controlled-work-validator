@@ -1,5 +1,6 @@
 package uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.submission;
 
+import java.util.Comparator;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -65,7 +66,7 @@ public class SubmissionValidation {
 
     submissionValidatorList.stream()
         .filter(validator -> validator.appliesTo(scope))
-        .sorted((v1, v2) -> Integer.compare(v1.priority(), v2.priority()))
+        .sorted(Comparator.comparingInt(SubmissionValidator::priority))
         .forEach(validator -> validator.validate(submission, context));
 
     ValidationResult result = new ValidationResult();

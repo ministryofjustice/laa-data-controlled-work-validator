@@ -1,5 +1,6 @@
 package uk.gov.justice.laa.dstew.payments.claims.validation.core.util;
 
+import java.time.Clock;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
@@ -35,6 +36,10 @@ import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class DateUtils {
 
+  // ─────────────────────────────────────────────────────────────────────────
+  // Constants
+  // ─────────────────────────────────────────────────────────────────────────
+
   private static final LocalDate MIN_BIRTH_DATE = LocalDate.of(1900, 1, 1);
 
   /**
@@ -65,6 +70,91 @@ public final class DateUtils {
           .appendPattern("MMM-yyyy")
           .toFormatter(Locale.ENGLISH);
 
+  // ─────────────────────────────────────────────────────────────────────────
+  // Clock management
+  // ─────────────────────────────────────────────────────────────────────────
+
+  /**
+   * The {@link Clock} used by all date/time operations in this class. Defaults to
+   * {@link Clock#systemDefaultZone()} in production. Override in tests via {@link #setClock(Clock)}
+   * to make time-dependent behaviour deterministic.
+   */
+  private static Clock clock = Clock.systemDefaultZone();
+
+  /**
+   * Replaces the clock used by all static methods in this class.
+   *
+   * <p><strong>For use in tests only.</strong> This method throws {@link IllegalStateException} if
+   * called outside a test context (i.e. when JUnit is not present on the classpath). Always call
+   * {@link #resetClock()} in an {@code @AfterEach} to avoid leaking a fixed clock into other
+   * tests.
+   *
+   * @param testClock the clock to use
+   * @throws IllegalStateException if called outside a test context
+   */
+  public static void setClock(Clock testClock) {
+    if (!isTestContext()) {
+      throw new IllegalStateException(
+          "DateUtils.setClock() may only be called from a test context.");
+    }
+    clock = testClock;
+  }
+
+  /**
+   * Resets the clock to the system default. Call this in {@code @AfterEach} after any test that
+   * called {@link #setClock(Clock)}.
+   */
+  public static void resetClock() {
+    clock = Clock.systemDefaultZone();
+  }
+
+  /**
+   * Returns the current date using the configured {@link Clock}.
+   *
+   * <p>All internal methods that need the current date should call this rather than
+   * {@link LocalDate#now()} directly, so that test-injected clocks are honoured consistently.
+   *
+   * @return the current {@link LocalDate}
+   */
+  private static LocalDate now() {
+    return LocalDate.now(clock);
+  }
+
+  /**
+   * Returns the current month and year using the configured {@link Clock}.
+   *
+   * @return the current {@link YearMonth}
+   */
+  public static YearMonth currentYearMonth() {
+    return YearMonth.now(clock);
+  }
+
+  /**
+   * Returns the current month and year as a human-readable string (e.g. {@code "May 2025"}).
+   *
+   * @return the formatted current month string
+   */
+  public static String getReadableCurrentMonth() {
+    return DateTimeFormatter.ofPattern("MMMM yyyy").format(currentYearMonth());
+  }
+
+  /**
+   * Returns {@code true} when JUnit is present on the classpath, which is only the case during
+   * testing (JUnit is a {@code testImplementation} dependency).
+   */
+  private static boolean isTestContext() {
+    try {
+      Class.forName("org.junit.jupiter.api.Test");
+      return true;
+    } catch (ClassNotFoundException e) {
+      return false;
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Date predicates
+  // ─────────────────────────────────────────────────────────────────────────
+
   /**
    * Checks if the given date is non-null.
    *
@@ -76,13 +166,14 @@ public final class DateUtils {
   }
 
   /**
-   * Checks if the given date of birth is valid (not null and within allowed range).
+   * Checks if the given date of birth is valid (not null and within the allowed range of
+   * {@code 1900-01-01} to today).
    *
    * @param date the date of birth to check
    * @return true if the date is valid and within the allowed range, false otherwise
    */
   public static boolean isValidDateOfBirth(LocalDate date) {
-    return isValidDate(date) && isDateWithinRange(date, MIN_BIRTH_DATE, LocalDate.now());
+    return isValidDate(date) && isDateWithinRange(date, MIN_BIRTH_DATE, now());
   }
 
   /**
@@ -102,19 +193,100 @@ public final class DateUtils {
         && !date.isAfter(latestDateAllowed);
   }
 
+  // ─────────────────────────────────────────────────────────────────────────
+  // Parsing
+  // ─────────────────────────────────────────────────────────────────────────
+
   /**
-   * Validates whether the provided date value is between the earliest date allowed and today's
-   * date. If the date is invalid or falls outside the range, an error is added.
+   * Parses a date string in {@code yyyy-MM-dd} format to a {@link LocalDate}.
    *
-   * @param fieldName The name of the field associated with the date being validated.
-   * @param dateValueToCheck The date value to validate in the format "yyyy-MM-dd".
+   * @param dateValue the date string to parse
+   * @return the parsed LocalDate, or {@code null} if parsing fails or input is blank
+   */
+  public static LocalDate parseDate(String dateValue) {
+    if (!StringUtils.hasText(dateValue)) {
+      return null;
+    }
+    try {
+      return LocalDate.parse(dateValue, DATE_FORMATTER_YYYY_MM_DD);
+    } catch (DateTimeParseException e) {
+      log.debug("Could not parse date value: {}", dateValue);
+      return null;
+    }
+  }
+
+  /**
+   * Parses a submission period string (e.g., {@code "JAN-2026"}, {@code "jan-2026"},
+   * {@code "Jan-2026"}) into a {@link YearMonth}. The parsing is case-insensitive.
+   *
+   * @param submissionPeriod the submission period string in format {@code "MMM-yyyy"}
+   * @return the parsed YearMonth, or {@code null} if parsing fails or input is blank
+   */
+  public static YearMonth parseSubmissionPeriod(String submissionPeriod) {
+    if (!StringUtils.hasText(submissionPeriod)) {
+      return null;
+    }
+    try {
+      return YearMonth.parse(submissionPeriod, SUBMISSION_PERIOD_FORMATTER);
+    } catch (DateTimeParseException e) {
+      log.debug("Could not parse submission period: {}", submissionPeriod);
+      return null;
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Submission period utilities
+  // ─────────────────────────────────────────────────────────────────────────
+
+  /**
+   * Calculates the submission cutoff date for a given disbursement submission period. The cutoff is
+   * the {@value CUTOFF_DAY_OF_MONTH}th day of the month following the given period, and represents
+   * the deadline by which a disbursement claim for that period must be submitted.
+   *
+   * <p>For example, a submission period of MAY-2025 yields a cutoff of 20 JUN-2025.
+   *
+   * @param submissionPeriod the submission period for which the cutoff is calculated
+   * @return the cutoff date ({@value CUTOFF_DAY_OF_MONTH}th of the month following {@code
+   *     submissionPeriod})
+   */
+  public static LocalDate submissionPeriodCutoffDate(YearMonth submissionPeriod) {
+    return submissionPeriod.plusMonths(CUTOFF_MONTH_OFFSET).atDay(CUTOFF_DAY_OF_MONTH);
+  }
+
+  /**
+   * Given a string describing the submission period, parses and returns the local date of the
+   * twentieth day of the following month. For example, a period of {@code "JAN-2026"} yields
+   * {@code 2026-02-20}.
+   *
+   * @param submissionPeriod the submission period in format {@code "MMM-yyyy"} (e.g. "JAN-2026")
+   * @return the twentieth day of the following month as a {@link LocalDate}
+   * @throws IllegalArgumentException if the submission period is blank
+   * @throws DateTimeParseException if the submission period string cannot be parsed
+   */
+  private static LocalDate getTwentiethOfNextMonth(String submissionPeriod) {
+    if (!StringUtils.hasText(submissionPeriod)) {
+      throw new IllegalArgumentException("Submission period cannot be null or empty");
+    }
+    YearMonth yearMonth = YearMonth.parse(submissionPeriod, SUBMISSION_PERIOD_FORMATTER);
+    return yearMonth.plusMonths(1).atDay(20);
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Validation
+  // ─────────────────────────────────────────────────────────────────────────
+
+  /**
+   * Validates whether the provided date value falls between {@code earliestDateAllowed} and the
+   * current date. Returns an error if the value is unparseable or out of range.
+   *
+   * @param fieldName the name of the field associated with the date being validated
+   * @param dateValueToCheck the date value to validate in {@code yyyy-MM-dd} format
    * @param earliestDateAllowed the earliest date to check the date value against
    * @return a list of validation issues, empty if valid
    */
   public static List<ValidationIssue> validateDateInPast(
       String fieldName, String dateValueToCheck, LocalDate earliestDateAllowed) {
-
-    return validateDateBetween(fieldName, dateValueToCheck, earliestDateAllowed, LocalDate.now());
+    return validateDateBetween(fieldName, dateValueToCheck, earliestDateAllowed, now());
   }
 
   /**
@@ -147,15 +319,13 @@ public final class DateUtils {
         try {
           LocalDate date = LocalDate.parse(dateValueToCheck, DATE_FORMATTER_YYYY_MM_DD);
 
-          if (date.isAfter(LocalDate.now())) {
-            // Set technicalMessage for future date error
+          if (date.isAfter(now())) {
             ClaimValidationError error = getDateError(fieldName);
             issues.add(
                 error.toValidationIssueWithTechnicalMessage(
                     String.format("%s cannot be a future date", fieldName),
                     String.format("%s cannot be a future date", fieldName)));
           } else if (date.isBefore(earliestDateAllowed)) {
-            // Set technicalMessage for early date error
             ClaimValidationError error = getDateError(fieldName);
             String msg =
                 String.format(
@@ -163,7 +333,6 @@ public final class DateUtils {
                     fieldName, earliestDateAllowed.format(DATE_FORMATTER_FOR_DISPLAY_MESSAGE));
             issues.add(error.toValidationIssueWithTechnicalMessage(msg, msg));
           } else if (date.isAfter(twentiethOfNextMonth)) {
-            // Set technicalMessage for late date error
             ClaimValidationError error = getDateError(fieldName);
             String msg =
                 String.format(
@@ -183,13 +352,12 @@ public final class DateUtils {
   }
 
   /**
-   * Validates whether a given date value falls within an allowed date range. If the date is invalid
-   * or outside the specified range, an error is added to the validation context.
+   * Validates whether a given date value falls within an allowed date range.
    *
-   * @param fieldName The name of the field being validated (used in error messages)
-   * @param dateValueToCheck The date value to validate in the format "yyyy-MM-dd"
-   * @param earliestDateAllowed The earliest allowed date
-   * @param latestDateAllowed The latest allowed date
+   * @param fieldName the name of the field being validated (used in error messages)
+   * @param dateValueToCheck the date value to validate in {@code yyyy-MM-dd} format
+   * @param earliestDateAllowed the earliest allowed date
+   * @param latestDateAllowed the latest allowed date
    * @return a list of validation issues, empty if valid
    */
   private static List<ValidationIssue> validateDateBetween(
@@ -212,40 +380,26 @@ public final class DateUtils {
     return Collections.emptyList();
   }
 
-  /**
-   * Given a string describing the submission period, parses and returns the local date of the
-   * twentieth day of the following month. If the submission period is Jan 2026 then the latest Case
-   * Concluded Date allowed is the 20 Feb 2026.
-   *
-   * @param submissionPeriod The submission period in format "MMM-yyyy" (e.g. "JAN-2026")
-   * @return The twentieth day of the following month as a LocalDate
-   * @throws DateTimeParseException if the submissionPeriod string cannot be parsed
-   */
-  private static LocalDate getTwentiethOfNextMonth(String submissionPeriod) {
-    if (!StringUtils.hasText(submissionPeriod)) {
-      throw new IllegalArgumentException("Submission period cannot be null or empty");
-    }
-    YearMonth yearMonth = YearMonth.parse(submissionPeriod, SUBMISSION_PERIOD_FORMATTER);
-    return yearMonth.plusMonths(1).atDay(20);
-  }
+  // ─────────────────────────────────────────────────────────────────────────
+  // Error helpers
+  // ─────────────────────────────────────────────────────────────────────────
 
   /**
    * Creates a date validation issue for the given field and message.
    *
    * @param fieldName the name of the field
    * @param message the error message
-   * @return a ValidationIssue for the error
+   * @return a {@link ValidationIssue} for the error
    */
   private static ValidationIssue createDateIssue(String fieldName, String message) {
-    ClaimValidationError error = getDateError(fieldName);
-    return error.toValidationIssue(message);
+    return getDateError(fieldName).toValidationIssue(message);
   }
 
   /**
-   * Gets the appropriate ClaimValidationError for a date field name.
+   * Maps a date field name to its corresponding {@link ClaimValidationError}.
    *
    * @param fieldName the field name
-   * @return the corresponding ClaimValidationError
+   * @return the corresponding {@link ClaimValidationError}
    */
   private static ClaimValidationError getDateError(String fieldName) {
     return switch (fieldName) {
@@ -257,57 +411,5 @@ public final class DateUtils {
           ClaimValidationError.INVALID_CLIENT_DATE_OF_BIRTH;
       default -> ClaimValidationError.INVALID_DATE_FORMAT;
     };
-  }
-
-  /**
-   * Parses a submission period string (e.g., "JAN-2026", "jan-2026", "Jan-2026") into a YearMonth.
-   * The parsing is case-insensitive.
-   *
-   * @param submissionPeriod the submission period string in format "MMM-yyyy"
-   * @return the parsed YearMonth, or null if parsing fails or input is blank
-   */
-  public static YearMonth parseSubmissionPeriod(String submissionPeriod) {
-    if (!StringUtils.hasText(submissionPeriod)) {
-      return null;
-    }
-    try {
-      return YearMonth.parse(submissionPeriod, SUBMISSION_PERIOD_FORMATTER);
-    } catch (DateTimeParseException e) {
-      log.debug("Could not parse submission period: {}", submissionPeriod);
-      return null;
-    }
-  }
-
-  /**
-   * Parses a date string in yyyy-MM-dd format to a LocalDate.
-   *
-   * @param dateValue the date string to parse
-   * @return the parsed LocalDate, or null if parsing fails or input is blank
-   */
-  public static LocalDate parseDate(String dateValue) {
-    if (!StringUtils.hasText(dateValue)) {
-      return null;
-    }
-    try {
-      return LocalDate.parse(dateValue, DATE_FORMATTER_YYYY_MM_DD);
-    } catch (DateTimeParseException e) {
-      log.debug("Could not parse date value: {}", dateValue);
-      return null;
-    }
-  }
-
-  /**
-   * Calculates the submission cutoff date for a given disbursement submission period. The cutoff is
-   * the {@value CUTOFF_DAY_OF_MONTH}th day of the month following the given period, and represents
-   * the deadline by which a disbursement claim for that period must be submitted.
-   *
-   * <p>For example, a submission period of MAY-2025 yields a cutoff of 20 JUN-2025.
-   *
-   * @param submissionPeriod the submission period for which the cutoff is calculated
-   * @return the cutoff date ({@value CUTOFF_DAY_OF_MONTH}th of the month following {@code
-   *     submissionPeriod})
-   */
-  public static LocalDate submissionPeriodCutoffDate(YearMonth submissionPeriod) {
-    return submissionPeriod.plusMonths(CUTOFF_MONTH_OFFSET).atDay(CUTOFF_DAY_OF_MONTH);
   }
 }

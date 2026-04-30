@@ -6,7 +6,6 @@ import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.submis
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.submission.SubmissionValidationError;
 import uk.gov.justice.laa.dstew.payments.claimsdata.model.SubmissionResponse;
 
-
 /**
  * Validates that a submission's nil flag is set correctly.
  *
@@ -26,6 +25,7 @@ public class NilSubmissionValidator implements SubmissionValidator {
   @Override
   public void validate(final SubmissionResponse submission, SubmissionValidationContext context) {
     log.debug("Validating nil submission for submission {}", submission.getSubmissionId());
+
     if (Boolean.TRUE.equals(submission.getIsNilSubmission())) {
       if (submission.getClaims() != null && !submission.getClaims().isEmpty()) {
         context.addValidationError(
@@ -36,6 +36,7 @@ public class NilSubmissionValidator implements SubmissionValidator {
       context.addValidationError(
           SubmissionValidationError.NON_NIL_SUBMISSION_CONTAINS_NO_CLAIMS.toValidationIssue());
     }
+
     log.debug("Nil submission completed for submission {}", submission.getSubmissionId());
   }
 

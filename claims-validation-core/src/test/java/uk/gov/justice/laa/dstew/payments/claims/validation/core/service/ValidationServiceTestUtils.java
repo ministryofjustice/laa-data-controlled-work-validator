@@ -10,8 +10,13 @@ public class ValidationServiceTestUtils {
   public static void assertContextClaimError(
           List<ValidationIssue> issues, ValidationError validationError) {
     AssertionsForInterfaceTypes.assertThat(issues).extracting(ValidationIssue::getMessage)
-            .containsExactly(
-                    validationError.getDisplayMessage());
+            .containsExactly(validationError.getDisplayMessage());
+  }
+
+  public static void assertContextClaimError(
+          List<ValidationIssue> issues, ValidationIssue validationIssue) {
+    AssertionsForInterfaceTypes.assertThat(issues).extracting(ValidationIssue::getMessage)
+            .containsExactly(validationIssue.getMessage());
   }
 
 }
