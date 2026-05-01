@@ -23,4 +23,4 @@ pluginManagement {
 
 rootProject.name = 'laa-data-controlled-work-validator'
 
-include 'claims-validation-core', 'reference-fee-scheme-platform-api', 'reference-provider-details-api'
+include 'claims-validation-core', 'reference-fee-scheme-platform-api'

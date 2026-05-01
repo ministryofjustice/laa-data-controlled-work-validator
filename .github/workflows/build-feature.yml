@@ -33,7 +33,8 @@ jobs:
       checkstyle_report_path: 'claims-validation-core/build/reports/checkstyle'
       jacoco_coverage_report_path: 'claims-validation-core/build/reports/jacoco'
     secrets:
-      gh_token: ${{ secrets.GITHUB_TOKEN }}
+      # requires a pat due to accessing a private github repos packages (data-claims-api)
+      gh_token: ${{ secrets.PHILS_PAT_TOKEN }}
       aws_region: ${{ vars.LAA_DATA_CLAIMS_EVENT_SERVICE_AWS_REGION }}
 
   sca-scan:
@@ -48,4 +49,5 @@ jobs:
       java_version: *JAVA_VERSION
       java_distribution: *JDK_DISTRIBUTION
     secrets:
-      gh_token: ${{ secrets.GITHUB_TOKEN }}
+      # requires a pat due to accessing a private github repos packages (data-claims-api)
+      gh_token: ${{ secrets.PHILS_PAT_TOKEN }}
