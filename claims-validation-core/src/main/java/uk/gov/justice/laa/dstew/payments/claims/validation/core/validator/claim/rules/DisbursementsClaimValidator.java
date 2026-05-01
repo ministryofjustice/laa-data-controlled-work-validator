@@ -66,6 +66,6 @@ public class DisbursementsClaimValidator implements ClaimValidator {
 
   @Override
   public String getValidatorCode() {
-    return "DISBURSEMENTS";
+    return "CLAIM_DISBURSEMENTS";
   }
 }

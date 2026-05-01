@@ -66,6 +66,11 @@ public class OutcomeCodeClaimValidator implements ClaimValidator {
 
   @Override
   public String getValidatorCode() {
-    return "OUTCOME_CODE";
+    return "CLAIM_OUTCOME_CODE";
+  }
+
+  @Override
+  public boolean appliesTo(String scope) {
+    return true;
   }
 }

@@ -94,6 +94,11 @@ public class UniqueFileNumberClaimValidator implements ClaimValidator {
 
   @Override
   public String getValidatorCode() {
-    return "UNIQUE_FILE_NUMBER";
+    return "CLAIM_UNIQUE_FILE_NUMBER";
+  }
+
+  @Override
+  public boolean appliesTo(String scope) {
+    return true;
   }
 }

@@ -67,6 +67,11 @@ public class DuplicateClaimValidator implements ClaimValidator {
 
   @Override
   public String getValidatorCode() {
-    return "DUPLICATE_CLAIM";
+    return "CLAIM_DUPLICATE_CLAIM";
+  }
+
+  @Override
+  public boolean appliesTo(String scope) {
+    return true;
   }
 }

@@ -74,6 +74,11 @@ public class CaseDatesClaimValidator implements ClaimValidator {
 
   @Override
   public String getValidatorCode() {
-    return "CASE_DATES";
+    return "CLAIM_CASE_DATES";
+  }
+
+  @Override
+  public boolean appliesTo(String scope) {
+    return true;
   }
 }

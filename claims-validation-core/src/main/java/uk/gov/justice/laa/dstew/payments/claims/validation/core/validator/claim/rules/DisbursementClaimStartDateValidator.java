@@ -74,6 +74,6 @@ public final class DisbursementClaimStartDateValidator implements ClaimValidator
 
   @Override
   public String getValidatorCode() {
-    return "DISBURSEMENT_START_DATE";
+    return "CLAIM_DISBURSEMENT_START_DATE";
   }
 }

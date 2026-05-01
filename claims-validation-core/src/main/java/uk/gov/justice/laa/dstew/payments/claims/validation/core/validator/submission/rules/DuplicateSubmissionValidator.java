@@ -46,6 +46,16 @@ public class DuplicateSubmissionValidator implements SubmissionValidator {
     return 100;
   }
 
+  @Override
+  public boolean appliesTo(String scope) {
+    return true;
+  }
+
+  @Override
+  public String getValidatorCode() {
+    return "SUBMISSION_DUPLICATE_VALIDATOR";
+  }
+
   private boolean isDuplicateSubmission(SubmissionResponse submission) {
 
     final List<SubmissionBase> submissionBases =

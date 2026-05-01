@@ -28,7 +28,7 @@ import uk.gov.justice.laa.dstew.payments.claimsdata.model.SubmissionResponse;
  *
  * <p>Verifies that {@link ValidationService} correctly delegates to the {@link ClaimValidation}
  * and {@link SubmissionValidation} pipelines and surfaces results to callers. Each overload is
- * tested independently to confirm default argument values are applied correctly. Pipeline-level
+ * tested independently to confirm default argument values are applied correctly.
  * Pipeline-level behaviour — scope filtering, priority ordering, and deduplication — is tested in
  * ClaimValidationTest.
  */
@@ -80,7 +80,7 @@ class ValidationServiceTest {
     @DisplayName("Returns MISSING_CLAIM error when claim is null")
     void returnsMissingClaimWhenClaimIsNull() {
       ValidationResult result = withClaims(new ClaimValidation(Collections.emptyList()))
-          .validateClaim((Claim) null);
+          .validateClaim(null);
 
       assertThat(result.getIsValid()).isFalse();
       assertThat(result.getIssues()).hasSize(1);
@@ -95,8 +95,18 @@ class ValidationServiceTest {
       ClaimValidator captor = new ClaimValidator() {
         @Override public void validate(Claim c, ClaimValidationContext ctx) {
           capturedScope.set(ctx.getScope());
-          return;
         }
+
+        @Override
+        public int priority() {
+          return 0;
+        }
+
+        @Override
+        public boolean appliesTo(String scope) {
+          return true;
+        }
+
         @Override public String getValidatorCode() { return "CAPTOR"; }
       };
 
@@ -122,8 +132,18 @@ class ValidationServiceTest {
       ClaimValidator captor = new ClaimValidator() {
         @Override public void validate(Claim c, ClaimValidationContext ctx) {
           capturedScope.set(ctx.getScope());
-          return;
         }
+
+        @Override
+        public int priority() {
+          return 0;
+        }
+
+        @Override
+        public boolean appliesTo(String scope) {
+          return true;
+        }
+
         @Override public String getValidatorCode() { return "CAPTOR"; }
       };
 
@@ -140,8 +160,18 @@ class ValidationServiceTest {
       ClaimValidator captor = new ClaimValidator() {
         @Override public void validate(Claim c, ClaimValidationContext ctx) {
           capturedRelated.set(ctx.getRelatedClaims());
-          return;
         }
+
+        @Override
+        public int priority() {
+          return 0;
+        }
+
+        @Override
+        public boolean appliesTo(String scope) {
+          return true;
+        }
+
         @Override public String getValidatorCode() { return "CAPTOR"; }
       };
 
@@ -183,8 +213,18 @@ class ValidationServiceTest {
         @Override public void validate(Claim c, ClaimValidationContext ctx) {
           ctx.addValidationIssue(ValidationIssue.builder()
               .code("TEST_ERROR").message("error").severity(ValidationSeverity.ERROR).build());
-          return;
         }
+
+        @Override
+        public int priority() {
+          return 0;
+        }
+
+        @Override
+        public boolean appliesTo(String scope) {
+          return true;
+        }
+
         @Override public String getValidatorCode() { return "ERROR_VALIDATOR"; }
       };
 
@@ -202,8 +242,18 @@ class ValidationServiceTest {
         @Override public void validate(Claim c, ClaimValidationContext ctx) {
           ctx.addValidationIssue(ValidationIssue.builder()
               .code("WARN").message("warn").severity(ValidationSeverity.WARNING).build());
-          return;
         }
+
+        @Override
+        public int priority() {
+          return 0;
+        }
+
+        @Override
+        public boolean appliesTo(String scope) {
+          return true;
+        }
+
         @Override public String getValidatorCode() { return "WARN_VALIDATOR"; }
       };
 
@@ -251,6 +301,16 @@ class ValidationServiceTest {
               .code("SUB_ERROR").message("err").severity(ValidationSeverity.ERROR).build());
         }
         @Override public int priority() { return 0; }
+
+        @Override
+        public boolean appliesTo(String scope) {
+          return true;
+        }
+
+        @Override
+        public String getValidatorCode() {
+          return "";
+        }
       };
 
       ValidationResult result = withSubmissions(new SubmissionValidation(List.of(errorValidator)))
@@ -271,6 +331,12 @@ class ValidationServiceTest {
           capturedScope.set(scope);
           return true;
         }
+
+        @Override
+        public String getValidatorCode() {
+          return "";
+        }
+
         @Override public int priority() { return 0; }
       };
 
@@ -299,6 +365,12 @@ class ValidationServiceTest {
           capturedScope.set(scope);
           return true;
         }
+
+        @Override
+        public String getValidatorCode() {
+          return "";
+        }
+
         @Override public int priority() { return 0; }
       };
 
@@ -317,6 +389,16 @@ class ValidationServiceTest {
               .code("SUB_WARN").message("warn").severity(ValidationSeverity.WARNING).build());
         }
         @Override public int priority() { return 0; }
+
+        @Override
+        public boolean appliesTo(String scope) {
+          return true;
+        }
+
+        @Override
+        public String getValidatorCode() {
+          return "";
+        }
       };
 
       ValidationResult result = withSubmissions(new SubmissionValidation(List.of(warningValidator)))

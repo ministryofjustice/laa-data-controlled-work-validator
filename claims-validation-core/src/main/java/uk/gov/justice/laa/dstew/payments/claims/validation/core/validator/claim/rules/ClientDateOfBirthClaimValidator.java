@@ -68,6 +68,11 @@ public class ClientDateOfBirthClaimValidator implements ClaimValidator {
 
   @Override
   public String getValidatorCode() {
-    return "CLIENT_DATE_OF_BIRTH";
+    return "CCLAIM_LIENT_DATE_OF_BIRTH";
+  }
+
+  @Override
+  public boolean appliesTo(String scope) {
+    return true;
   }
 }

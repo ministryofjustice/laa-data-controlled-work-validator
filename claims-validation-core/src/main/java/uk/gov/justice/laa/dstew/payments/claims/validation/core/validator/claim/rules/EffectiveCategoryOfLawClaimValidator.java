@@ -166,6 +166,6 @@ public class EffectiveCategoryOfLawClaimValidator implements ClaimValidator {
 
   @Override
   public String getValidatorCode() {
-    return "CATEGORY_OF_LAW";
+    return "CLAIM_CATEGORY_OF_LAW";
   }
 }

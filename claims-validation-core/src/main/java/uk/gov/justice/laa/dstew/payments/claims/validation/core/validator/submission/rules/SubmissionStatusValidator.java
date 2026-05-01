@@ -55,4 +55,15 @@ public class SubmissionStatusValidator implements SubmissionValidator {
   public int priority() {
     return 1;
   }
+
+  @Override
+  public boolean appliesTo(String scope) {
+    return true;
+  }
+
+  @Override
+  public String getValidatorCode() {
+    return "SUBMISSION_STATUS_VALIDATOR";
+  }
+
 }

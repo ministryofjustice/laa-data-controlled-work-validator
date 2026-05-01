@@ -55,7 +55,6 @@ class ClaimValidationTest {
         @Override
         public void validate(Claim claim, ClaimValidationContext context) {
           callOrder.add("low");
-          return;
         }
 
         @Override
@@ -73,7 +72,6 @@ class ClaimValidationTest {
         public void validate(Claim claim, ClaimValidationContext context) {
           callOrder.add("high");
           context.addValidationIssue(sharedIssue);
-          return;
         }
 
         @Override
@@ -101,7 +99,11 @@ class ClaimValidationTest {
         @Override
         public void validate(Claim claim, ClaimValidationContext context) {
           called.add("excluded");
-          return;
+        }
+
+        @Override
+        public int priority() {
+          return 0;
         }
 
         @Override
@@ -128,16 +130,36 @@ class ClaimValidationTest {
         @Override
         public void validate(Claim c, ClaimValidationContext ctx) {
           ctx.addValidationIssue(sharedIssue);
-          return;
         }
+
+        @Override
+        public int priority() {
+          return 0;
+        }
+
+        @Override
+        public boolean appliesTo(String scope) {
+          return true;
+        }
+
         @Override public String getValidatorCode() { return "V1"; }
       };
       ClaimValidator v2 = new ClaimValidator() {
         @Override
         public void validate(Claim c, ClaimValidationContext ctx) {
           ctx.addValidationIssue(sharedIssue);
-          return;
         }
+
+        @Override
+        public int priority() {
+          return 0;
+        }
+
+        @Override
+        public boolean appliesTo(String scope) {
+          return false;
+        }
+
         @Override public String getValidatorCode() { return "V2"; }
       };
 
@@ -178,8 +200,18 @@ class ClaimValidationTest {
         @Override
         public void validate(Claim claim, ClaimValidationContext context) {
           captured.set(context);
-          return;
         }
+
+        @Override
+        public int priority() {
+          return 0;
+        }
+
+        @Override
+        public boolean appliesTo(String scope) {
+          return true;
+        }
+
         @Override public String getValidatorCode() { return "CAPTURE"; }
       };
 
@@ -200,8 +232,18 @@ class ClaimValidationTest {
         @Override
         public void validate(Claim claim, ClaimValidationContext context) {
           captured.set(context);
-          return;
         }
+
+        @Override
+        public int priority() {
+          return 0;
+        }
+
+        @Override
+        public boolean appliesTo(String scope) {
+          return true;
+        }
+
         @Override public String getValidatorCode() { return "CAPTURE"; }
       };
 
@@ -269,9 +311,9 @@ class ClaimValidationTest {
     }
 
     @Test
-    @DisplayName("Has validator code MANDATORY_FIELD")
+    @DisplayName("Has validator code CLAIM_MANDATORY_FIELD")
     void hasCorrectValidatorCode() {
-      assertThat(validator.getValidatorCode()).isEqualTo("MANDATORY_FIELD");
+      assertThat(validator.getValidatorCode()).isEqualTo("CLAIM_MANDATORY_FIELD");
     }
   }
 
@@ -331,9 +373,9 @@ class ClaimValidationTest {
     }
 
     @Test
-    @DisplayName("Has validator code UNIQUE_FILE_NUMBER")
+    @DisplayName("Has validator code CLAIM_UNIQUE_FILE_NUMBER")
     void hasCorrectValidatorCode() {
-      assertThat(validator.getValidatorCode()).isEqualTo("UNIQUE_FILE_NUMBER");
+      assertThat(validator.getValidatorCode()).isEqualTo("CLAIM_UNIQUE_FILE_NUMBER");
     }
   }
 }

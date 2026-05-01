@@ -93,6 +93,11 @@ public class MandatoryFieldClaimValidator implements ClaimValidator {
 
   @Override
   public String getValidatorCode() {
-    return "MANDATORY_FIELD";
+    return "CLAIM_MANDATORY_FIELD";
+  }
+
+  @Override
+  public boolean appliesTo(String scope) {
+    return true;
   }
 }

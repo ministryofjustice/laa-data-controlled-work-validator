@@ -82,6 +82,11 @@ public class StageReachedClaimValidator implements ClaimValidator {
 
   @Override
   public String getValidatorCode() {
-    return "STAGE_REACHED";
+    return "CLAIM_STAGE_REACHED";
+  }
+
+  @Override
+  public boolean appliesTo(String scope) {
+    return true;
   }
 }

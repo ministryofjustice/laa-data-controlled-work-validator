@@ -44,4 +44,14 @@ public class NilSubmissionValidator implements SubmissionValidator {
   public int priority() {
     return 10;
   }
+
+  @Override
+  public boolean appliesTo(String scope) {
+    return true;
+  }
+
+  @Override
+  public String getValidatorCode() {
+    return "SUBMISSION_NIL_VALIDATOR";
+  }
 }

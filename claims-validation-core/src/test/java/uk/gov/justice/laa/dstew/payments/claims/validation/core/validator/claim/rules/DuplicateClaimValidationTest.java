@@ -109,7 +109,7 @@ class DuplicateClaimValidationTest {
 
   @Test
   void getValidatorCode_returnsDuplicateClaim() {
-    assertThat(validator.getValidatorCode()).isEqualTo("DUPLICATE_CLAIM");
+    assertThat(validator.getValidatorCode()).isEqualTo("CLAIM_DUPLICATE_CLAIM");
   }
 
   @Test

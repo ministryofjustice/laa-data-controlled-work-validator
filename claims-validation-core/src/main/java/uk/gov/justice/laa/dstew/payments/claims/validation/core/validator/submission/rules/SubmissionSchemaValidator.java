@@ -74,15 +74,19 @@ public class SubmissionSchemaValidator
     return null;
   }
 
-
   @Override
   public int priority() {
     return 1; // Schema validation runs before all other submission validators
   }
 
   @Override
+  public boolean appliesTo(String scope) {
+    return true;
+  }
+
+  @Override
   public String getValidatorCode() {
-    return "SUBMISSION_SCHEMA";
+    return "SUBMISSION_SCHEMA_VALIDATOR";
   }
 
   // ─────────────────────────────────────────────────────────────────────────
