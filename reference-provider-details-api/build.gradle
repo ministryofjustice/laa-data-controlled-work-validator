@@ -13,14 +13,15 @@ dependencies {
      * Upgrades to resolve vulnerabilities
      */
     // Upgrade to fix Uncontrolled Recursion vulnerability in commons-lang3
-    // implementation 'org.apache.commons:commons-lang3:3.18.0'
+    //implementation 'org.apache.commons:commons-lang3:3.18.0'
     // Upgrade to fix vulnerabilities in tomcat-embed-core
-    // implementation 'org.apache.tomcat.embed:tomcat-embed-core:11.0.21'
+    //implementation 'org.apache.tomcat.embed:tomcat-embed-core:11.0.9'
     // Upgrade to fix CVE-2026-1225 vulnerability in logback-core
     implementation 'ch.qos.logback:logback-core:1.5.25'
 
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.9'
+    implementation 'org.openapitools:jackson-databind-nullable:0.2.6'
 }
 
 sourceSets.main.java.srcDirs += ['generated/src/main/java']
@@ -29,11 +30,11 @@ checkstyleMain.exclude "*"
 
 openApiGenerate {
     generatorName = "spring"
-    inputSpec = "$rootDir/reference-fee-scheme-platform-api/open-api-specification.yml".toString()
-    outputDir = "$rootDir/reference-fee-scheme-platform-api/generated".toString()
-    apiPackage = "uk.gov.justice.laa.fee.scheme.api"
-    invokerPackage = "uk.gov.justice.laa.fee.scheme.invoker"
-    modelPackage = "uk.gov.justice.laa.fee.scheme.model"
+    inputSpec = "$rootDir/reference-provider-details-api/open-api-specification.yml".toString()
+    outputDir = "$rootDir/reference-provider-details-api/generated".toString()
+    apiPackage = "uk.gov.justice.laadata.providers.api"
+    invokerPackage = "uk.gov.justice.laadata.providers.invoker"
+    modelPackage = "uk.gov.justice.laadata.providers.model"
     configOptions = [
             generateBuilders    : "true",
             interfaceOnly       : "true", // This will only generate interfaces, not implementations
@@ -42,14 +43,13 @@ openApiGenerate {
             useJakartaEe        : "true",
             useSpringBoot3      : "true",
             useTags             : "true",
-            openApiNullable     : "false"
     ]
 }
 
 compileJava.dependsOn 'openApiGenerate'
 
 clean {
-    delete "$rootDir/reference-fee-scheme-platform-api/generated"
+    delete "$rootDir/reference-provider-details-api/generated"
 }
 
 // disable for overall project when running a build
@@ -60,13 +60,6 @@ tasks.named('bootJar') {
 tasks.named('bootRun') {
     enabled = false
 }
-
 tasks.withType(Test).configureEach {
     useJUnitPlatform()
-}
-
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(25)
-    }
 }
