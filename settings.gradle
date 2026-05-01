@@ -17,9 +17,10 @@ pluginManagement {
         id 'io.freefair.lombok' version '9.1.0'
         id 'com.diffplug.spotless' version '7.2.1'
         id 'io.sentry.jvm.gradle' version '6.1.0'
+        id 'net.researchgate.release' version '3.1.0'
     }
 }
 
-rootProject.name = 'laa-claims-validation-api'
+rootProject.name = 'laa-data-controlled-work-validator'
 
 include 'claims-validation-core', 'reference-fee-scheme-platform-api'
