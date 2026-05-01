@@ -13,7 +13,6 @@ import uk.gov.justice.laa.dstew.payments.claims.validation.core.config.Exclusion
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.config.MandatoryFieldsRegistry;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.FeeCalculationType;
-import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationIssue;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.util.StringCaseUtil;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidationContext;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidationError;
@@ -37,11 +36,11 @@ public class MandatoryFieldClaimValidator implements ClaimValidator {
   }
 
   @Override
-  public List<ValidationIssue> validate(Claim claim, ClaimValidationContext context) {
+  public void validate(Claim claim, ClaimValidationContext context) {
 
     AreaOfLaw areaOfLaw = claim.getAreaOfLaw();
     if (areaOfLaw == null) {
-      return context.getIssues(); // No area of law - no mandatory fields to check
+      return; // No area of law - no mandatory fields to check
     }
 
     String feeCalculationType = context.getFeeCalculationType();
@@ -50,7 +49,7 @@ public class MandatoryFieldClaimValidator implements ClaimValidator {
         mandatoryFieldsRegistry.getMandatoryFieldsByAreaOfLaw();
     List<String> mandatoryFields = mandatoryFieldsByAreaOfLaw.get(areaOfLaw);
     if (Objects.isNull(mandatoryFields)) {
-      return context.getIssues();
+      return;
     }
     boolean isDisbursementLegalHelpClaim =
         FeeCalculationType.DISB_ONLY.getValue().equals(feeCalculationType)
@@ -85,8 +84,6 @@ public class MandatoryFieldClaimValidator implements ClaimValidator {
         throw new IllegalStateException("Error accessing property in Claim: " + fieldName, e);
       }
     }
-
-    return context.getIssues();
   }
 
   @Override

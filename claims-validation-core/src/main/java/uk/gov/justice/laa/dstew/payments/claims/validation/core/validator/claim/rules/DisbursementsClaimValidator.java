@@ -1,11 +1,9 @@
 package uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.rules;
 
 import java.math.BigDecimal;
-import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
-import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationIssue;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidationContext;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidationError;
 import uk.gov.justice.laa.dstew.payments.claimsdata.model.AreaOfLaw;
@@ -23,13 +21,13 @@ public class DisbursementsClaimValidator implements ClaimValidator {
   private static final BigDecimal MAX_VAT_MEDIATION = new BigDecimal("999999999.99");
 
   @Override
-  public List<ValidationIssue> validate(Claim claim, ClaimValidationContext context) {
+  public void validate(Claim claim, ClaimValidationContext context) {
 
     log.debug("Validating disbursements");
 
     BigDecimal vatAmount = claim.getDisbursementsVatAmount();
     if (vatAmount == null) {
-      return context.getIssues(); // No VAT amount to validate
+      return; // No VAT amount to validate
     }
 
     AreaOfLaw areaOfLaw = claim.getAreaOfLaw();
@@ -41,7 +39,6 @@ public class DisbursementsClaimValidator implements ClaimValidator {
     }
 
     log.debug("Disbursements validation completed, found {} issues", context.getIssues().size());
-    return context.getIssues();
   }
 
   private BigDecimal getMaxVatAmount(AreaOfLaw areaOfLaw) {

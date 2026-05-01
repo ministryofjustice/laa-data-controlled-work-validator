@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -12,7 +11,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.FeeCalculationType;
-import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationIssue;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidationContext;
 
 class DisbursementClaimStartDateValidatorTest {
@@ -58,9 +56,9 @@ class DisbursementClaimStartDateValidatorTest {
       String caseStartDate, String submissionPeriod) {
     claim = claim.toBuilder().caseStartDate(caseStartDate).submissionPeriod(submissionPeriod).build();
 
-    List<ValidationIssue> issues = validator.validate(claim, context);
+    validator.validate(claim, context);
 
-    assertThat(issues).isEmpty();
+    assertThat(context.getIssues()).isEmpty();
   }
 
   @ParameterizedTest
@@ -82,11 +80,11 @@ class DisbursementClaimStartDateValidatorTest {
     claim = claim.toBuilder().caseStartDate(caseStartDate).submissionPeriod(submissionPeriod).build();
     LocalDate startDate = LocalDate.parse(caseStartDate, DATE_FORMATTER_YYYY_MM_DD);
 
-    List<ValidationIssue> issues = validator.validate(claim, context);
+    validator.validate(claim, context);
 
-    assertThat(issues).isNotEmpty();
+    assertThat(context.getIssues()).isNotEmpty();
     assertThat(
-            issues.stream()
+            context.getIssues().stream()
                 .anyMatch(
                     x ->
                         x.getMessage()

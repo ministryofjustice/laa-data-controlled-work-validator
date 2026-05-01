@@ -2,7 +2,6 @@ package uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -30,17 +29,17 @@ class ClientDateOfBirthClaimValidationTest {
 
     ClaimValidationContext context = ClaimValidationContext.builder().build();
 
-    List<?> issues = validator.validate(claim, context);
+    validator.validate(claim, context);
 
     assertThat(
-            issues.stream()
+            context.getIssues().stream()
                 .anyMatch(
                     x ->
                         x.toString()
                             .contains("Client Date of Birth must be between 01/01/1900 and today")))
         .isTrue();
     assertThat(
-            issues.stream()
+            context.getIssues().stream()
                 .anyMatch(
                     x ->
                         x.toString()
@@ -63,24 +62,24 @@ class ClientDateOfBirthClaimValidationTest {
 
     ClaimValidationContext context = ClaimValidationContext.builder().build();
 
-    List<?> issues = validator.validate(claim, context);
+    validator.validate(claim, context);
 
     assertThat(
-            issues.stream()
+            context.getIssues().stream()
                 .anyMatch(
                     x ->
                         x.toString()
                             .contains("Client Date of Birth must be between 01/01/1900 and today")))
         .isTrue();
     assertThat(
-            issues.stream()
+            context.getIssues().stream()
                 .anyMatch(
                     x ->
                         x.toString()
                             .contains("Client Date of Birth must be between 01/01/1900 and today")))
         .isTrue();
     assertThat(
-            issues.stream()
+            context.getIssues().stream()
                 .anyMatch(
                     x ->
                         x.toString()

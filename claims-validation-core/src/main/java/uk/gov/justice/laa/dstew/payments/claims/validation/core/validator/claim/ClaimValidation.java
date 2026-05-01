@@ -87,12 +87,12 @@ public class ClaimValidation {
             .forEach(
                     validator -> {
                       log.debug("Running validator: {}", validator.getValidatorCode());
-                      List<ValidationIssue> validatorIssues = validator.validate(claim, context);
-                      issues.addAll(validatorIssues);
+                      validator.validate(claim, context);
+                      issues.addAll(context.getIssues());
                       log.debug(
                               "Validator {} found {} issues",
                               validator.getValidatorCode(),
-                              validatorIssues.size());
+                              context.getIssues().size());
                     });
 
     // Determine if claim is valid (no ERROR severity issues)

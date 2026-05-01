@@ -2,8 +2,6 @@ package uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -47,20 +45,19 @@ class MatterTypeClaimValidationTest {
     Claim claim = Claim.builder().id(claimId).matterTypeCode(matterTypeCode).areaOfLaw(areaOfLaw).build();
     ClaimValidationContext context = ClaimValidationContext.builder().build();
 
-    // Run validation
-    List<ValidationIssue> issues = validator.validate(claim, context);
+    validator.validate(claim, context);
 
     if (expectError) {
       String expectedMessage =
           String.format(
               "matter_type_code (%s): does not match the regex pattern %s (provided value: %s)",
               areaOfLaw, regex, matterTypeCode);
-      assertThat(issues).isNotEmpty();
-      ValidationIssue issue = issues.get(0);
+      assertThat(context.getIssues()).isNotEmpty();
+      ValidationIssue issue = context.getIssues().get(0);
       assertThat(issue.getTechnicalMessage()).isEqualTo(expectedMessage);
       assertThat(issue.getMessage()).isEqualTo(expectedDisplayMessage);
     } else {
-      assertThat(issues).isEmpty();
+      assertThat(context.getIssues()).isEmpty();
     }
   }
 
@@ -79,18 +76,10 @@ class MatterTypeClaimValidationTest {
             .build();
 
     ClaimValidationContext context = ClaimValidationContext.builder().build();
-    // Simulate a pre-existing error (if needed, but the validator should not add a duplicate)
-    List<ValidationIssue> issues = new ArrayList<>();
-    issues.add(
-        ValidationIssue.builder()
-            .message("Each Matter Type Code 1 and 2 must be 4 characters")
-            .technicalMessage("matter_type_code: does not match regex pattern")
-            .build());
 
-    // Run validation
-    List<ValidationIssue> newIssues = validator.validate(claim, context);
+    validator.validate(claim, context);
 
     // Only one error should exist (no duplicate)
-    assertThat(newIssues.size()).isLessThanOrEqualTo(1);
+    assertThat(context.getIssues().size()).isLessThanOrEqualTo(1);
   }
 }

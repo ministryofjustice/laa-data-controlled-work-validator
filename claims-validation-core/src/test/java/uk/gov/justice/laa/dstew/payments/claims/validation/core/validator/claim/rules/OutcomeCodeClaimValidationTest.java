@@ -3,16 +3,13 @@ package uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim
 import static org.assertj.core.api.Assertions.assertThat;
 import static uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.rules.OutcomeCodeClaimValidator.*;
 
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
-import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationIssue;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidationContext;
 import uk.gov.justice.laa.dstew.payments.claimsdata.model.AreaOfLaw;
 import uk.gov.justice.laa.dstew.payments.claimsdata.model.ClaimStatus;
@@ -77,25 +74,36 @@ class OutcomeCodeClaimValidationTest {
             .areaOfLaw(areaOfLaw)
             .build();
     ClaimValidationContext context = ClaimValidationContext.builder().build();
-    List<ValidationIssue> issues = validator.validate(claim, context);
+    validator.validate(claim, context);
     if (expectError) {
       String expectedTechnical =
           String.format(
               "outcome_code (%s): does not match the regex pattern %s (provided value: %s)",
               areaOfLaw, outcomeCodePatterns.get(areaOfLaw), outcomeCode);
       String expectedDisplay = outcomeCodeDisplayMessages.get(areaOfLaw);
-      assertThat(issues).hasSize(1);
-      assertThat(issues.get(0).getTechnicalMessage()).isEqualTo(expectedTechnical);
-      assertThat(issues.get(0).getMessage()).isEqualTo(expectedDisplay);
+      assertThat(context.getIssues()).hasSize(1);
+      assertThat(context.getIssues().get(0).getTechnicalMessage()).isEqualTo(expectedTechnical);
+      assertThat(context.getIssues().get(0).getMessage()).isEqualTo(expectedDisplay);
     } else {
-      assertThat(issues).isEmpty();
+      assertThat(context.getIssues()).isEmpty();
     }
   }
 
   @Test
-  @Disabled(
-      "TODO: Duplicate error test not relevant in new codebase; validator returns issues, does not add to context.")
+  @DisplayName("Should not add duplicate errors if the field is already in error")
   void shouldNotAddDuplicateRegexValidationError() {
-    // Not applicable in new codebase
+    Claim claim =
+        Claim.builder()
+            .id(new UUID(1, 1))
+            .feeCode("feeCode1")
+            .caseStartDate("2025-08-14")
+            .status(ClaimStatus.READY_TO_PROCESS)
+            .uniqueFileNumber("010101/123")
+            .outcomeCode("ABCD") // invalid — too long for LEGAL_HELP
+            .areaOfLaw(AreaOfLaw.LEGAL_HELP)
+            .build();
+    ClaimValidationContext context = ClaimValidationContext.builder().build();
+    validator.validate(claim, context);
+    assertThat(context.getIssues()).hasSize(1);
   }
 }

@@ -4,12 +4,10 @@ import static uk.gov.justice.laa.dstew.payments.claims.validation.core.util.Date
 import static uk.gov.justice.laa.dstew.payments.claims.validation.core.util.DateUtils.validateDateInPast;
 
 import java.time.LocalDate;
-import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
-import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationIssue;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidationContext;
 import uk.gov.justice.laa.dstew.payments.claimsdata.model.AreaOfLaw;
 
@@ -27,7 +25,7 @@ public class CaseDatesClaimValidator implements ClaimValidator {
   private static final String CASE_CONCLUDED_DATE_FIELD_NAME = "Case Concluded Date";
 
   @Override
-  public List<ValidationIssue> validate(Claim claim, ClaimValidationContext context) {
+  public void validate(Claim claim, ClaimValidationContext context) {
 
     log.debug("Validating case dates");
 
@@ -67,7 +65,6 @@ public class CaseDatesClaimValidator implements ClaimValidator {
     }
 
     log.debug("Case dates validation completed, found {} issues", context.getIssues().size());
-    return context.getIssues();
   }
 
   @Override

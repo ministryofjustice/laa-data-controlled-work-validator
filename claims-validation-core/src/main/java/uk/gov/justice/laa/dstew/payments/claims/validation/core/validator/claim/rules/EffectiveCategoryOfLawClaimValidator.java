@@ -11,7 +11,6 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.client.FeeSchemeClient;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.client.ProviderDetailsClient;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
-import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationIssue;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.util.ClaimEffectiveDateUtil;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidationContext;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidationError;
@@ -36,14 +35,14 @@ public class EffectiveCategoryOfLawClaimValidator implements ClaimValidator {
   }
 
   @Override
-  public List<ValidationIssue> validate(Claim claim, ClaimValidationContext context) {
+  public void validate(Claim claim, ClaimValidationContext context) {
 
     AreaOfLaw areaOfLaw = claim.getAreaOfLaw();
     String officeCode = claim.getOfficeAccountNumber();
     String feeCode = claim.getFeeCode();
 
     if (feeCode == null || feeCode.isBlank()) {
-      return context.getIssues(); // MandatoryFieldValidator handles this
+      return; // MandatoryFieldValidator handles this
     }
 
     LocalDate effectiveDate = null;
@@ -81,8 +80,6 @@ public class EffectiveCategoryOfLawClaimValidator implements ClaimValidator {
           ex);
       handleProviderDetailsApiError(context, ex);
     }
-
-    return context.getIssues();
   }
 
   private List<String> getEffectiveCategoriesOfLaw(

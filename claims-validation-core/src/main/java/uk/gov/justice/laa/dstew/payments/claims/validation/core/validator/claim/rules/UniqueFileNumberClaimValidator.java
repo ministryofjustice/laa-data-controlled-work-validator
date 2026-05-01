@@ -2,12 +2,10 @@ package uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim
 
 import java.time.DateTimeException;
 import java.time.LocalDate;
-import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
-import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationIssue;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.util.DateUtils;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidationContext;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidationError;
@@ -23,26 +21,24 @@ public class UniqueFileNumberClaimValidator implements ClaimValidator {
   private static final String UFN_PATTERN = "\\d{6}/\\d{3}";
 
   @Override
-  public List<ValidationIssue> validate(Claim claim, ClaimValidationContext context) {
+  public void validate(Claim claim, ClaimValidationContext context) {
 
     String uniqueFileNumber = claim.getUniqueFileNumber();
 
     if (!StringUtils.hasText(uniqueFileNumber)) {
-      return context.getIssues(); // Not present, skip validation
+      return; // Not present, skip validation
     }
 
     if (!isValidFormat(uniqueFileNumber)) {
       context.addValidationIssue(
               ClaimValidationError.INVALID_DATE_IN_UNIQUE_FILE_NUMBER.toValidationIssue());
-      return context.getIssues();
+      return;
     }
 
     if (!isValidDateInPast(uniqueFileNumber)) {
       context.addValidationIssue(
               ClaimValidationError.INVALID_DATE_IN_UNIQUE_FILE_NUMBER.toValidationIssue());
     }
-
-    return context.getIssues();
   }
 
   /**

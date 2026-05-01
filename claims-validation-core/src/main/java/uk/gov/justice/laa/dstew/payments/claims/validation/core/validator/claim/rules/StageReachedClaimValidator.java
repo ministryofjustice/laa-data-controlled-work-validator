@@ -1,11 +1,9 @@
 package uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.rules;
 
-import java.util.List;
 import java.util.regex.Pattern;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
-import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationIssue;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidationContext;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidationError;
 import uk.gov.justice.laa.dstew.payments.claimsdata.model.AreaOfLaw;
@@ -24,11 +22,11 @@ public class StageReachedClaimValidator implements ClaimValidator {
           "^(INV[A-M]|PRI[A-E]|PRO[C-FH-LP-TUVW]|APP[ABC]|AS(MS|PL|AS)|YOU[EFKLXY]|VOID)$");
 
   @Override
-  public List<ValidationIssue> validate(Claim claim, ClaimValidationContext context) {
+  public void validate(Claim claim, ClaimValidationContext context) {
 
     String stageReached = claim.getStageReachedCode();
     if (stageReached == null || stageReached.isBlank()) {
-      return context.getIssues(); // Optional field
+      return; // Optional field
     }
 
     AreaOfLaw areaOfLaw = claim.getAreaOfLaw();
@@ -63,8 +61,6 @@ public class StageReachedClaimValidator implements ClaimValidator {
                 ClaimValidationError.INVALID_STAGE_REACHED.toValidationIssue());
       }
     }
-
-    return context.getIssues();
   }
 
   private Pattern getPattern(AreaOfLaw areaOfLaw) {

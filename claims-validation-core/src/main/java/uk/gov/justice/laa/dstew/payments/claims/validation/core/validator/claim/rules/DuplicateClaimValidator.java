@@ -23,12 +23,12 @@ public class DuplicateClaimValidator implements ClaimValidator {
   private final List<DuplicateClaimValidationStrategy> strategyList;
 
   @Override
-  public List<ValidationIssue> validate(Claim claim, ClaimValidationContext context) {
+  public void validate(Claim claim, ClaimValidationContext context) {
 
     AreaOfLaw areaOfLaw = claim.getAreaOfLaw();
     if (areaOfLaw == null) {
       log.debug("No area of law set, skipping duplicate claim validation");
-      return context.getIssues();
+      return;
     }
 
     String officeCode = claim.getOfficeAccountNumber();
@@ -46,7 +46,7 @@ public class DuplicateClaimValidator implements ClaimValidator {
 
     if (compatibleStrategies.isEmpty()) {
       log.debug("No duplicate claim validation strategy found for area of law: {}", areaOfLaw);
-      return context.getIssues();
+      return;
     }
 
     // Run each compatible strategy and collect validation issues
@@ -58,7 +58,6 @@ public class DuplicateClaimValidator implements ClaimValidator {
     }
 
     log.debug("Duplicate claim validation completed, found {} issues", context.getIssues().size());
-    return context.getIssues();
   }
 
   @Override

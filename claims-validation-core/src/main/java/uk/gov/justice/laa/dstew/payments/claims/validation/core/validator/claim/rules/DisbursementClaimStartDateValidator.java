@@ -5,12 +5,10 @@ import static uk.gov.justice.laa.dstew.payments.claims.validation.core.util.FeeT
 
 import java.time.LocalDate;
 import java.time.YearMonth;
-import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
-import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationIssue;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.util.DateUtils;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidationContext;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidationError;
@@ -28,19 +26,19 @@ import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.
 public final class DisbursementClaimStartDateValidator implements ClaimValidator {
 
   @Override
-  public List<ValidationIssue> validate(Claim claim, ClaimValidationContext context) {
+  public void validate(Claim claim, ClaimValidationContext context) {
 
     String feeType = context.getFeeCalculationType();
     if (!isDisbursementClaim(feeType)) {
       log.debug("Claim {} is not a disbursement claim", claim.getId());
-      return context.getIssues();
+      return;
     }
 
     if (StringUtils.hasText(claim.getSubmissionPeriod())
         && StringUtils.hasText(claim.getCaseStartDate())) {
       YearMonth submissionPeriod = parseSubmissionPeriod(claim.getSubmissionPeriod());
       if (submissionPeriod == null) {
-        return context.getIssues();
+        return;
       }
       LocalDate submissionEndDate = DateUtils.submissionPeriodCutoffDate(submissionPeriod);
       LocalDate caseStartDate =
@@ -61,8 +59,6 @@ public final class DisbursementClaimStartDateValidator implements ClaimValidator
                 caseStartDate.format(DateUtils.DATE_FORMATTER_FOR_DISPLAY_MESSAGE)));
       }
     }
-
-    return context.getIssues();
   }
 
   @Override

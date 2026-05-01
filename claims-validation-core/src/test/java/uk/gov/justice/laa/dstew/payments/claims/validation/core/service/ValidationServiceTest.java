@@ -93,9 +93,9 @@ class ValidationServiceTest {
       AtomicReference<String> capturedScope = new AtomicReference<>("NOT_SET");
 
       ClaimValidator captor = new ClaimValidator() {
-        @Override public List<ValidationIssue> validate(Claim c, ClaimValidationContext ctx) {
+        @Override public void validate(Claim c, ClaimValidationContext ctx) {
           capturedScope.set(ctx.getScope());
-          return List.of();
+          return;
         }
         @Override public String getValidatorCode() { return "CAPTOR"; }
       };
@@ -120,9 +120,9 @@ class ValidationServiceTest {
       AtomicReference<String> capturedScope = new AtomicReference<>();
 
       ClaimValidator captor = new ClaimValidator() {
-        @Override public List<ValidationIssue> validate(Claim c, ClaimValidationContext ctx) {
+        @Override public void validate(Claim c, ClaimValidationContext ctx) {
           capturedScope.set(ctx.getScope());
-          return List.of();
+          return;
         }
         @Override public String getValidatorCode() { return "CAPTOR"; }
       };
@@ -138,9 +138,9 @@ class ValidationServiceTest {
       AtomicReference<List<Claim>> capturedRelated = new AtomicReference<>();
 
       ClaimValidator captor = new ClaimValidator() {
-        @Override public List<ValidationIssue> validate(Claim c, ClaimValidationContext ctx) {
+        @Override public void validate(Claim c, ClaimValidationContext ctx) {
           capturedRelated.set(ctx.getRelatedClaims());
-          return List.of();
+          return;
         }
         @Override public String getValidatorCode() { return "CAPTOR"; }
       };
@@ -180,9 +180,10 @@ class ValidationServiceTest {
     @DisplayName("Returns invalid result when a validator raises an ERROR issue")
     void returnsInvalidResultWhenErrorIssueFound() {
       ClaimValidator errorValidator = new ClaimValidator() {
-        @Override public List<ValidationIssue> validate(Claim c, ClaimValidationContext ctx) {
-          return List.of(ValidationIssue.builder()
+        @Override public void validate(Claim c, ClaimValidationContext ctx) {
+          ctx.addValidationIssue(ValidationIssue.builder()
               .code("TEST_ERROR").message("error").severity(ValidationSeverity.ERROR).build());
+          return;
         }
         @Override public String getValidatorCode() { return "ERROR_VALIDATOR"; }
       };
@@ -198,9 +199,10 @@ class ValidationServiceTest {
     @DisplayName("Returns valid result when validators raise only WARNING issues")
     void returnsValidResultWithWarningsOnly() {
       ClaimValidator warningValidator = new ClaimValidator() {
-        @Override public List<ValidationIssue> validate(Claim c, ClaimValidationContext ctx) {
-          return List.of(ValidationIssue.builder()
+        @Override public void validate(Claim c, ClaimValidationContext ctx) {
+          ctx.addValidationIssue(ValidationIssue.builder()
               .code("WARN").message("warn").severity(ValidationSeverity.WARNING).build());
+          return;
         }
         @Override public String getValidatorCode() { return "WARN_VALIDATOR"; }
       };

@@ -1,8 +1,6 @@
 package uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.rules;
 
-import java.util.List;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
-import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationIssue;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidationContext;
 
 /**
@@ -19,9 +17,8 @@ public interface ClaimValidator {
    *
    * @param claim the strongly-typed Claim object
    * @param context additional context needed for validation
-   * @return a list of validation issues found, or an empty list if valid
    */
-  List<ValidationIssue> validate(Claim claim, ClaimValidationContext context);
+  void validate(Claim claim, ClaimValidationContext context);
 
   /**
    * Returns the priority of this validator. Lower values run first. Schema validation should be 0,

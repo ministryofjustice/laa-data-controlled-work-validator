@@ -1,11 +1,9 @@
 package uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.rules;
 
-import java.util.List;
 import java.util.regex.Pattern;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
-import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationIssue;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidationContext;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidationError;
 import uk.gov.justice.laa.dstew.payments.claimsdata.model.AreaOfLaw;
@@ -23,7 +21,7 @@ public class ScheduleReferenceClaimValidator implements ClaimValidator {
   private static final Pattern SCHEDULE_REF_PATTERN = Pattern.compile(SCHEDULE_REF_REGEX);
 
   @Override
-  public List<ValidationIssue> validate(Claim claim, ClaimValidationContext context) {
+  public void validate(Claim claim, ClaimValidationContext context) {
     String scheduleReference = claim.getScheduleReference();
     if (scheduleReference != null
         && AreaOfLaw.LEGAL_HELP.equals(claim.getAreaOfLaw())
@@ -40,7 +38,6 @@ public class ScheduleReferenceClaimValidator implements ClaimValidator {
           ClaimValidationError.INVALID_SCHEDULE_REFERENCE.toValidationIssueWithTechnicalMessage(
               technicalMessage, errorMessage));
     }
-    return context.getIssues();
   }
 
   @Override

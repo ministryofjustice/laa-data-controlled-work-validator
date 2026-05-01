@@ -1,6 +1,5 @@
 package uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.rules;
 
-import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
@@ -22,18 +21,18 @@ public class MatterTypeClaimValidator implements ClaimValidator {
   private static final String MATTER_TYPE_MEDIATION_PATTERN = "^[A-Z]{4}[-:][A-Z]{4}$";
 
   @Override
-  public List<ValidationIssue> validate(Claim claim, ClaimValidationContext context) {
+  public void validate(Claim claim, ClaimValidationContext context) {
 
     String matterType = claim.getMatterTypeCode();
     AreaOfLaw areaOfLaw = claim.getAreaOfLaw();
 
     if (matterType == null || areaOfLaw == null) {
-      return context.getIssues(); // Skip if no matter type or area of law
+      return; // Skip if no matter type or area of law
     }
 
     String regex = getRegexForAreaOfLaw(areaOfLaw);
     if (regex == null) {
-      return context.getIssues(); // No regex defined for this area of law
+      return; // No regex defined for this area of law
     }
 
     log.debug("Validating matter type: {} for area of law: {}", matterType, areaOfLaw);
@@ -43,7 +42,7 @@ public class MatterTypeClaimValidator implements ClaimValidator {
           String.format(
               "matter_type_code (%s): does not match the regex pattern %s (provided value: %s)",
               areaOfLaw, regex, matterType);
-      String displayMessage = null;
+      String displayMessage;
       // Set display message to match legacy expectations
       if (AreaOfLaw.LEGAL_HELP.equals(areaOfLaw)) {
         displayMessage = "Each Matter Type Code 1 and 2 must be 4 characters";
@@ -58,8 +57,6 @@ public class MatterTypeClaimValidator implements ClaimValidator {
       issue.setMessage(displayMessage);
       context.addValidationIssue(issue);
     }
-
-    return context.getIssues();
   }
 
   private String getRegexForAreaOfLaw(AreaOfLaw areaOfLaw) {

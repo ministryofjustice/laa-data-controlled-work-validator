@@ -40,7 +40,7 @@ class ClaimValidationTest {
   class ClaimValidationPipeline {
 
     @Test
-    @DisplayName("Runs validators in priority order and deduplicates identical issues")
+    @DisplayName("Runs validators in priority order and deduplicates identical context.getIssues()")
     void runValidatorsInPriorityOrderAndDeduplicateIssues() {
       List<String> callOrder = new ArrayList<>();
 
@@ -53,9 +53,9 @@ class ClaimValidationTest {
 
       ClaimValidator lowPriority = new ClaimValidator() {
         @Override
-        public List<ValidationIssue> validate(Claim claim, ClaimValidationContext context) {
+        public void validate(Claim claim, ClaimValidationContext context) {
           callOrder.add("low");
-          return List.of(sharedIssue);
+          return;
         }
 
         @Override
@@ -70,9 +70,10 @@ class ClaimValidationTest {
 
       ClaimValidator highPriority = new ClaimValidator() {
         @Override
-        public List<ValidationIssue> validate(Claim claim, ClaimValidationContext context) {
+        public void validate(Claim claim, ClaimValidationContext context) {
           callOrder.add("high");
-          return List.of(sharedIssue);
+          context.addValidationIssue(sharedIssue);
+          return;
         }
 
         @Override
@@ -98,9 +99,9 @@ class ClaimValidationTest {
 
       ClaimValidator excluded = new ClaimValidator() {
         @Override
-        public List<ValidationIssue> validate(Claim claim, ClaimValidationContext context) {
+        public void validate(Claim claim, ClaimValidationContext context) {
           called.add("excluded");
-          return List.of();
+          return;
         }
 
         @Override
@@ -117,7 +118,7 @@ class ClaimValidationTest {
     }
 
     @Test
-    @DisplayName("Deduplicates identical issues across validators, preserving insertion order")
+    @DisplayName("Deduplicates identical context.getIssues() across validators, preserving insertion order")
     void deduplicatesIdenticalIssuesPreservingOrder() {
       ValidationIssue sharedIssue = ValidationIssue.builder()
           .code("DUPLICATE_CODE").message("duplicate").severity(ValidationSeverity.WARNING)
@@ -125,15 +126,17 @@ class ClaimValidationTest {
 
       ClaimValidator v1 = new ClaimValidator() {
         @Override
-        public List<ValidationIssue> validate(Claim c, ClaimValidationContext ctx) {
-          return List.of(sharedIssue);
+        public void validate(Claim c, ClaimValidationContext ctx) {
+          ctx.addValidationIssue(sharedIssue);
+          return;
         }
         @Override public String getValidatorCode() { return "V1"; }
       };
       ClaimValidator v2 = new ClaimValidator() {
         @Override
-        public List<ValidationIssue> validate(Claim c, ClaimValidationContext ctx) {
-          return List.of(sharedIssue);
+        public void validate(Claim c, ClaimValidationContext ctx) {
+          ctx.addValidationIssue(sharedIssue);
+          return;
         }
         @Override public String getValidatorCode() { return "V2"; }
       };
@@ -173,9 +176,9 @@ class ClaimValidationTest {
 
       ClaimValidator capturingValidator = new ClaimValidator() {
         @Override
-        public List<ValidationIssue> validate(Claim claim, ClaimValidationContext context) {
+        public void validate(Claim claim, ClaimValidationContext context) {
           captured.set(context);
-          return List.of();
+          return;
         }
         @Override public String getValidatorCode() { return "CAPTURE"; }
       };
@@ -195,9 +198,9 @@ class ClaimValidationTest {
 
       ClaimValidator capturingValidator = new ClaimValidator() {
         @Override
-        public List<ValidationIssue> validate(Claim claim, ClaimValidationContext context) {
+        public void validate(Claim claim, ClaimValidationContext context) {
           captured.set(context);
-          return List.of();
+          return;
         }
         @Override public String getValidatorCode() { return "CAPTURE"; }
       };
@@ -232,11 +235,11 @@ class ClaimValidationTest {
       Claim claim = Claim.builder().areaOfLaw(AreaOfLaw.CRIME_LOWER).build();
       ClaimValidationContext context = ClaimValidationContext.builder().scope("fee").build();
 
-      List<ValidationIssue> issues = validator.validate(claim, context);
+      validator.validate(claim, context);
 
-      assertThat(issues).isNotEmpty();
-      assertThat(issues.getFirst().getCode()).isEqualTo("MISSING_MANDATORY_FIELD");
-      assertThat(issues.getFirst().getSeverity()).isEqualTo(ValidationSeverity.ERROR);
+      assertThat(context.getIssues()).isNotEmpty();
+      assertThat(context.getIssues().getFirst().getCode()).isEqualTo("MISSING_MANDATORY_FIELD");
+      assertThat(context.getIssues().getFirst().getSeverity()).isEqualTo(ValidationSeverity.ERROR);
     }
 
     @Test
@@ -251,7 +254,8 @@ class ClaimValidationTest {
           .build();
       ClaimValidationContext context = ClaimValidationContext.builder().scope("fee").build();
 
-      assertThat(validator.validate(claim, context)).isEmpty();
+      validator.validate(claim, context);
+      assertThat(context.getIssues()).isEmpty();
     }
 
     @Test
@@ -260,7 +264,8 @@ class ClaimValidationTest {
       Claim claim = Claim.builder().build();
       ClaimValidationContext context = ClaimValidationContext.builder().scope("fee").build();
 
-      assertThat(validator.validate(claim, context)).isEmpty();
+      validator.validate(claim, context);
+      assertThat(context.getIssues()).isEmpty();
     }
 
     @Test
@@ -287,7 +292,8 @@ class ClaimValidationTest {
       Claim claim = Claim.builder().uniqueFileNumber("010120/001").build();
       ClaimValidationContext context = ClaimValidationContext.builder().build();
 
-      assertThat(validator.validate(claim, context)).isEmpty();
+      validator.validate(claim, context);
+      assertThat(context.getIssues()).isEmpty();
     }
 
     @Test
@@ -296,10 +302,10 @@ class ClaimValidationTest {
       Claim claim = Claim.builder().uniqueFileNumber("invalid-format").build();
       ClaimValidationContext context = ClaimValidationContext.builder().build();
 
-      List<ValidationIssue> issues = validator.validate(claim, context);
+      validator.validate(claim, context);
 
-      assertThat(issues).hasSize(1);
-      assertThat(issues.getFirst().getCode()).isEqualTo("INVALID_DATE_IN_UNIQUE_FILE_NUMBER");
+      assertThat(context.getIssues()).hasSize(1);
+      assertThat(context.getIssues().getFirst().getCode()).isEqualTo("INVALID_DATE_IN_UNIQUE_FILE_NUMBER");
     }
 
     @Test
@@ -308,10 +314,10 @@ class ClaimValidationTest {
       Claim claim = Claim.builder().uniqueFileNumber("010149/001").build();
       ClaimValidationContext context = ClaimValidationContext.builder().build();
 
-      List<ValidationIssue> issues = validator.validate(claim, context);
+      validator.validate(claim, context);
 
-      assertThat(issues).hasSize(1);
-      assertThat(issues.getFirst().getCode()).isEqualTo("INVALID_DATE_IN_UNIQUE_FILE_NUMBER");
+      assertThat(context.getIssues()).hasSize(1);
+      assertThat(context.getIssues().getFirst().getCode()).isEqualTo("INVALID_DATE_IN_UNIQUE_FILE_NUMBER");
     }
 
     @Test
@@ -320,7 +326,8 @@ class ClaimValidationTest {
       Claim claim = Claim.builder().build();
       ClaimValidationContext context = ClaimValidationContext.builder().build();
 
-      assertThat(validator.validate(claim, context)).isEmpty();
+      validator.validate(claim, context);
+      assertThat(context.getIssues()).isEmpty();
     }
 
     @Test

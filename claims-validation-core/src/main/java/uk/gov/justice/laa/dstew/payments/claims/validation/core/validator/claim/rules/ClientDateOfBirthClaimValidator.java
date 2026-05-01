@@ -1,12 +1,10 @@
 package uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.rules;
 
 import java.time.LocalDate;
-import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
-import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationIssue;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.util.DateUtils;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidationContext;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidationError;
@@ -20,7 +18,7 @@ import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.
 public class ClientDateOfBirthClaimValidator implements ClaimValidator {
 
   @Override
-  public List<ValidationIssue> validate(Claim claim, ClaimValidationContext context) {
+  public void validate(Claim claim, ClaimValidationContext context) {
 
     log.debug("Validating client dates of birth");
 
@@ -35,7 +33,6 @@ public class ClientDateOfBirthClaimValidator implements ClaimValidator {
             ClaimValidationError.INVALID_CLIENT_2_DATE_OF_BIRTH, context);
 
     log.debug("Client DOB validation completed, found {} issues", context.getIssues().size());
-    return context.getIssues();
   }
 
   /**

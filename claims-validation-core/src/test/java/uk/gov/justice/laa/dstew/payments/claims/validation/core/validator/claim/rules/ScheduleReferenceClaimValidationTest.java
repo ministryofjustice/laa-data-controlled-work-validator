@@ -2,14 +2,12 @@ package uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
-import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationIssue;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidationContext;
 import uk.gov.justice.laa.dstew.payments.claimsdata.model.AreaOfLaw;
 import uk.gov.justice.laa.dstew.payments.claimsdata.model.ClaimStatus;
@@ -56,7 +54,7 @@ class ScheduleReferenceClaimValidationTest {
             .areaOfLaw(AreaOfLaw.valueOf(areaOfLaw.replace(' ', '_')))
             .build();
     ClaimValidationContext context = ClaimValidationContext.builder().build();
-    List<ValidationIssue> issues = validator.validate(claim, context);
+    validator.validate(claim, context);
     if (expectError) {
       String expectedTechnical =
           String.format(
@@ -65,17 +63,29 @@ class ScheduleReferenceClaimValidationTest {
       String expectedDisplay =
           "Schedule Reference must be a maximum of 20 characters and contain only letters, "
               + "numbers, forward slashes, periods, and hyphens";
-      assertThat(issues).hasSize(1);
-      assertThat(issues.get(0).getTechnicalMessage()).isEqualTo(expectedTechnical);
-      assertThat(issues.get(0).getMessage()).isEqualTo(expectedDisplay);
+      assertThat(context.getIssues()).hasSize(1);
+      assertThat(context.getIssues().get(0).getTechnicalMessage()).isEqualTo(expectedTechnical);
+      assertThat(context.getIssues().get(0).getMessage()).isEqualTo(expectedDisplay);
     } else {
-      assertThat(issues).isEmpty();
+      assertThat(context.getIssues()).isEmpty();
     }
   }
 
   @Test
+  @DisplayName("Should not add duplicate errors if the field is already in error")
   void shouldNotAddDuplicateRegexValidationError() {
-    // Not applicable in new codebase; validator returns issues, does not add to context.
-    // TODO: If duplicate error logic is needed, implement here.
+    Claim claim =
+        Claim.builder()
+            .id(new UUID(1, 1))
+            .feeCode("feeCode1")
+            .caseStartDate("2025-08-14")
+            .caseReferenceNumber("123")
+            .scheduleReference("ABCDEFGHIJKLMNOPQRSTU") // 21 chars — invalid
+            .matterTypeCode("ab12:bc24")
+            .areaOfLaw(AreaOfLaw.LEGAL_HELP)
+            .build();
+    ClaimValidationContext context = ClaimValidationContext.builder().build();
+    validator.validate(claim, context);
+    assertThat(context.getIssues()).hasSize(1);
   }
 }

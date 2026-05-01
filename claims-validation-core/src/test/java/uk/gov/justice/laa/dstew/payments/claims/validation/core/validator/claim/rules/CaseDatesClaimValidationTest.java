@@ -4,14 +4,12 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.LocalDate;
-import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
-import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationIssue;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidationContext;
 import uk.gov.justice.laa.dstew.payments.claimsdata.model.AreaOfLaw;
 import uk.gov.justice.laa.dstew.payments.claimsdata.model.ClaimStatus;
@@ -50,24 +48,24 @@ class CaseDatesClaimValidationTest {
 
     ClaimValidationContext context = ClaimValidationContext.builder().build();
 
-    List<ValidationIssue> issues = validator.validate(claim, context);
+    validator.validate(claim, context);
 
-    System.out.println(issues);
+    System.out.println(context.getIssues());
 
     assertThat(
-            issues.stream()
+            context.getIssues().stream()
                 .anyMatch(
                     x -> x.getMessage().equals("Invalid date value provided for Case Start Date")))
         .isTrue();
     assertThat(
-            issues.stream()
+            context.getIssues().stream()
                 .anyMatch(
                     x ->
                         x.getMessage()
                             .equals("Transfer Date must be between 01/01/1995 and today")))
         .isTrue();
     assertThat(
-            issues.stream()
+            context.getIssues().stream()
                 .anyMatch(
                     x ->
                         x.getMessage()
@@ -96,24 +94,24 @@ class CaseDatesClaimValidationTest {
 
     ClaimValidationContext context = ClaimValidationContext.builder().build();
 
-    List<ValidationIssue> issues = validator.validate(claim, context);
+    validator.validate(claim, context);
 
     assertThat(
-            issues.stream()
+            context.getIssues().stream()
                 .anyMatch(
                     x ->
                         x.getMessage()
                             .equals("Case Start Date must be between 01/01/1995 and today")))
         .isTrue();
     assertThat(
-            issues.stream()
+            context.getIssues().stream()
                 .anyMatch(
                     x ->
                         x.getMessage()
                             .equals("Transfer Date must be between 01/01/1995 and today")))
         .isTrue();
     assertThat(
-            issues.stream()
+            context.getIssues().stream()
                 .anyMatch(
                     x ->
                         x.getMessage()
@@ -142,10 +140,10 @@ class CaseDatesClaimValidationTest {
 
     ClaimValidationContext context = ClaimValidationContext.builder().build();
 
-    List<ValidationIssue> issues = validator.validate(claim, context);
+    validator.validate(claim, context);
 
     assertThat(
-            issues.stream()
+            context.getIssues().stream()
                 .anyMatch(
                     x ->
                         x.getMessage()
@@ -175,10 +173,10 @@ class CaseDatesClaimValidationTest {
 
     ClaimValidationContext context = ClaimValidationContext.builder().build();
 
-    List<ValidationIssue> issues = validator.validate(claim, context);
+    validator.validate(claim, context);
 
     assertThat(
-            issues.stream()
+            context.getIssues().stream()
                 .anyMatch(
                     x -> x.getMessage().equals("Case Concluded Date cannot be a future date")))
         .isTrue();
@@ -236,12 +234,12 @@ class CaseDatesClaimValidationTest {
 
     ClaimValidationContext context = ClaimValidationContext.builder().build();
 
-    List<ValidationIssue> issues = validator.validate(claim, context);
+    validator.validate(claim, context);
 
     if (expectError) {
-      assertThat(issues.getFirst().getTechnicalMessage()).isEqualTo(expectedErrorMsg);
+      assertThat(context.getIssues().getFirst().getTechnicalMessage()).isEqualTo(expectedErrorMsg);
     } else {
-      assertTrue(issues.isEmpty());
+      assertTrue(context.getIssues().isEmpty());
     }
   }
 }

@@ -6,7 +6,6 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 import java.time.LocalDate;
-import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
@@ -74,8 +73,8 @@ class EffectiveCategoryOfLawClaimValidationTest {
     when(feeSchemeClient.getFeeDetails("feeCode1"))
         .thenReturn(ResponseEntity.ok(feeDetailsResponse));
     ClaimValidationContext context = ClaimValidationContext.builder().build();
-    List<?> issues = validator.validate(claim, context);
-    assertThat(issues).isEmpty();
+    validator.validate(claim, context);
+    assertThat(context.getIssues()).isEmpty();
   }
 
   static Stream<Arguments> exceptionProvider() {
@@ -103,9 +102,9 @@ class EffectiveCategoryOfLawClaimValidationTest {
             eq("officeAccountNumber"), eq(AreaOfLaw.LEGAL_HELP.getValue()), any(LocalDate.class)))
         .thenReturn(Mono.error(exception));
     ClaimValidationContext context = ClaimValidationContext.builder().build();
-    List<?> issues = validator.validate(claim, context);
-    assertThat(issues).hasSize(1);
-    assertThat(issues.get(0).toString())
+    validator.validate(claim, context);
+    assertThat(context.getIssues()).hasSize(1);
+    assertThat(context.getIssues().get(0).toString())
         .contains(ClaimValidationError.TECHNICAL_ERROR_PROVIDER_DETAILS_API.name());
   }
 }
