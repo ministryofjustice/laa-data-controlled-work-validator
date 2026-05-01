@@ -35,7 +35,7 @@ public class SubmissionStatusValidator implements SubmissionValidator {
               submissionId);
       case null -> {
         log.debug("Submission {} state is null", submissionId);
-        context.addValidationError(
+        context.addValidationIssue(
                 SubmissionValidationError.SUBMISSION_STATUS_IS_NULL
                         .toValidationIssue());
       }
@@ -44,7 +44,7 @@ public class SubmissionStatusValidator implements SubmissionValidator {
             "Submission {} cannot be validated in its current state: {}",
             submissionId,
             currentStatus);
-        context.addValidationError(
+        context.addValidationIssue(
             SubmissionValidationError.INCORRECT_SUBMISSION_STATUS_FOR_VALIDATION
                     .toValidationIssue(currentStatus));
       }
