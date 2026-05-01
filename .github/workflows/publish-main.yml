@@ -1,0 +1,32 @@
+name: Publish Main
+
+on:
+  push:
+    tags:
+      - '*'
+
+permissions:
+  contents: read
+
+env:
+  JAVA_VERSION: &JAVA_VERSION '25'
+  JDK_DISTRIBUTION: &JDK_DISTRIBUTION 'corretto'
+
+jobs:
+  assemble:
+    uses: ministryofjustice/laa-ccms-common-workflows/.github/workflows/gradle-build-and-publish.yml@dc4173bfc12f714d7e8cbdd9f524d00ef02e25c4 # v2
+    permissions:
+      contents: write
+      packages: write
+    with:
+      build_command: 'assemble'
+      junit_results: 'false'
+      junit_report: 'false'
+      publish_package: 'true'
+      checkstyle_report: 'false'
+      jacoco_coverage_report: 'false'
+      java_version: *JAVA_VERSION
+      java_distribution: *JDK_DISTRIBUTION
+    secrets:
+      gh_token: ${{ secrets.GITHUB_TOKEN }}
+      aws_region: ${{ vars.AWS_REGION }}
