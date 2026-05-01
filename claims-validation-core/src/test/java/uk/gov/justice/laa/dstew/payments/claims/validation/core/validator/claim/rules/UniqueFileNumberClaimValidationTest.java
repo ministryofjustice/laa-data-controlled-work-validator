@@ -4,15 +4,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
-import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationIssue;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidationContext;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidationError;
 
@@ -30,10 +27,10 @@ class UniqueFileNumberClaimValidationTest {
     ClaimValidationContext context = ClaimValidationContext.builder().build();
 
     // When
-    List<ValidationIssue> issues = validator.validate(claim, context);
+    validator.validate(claim, context);
 
     // Then
-    assertThat(issues).isEmpty();
+    assertThat(context.getIssues()).isEmpty();
   }
 
   @ParameterizedTest
@@ -47,10 +44,10 @@ class UniqueFileNumberClaimValidationTest {
     ClaimValidationContext context = ClaimValidationContext.builder().build();
 
     // When
-    List<ValidationIssue> issues = validator.validate(claim, context);
+    validator.validate(claim, context);
 
     // Then
-    assertThat(issues).isEmpty();
+    assertThat(context.getIssues()).isEmpty();
   }
 
   @ParameterizedTest
@@ -71,11 +68,11 @@ class UniqueFileNumberClaimValidationTest {
     ClaimValidationContext context = ClaimValidationContext.builder().build();
 
     // When
-    List<ValidationIssue> issues = validator.validate(claim, context);
+    validator.validate(claim, context);
 
     // Then
-    assertThat(issues).hasSize(1);
-    assertThat(issues.getFirst().getCode())
+    assertThat(context.getIssues()).hasSize(1);
+    assertThat(context.getIssues().getFirst().getCode())
         .isEqualTo(ClaimValidationError.INVALID_DATE_IN_UNIQUE_FILE_NUMBER.name());
   }
 
@@ -90,19 +87,15 @@ class UniqueFileNumberClaimValidationTest {
     ClaimValidationContext context = ClaimValidationContext.builder().build();
 
     // When
-    List<ValidationIssue> issues = validator.validate(claim, context);
+    validator.validate(claim, context);
 
     // Then
-    assertThat(issues).hasSize(1);
-    assertThat(issues.getFirst().getCode())
+    assertThat(context.getIssues()).hasSize(1);
+    assertThat(context.getIssues().getFirst().getCode())
         .isEqualTo(ClaimValidationError.INVALID_DATE_IN_UNIQUE_FILE_NUMBER.name());
   }
 
-  // TODO: Revisit this test - our validator returns issues directly and doesn't check
-  //       context for existing errors. Need to determine if duplicate error prevention
-  //       should be handled at the validator level or in ValidationService.
   @Test
-  @Disabled("Duplicate error prevention not implemented in this validator - see TODO")
   @DisplayName("Should not add duplicate errors if the field is already in error")
   void shouldNotAddDuplicateErrorsIfTheFieldIsAlreadyInError() {
     // Given
@@ -110,11 +103,11 @@ class UniqueFileNumberClaimValidationTest {
     ClaimValidationContext context = ClaimValidationContext.builder().build();
 
     // When
-    List<ValidationIssue> issues = validator.validate(claim, context);
+    validator.validate(claim, context);
 
     // Then
-    assertThat(issues).hasSize(1);
-    assertThat(issues.getFirst().getCode())
+    assertThat(context.getIssues()).hasSize(1);
+    assertThat(context.getIssues().getFirst().getCode())
         .isEqualTo(ClaimValidationError.INVALID_DATE_IN_UNIQUE_FILE_NUMBER.name());
   }
 
@@ -127,11 +120,11 @@ class UniqueFileNumberClaimValidationTest {
     ClaimValidationContext context = ClaimValidationContext.builder().build();
 
     // When
-    List<ValidationIssue> issues = validator.validate(claim, context);
+    validator.validate(claim, context);
 
     // Then
-    assertThat(issues).hasSize(1);
-    assertThat(issues.getFirst().getCode())
+    assertThat(context.getIssues()).hasSize(1);
+    assertThat(context.getIssues().getFirst().getCode())
         .isEqualTo(ClaimValidationError.INVALID_DATE_IN_UNIQUE_FILE_NUMBER.name());
   }
 }

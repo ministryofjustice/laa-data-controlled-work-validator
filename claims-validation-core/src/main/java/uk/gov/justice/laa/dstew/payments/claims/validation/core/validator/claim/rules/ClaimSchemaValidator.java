@@ -84,6 +84,7 @@ public class ClaimSchemaValidator
 
   @Override
   public List<ValidationIssue> validate(Claim claim, ClaimValidationContext context) {
-    return validateSubject(claim);
+    context.addValidationIssues(validateSubject(claim));
+    return context.getIssues();
   }
 }

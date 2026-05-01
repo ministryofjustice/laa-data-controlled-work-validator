@@ -5,7 +5,6 @@ import static uk.gov.justice.laa.dstew.payments.claims.validation.core.util.FeeT
 
 import java.time.LocalDate;
 import java.time.YearMonth;
-import java.util.ArrayList;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -30,19 +29,18 @@ public final class DisbursementClaimStartDateValidator implements ClaimValidator
 
   @Override
   public List<ValidationIssue> validate(Claim claim, ClaimValidationContext context) {
-    List<ValidationIssue> issues = new ArrayList<>();
 
     String feeType = context.getFeeCalculationType();
     if (!isDisbursementClaim(feeType)) {
       log.debug("Claim {} is not a disbursement claim", claim.getId());
-      return issues;
+      return context.getIssues();
     }
 
     if (StringUtils.hasText(claim.getSubmissionPeriod())
         && StringUtils.hasText(claim.getCaseStartDate())) {
       YearMonth submissionPeriod = parseSubmissionPeriod(claim.getSubmissionPeriod());
       if (submissionPeriod == null) {
-        return issues;
+        return context.getIssues();
       }
       LocalDate submissionEndDate = DateUtils.submissionPeriodCutoffDate(submissionPeriod);
       LocalDate caseStartDate =
@@ -57,14 +55,14 @@ public final class DisbursementClaimStartDateValidator implements ClaimValidator
             DateUtils.MAXIMUM_MONTHS_DIFFERENCE,
             caseStartDate.format(DateUtils.DATE_FORMATTER_FOR_DISPLAY_MESSAGE));
 
-        issues.add(
+        context.addValidationIssue(
             ClaimValidationError.DISBURSEMENT_TOO_EARLY.toValidationIssue(
                 DateUtils.MAXIMUM_MONTHS_DIFFERENCE,
                 caseStartDate.format(DateUtils.DATE_FORMATTER_FOR_DISPLAY_MESSAGE)));
       }
     }
 
-    return issues;
+    return context.getIssues();
   }
 
   @Override

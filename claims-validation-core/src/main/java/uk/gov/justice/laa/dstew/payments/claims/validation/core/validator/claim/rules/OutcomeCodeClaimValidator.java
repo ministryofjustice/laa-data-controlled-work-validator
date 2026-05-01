@@ -27,7 +27,7 @@ public class OutcomeCodeClaimValidator implements ClaimValidator {
     String outcomeCode = claim.getOutcomeCode();
     AreaOfLaw areaOfLaw = claim.getAreaOfLaw();
     if (outcomeCode == null || areaOfLaw == null) {
-      return List.of();
+      return context.getIssues();
     }
     String pattern = null;
     String displayMessage = null;
@@ -47,7 +47,7 @@ public class OutcomeCodeClaimValidator implements ClaimValidator {
         displayMessage = "Outcome Code must be a valid mediation outcome code or left blank";
       }
       default -> {
-        return List.of();
+        return context.getIssues();
       }
     }
     if (!outcomeCode.matches(pattern)) {
@@ -55,11 +55,11 @@ public class OutcomeCodeClaimValidator implements ClaimValidator {
           String.format(
               "outcome_code (%s): does not match the regex pattern %s (provided value: %s)",
               areaOfLaw.toString().replace('_', ' '), pattern, outcomeCode);
-      return List.of(
+      context.addValidationIssue(
           ClaimValidationError.INVALID_OUTCOME_CODE.toValidationIssueWithTechnicalMessage(
               technicalMessage, displayMessage));
     }
-    return List.of();
+    return context.getIssues();
   }
 
   @Override

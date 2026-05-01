@@ -36,11 +36,11 @@ public class ScheduleReferenceClaimValidator implements ClaimValidator {
               "schedule_reference (LEGAL_HELP): does not "
                   + "match the regex pattern %s (provided value: %s)",
               SCHEDULE_REF_REGEX, scheduleReference);
-      return List.of(
+      context.addValidationIssue(
           ClaimValidationError.INVALID_SCHEDULE_REFERENCE.toValidationIssueWithTechnicalMessage(
               technicalMessage, errorMessage));
     }
-    return List.of();
+    return context.getIssues();
   }
 
   @Override
