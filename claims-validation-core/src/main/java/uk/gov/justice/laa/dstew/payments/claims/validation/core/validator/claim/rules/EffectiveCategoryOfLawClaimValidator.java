@@ -9,12 +9,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.client.FeeSchemeClient;
-import uk.gov.justice.laa.dstew.payments.claims.validation.core.client.ProviderDetailsClient;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.provider.impl.HttpProviderDetailsProvider;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.util.ClaimEffectiveDateUtil;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidationContext;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidationError;
-import uk.gov.justice.laa.dstew.payments.claimsdata.model.AreaOfLaw;
 import uk.gov.justice.laa.fee.scheme.model.FeeDetailsResponse;
 import uk.gov.justice.laadata.providers.model.FirmOfficeContractAndScheduleDetails;
 import uk.gov.justice.laadata.providers.model.FirmOfficeContractAndScheduleLine;
@@ -27,7 +26,7 @@ import uk.gov.justice.laadata.providers.model.ProviderFirmOfficeContractAndSched
 public class EffectiveCategoryOfLawClaimValidator implements ClaimValidator {
 
   private final FeeSchemeClient feeSchemeClient;
-  private final ProviderDetailsClient providerDetailsClient;
+  private final HttpProviderDetailsProvider providerDetailsClient;
 
   @Override
   public int priority() {
@@ -37,7 +36,6 @@ public class EffectiveCategoryOfLawClaimValidator implements ClaimValidator {
   @Override
   public void validate(Claim claim, ClaimValidationContext context) {
 
-    AreaOfLaw areaOfLaw = claim.getAreaOfLaw();
     String officeCode = claim.getOfficeAccountNumber();
     String feeCode = claim.getFeeCode();
 
@@ -49,7 +47,7 @@ public class EffectiveCategoryOfLawClaimValidator implements ClaimValidator {
     try {
       effectiveDate = ClaimEffectiveDateUtil.getEffectiveDate(claim);
       List<String> effectiveCategoriesOfLaw =
-          getEffectiveCategoriesOfLaw(officeCode, areaOfLaw, effectiveDate);
+          getEffectiveCategoriesOfLaw(officeCode, effectiveDate);
 
       // Get fee details and validate category of law
       validateCategoryOfLaw(claim, feeCode, effectiveCategoriesOfLaw, context);
@@ -62,20 +60,18 @@ public class EffectiveCategoryOfLawClaimValidator implements ClaimValidator {
     } catch (WebClientResponseException ex) {
       log.error(
           "Error calling provider details API: Status={}, Message={}, officeCode={}, "
-              + "areaOfLaw={}, effectiveDate={}, "
-              + "Please check if the API endpoint is configured correctly.",
+              + "effectiveDate={}, Please check if the API endpoint is "
+                  + "configured correctly.",
           ex.getStatusCode(),
           ex.getMessage(),
           officeCode,
-          areaOfLaw != null ? areaOfLaw.getValue() : null,
           effectiveDate);
       handleProviderDetailsApiError(context, ex);
     } catch (Exception ex) {
       log.error(
           "Unexpected error during category of law validation for officeCode={}, "
-              + "areaOfLaw={}, effectiveDate={}",
+              + "effectiveDate={}",
           officeCode,
-          areaOfLaw != null ? areaOfLaw.getValue() : null,
           effectiveDate,
           ex);
       handleProviderDetailsApiError(context, ex);
@@ -83,19 +79,18 @@ public class EffectiveCategoryOfLawClaimValidator implements ClaimValidator {
   }
 
   private List<String> getEffectiveCategoriesOfLaw(
-      String officeCode, AreaOfLaw areaOfLaw, LocalDate effectiveDate) {
-    if (officeCode == null || areaOfLaw == null || effectiveDate == null) {
+      String officeCode, LocalDate effectiveDate) {
+    if (officeCode == null || effectiveDate == null) {
       return Collections.emptyList();
     }
 
     log.debug(
-        "Calling Provider Details API: officeCode={}, areaOfLaw={}, effectiveDate={}",
+        "Calling Provider Details API: officeCode={}, effectiveDate={}",
         officeCode,
-        areaOfLaw.getValue(),
         effectiveDate);
 
     return providerDetailsClient
-        .getProviderFirmSchedules(officeCode, areaOfLaw.getValue(), effectiveDate)
+        .getProviderFirmSchedules(officeCode, effectiveDate)
         .blockOptional()
         .map(this::extractCategoriesFromSchedules)
         .orElse(Collections.emptyList());
