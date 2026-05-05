@@ -1,6 +1,7 @@
 package uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.submission.rules;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static uk.gov.justice.laa.dstew.payments.claims.validation.core.service.ValidationServiceTestUtils.assertContextClaimError;
@@ -44,6 +45,14 @@ class SubmissionSchemaValidatorTest {
   void beforeEach() {
     submissionSchemaValidator = new SubmissionSchemaValidator();
     submissionSchemaValidator.init(); // @PostConstruct is not called outside a Spring context
+  }
+
+  @Test
+  @DisplayName("Validator metadata: priority, appliesTo and code")
+  void metadata() {
+    assertEquals(1, submissionSchemaValidator.priority());
+    assertTrue(submissionSchemaValidator.appliesTo("ANY_SCOPE"));
+    assertEquals("SUBMISSION_SCHEMA_VALIDATOR", submissionSchemaValidator.getValidatorCode());
   }
 
   // ─────────────────────────────────────────────────────────────────────────

@@ -87,4 +87,13 @@ class ClientDateOfBirthClaimValidationTest {
                                 "Client 2 Date of Birth must be between 01/01/1900 and today")))
         .isTrue();
   }
+
+  @Test
+  @DisplayName("ClientDateOfBirthClaimValidator - priority, appliesTo and validator code")
+  void clientDobValidatorMetadata() {
+    assertThat(validator.priority()).isEqualTo(100);
+    assertThat(validator.appliesTo("any")).isTrue();
+    // Note: validator code contains a legacy typo - assert actual value to lock behaviour
+    assertThat(validator.getValidatorCode()).isEqualTo("CCLAIM_LIENT_DATE_OF_BIRTH");
+  }
 }

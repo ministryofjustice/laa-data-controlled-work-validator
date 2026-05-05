@@ -1,5 +1,6 @@
 package uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.submission.rules;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static uk.gov.justice.laa.dstew.payments.claims.validation.core.service.ValidationServiceTestUtils.assertContextClaimError;
@@ -16,6 +17,14 @@ import uk.gov.justice.laa.dstew.payments.claimsdata.model.SubmissionResponse;
 class NilSubmissionValidatorTest {
 
   private final NilSubmissionValidator nilSubmissionValidator = new NilSubmissionValidator();
+
+  @DisplayName("Validator metadata: priority, appliesTo and code")
+  @Test
+  void metadata() {
+    assertEquals(10, nilSubmissionValidator.priority());
+    assertTrue(nilSubmissionValidator.appliesTo("ANY_SCOPE"));
+    assertEquals("SUBMISSION_NIL_VALIDATOR", nilSubmissionValidator.getValidatorCode());
+  }
 
   @Test
   @DisplayName("Should have no errors when not flagged as NIL Submission and has claims")

@@ -64,8 +64,8 @@ class ScheduleReferenceClaimValidationTest {
           "Schedule Reference must be a maximum of 20 characters and contain only letters, "
               + "numbers, forward slashes, periods, and hyphens";
       assertThat(context.getIssues()).hasSize(1);
-      assertThat(context.getIssues().get(0).getTechnicalMessage()).isEqualTo(expectedTechnical);
-      assertThat(context.getIssues().get(0).getMessage()).isEqualTo(expectedDisplay);
+      assertThat(context.getIssues().getFirst().getTechnicalMessage()).isEqualTo(expectedTechnical);
+      assertThat(context.getIssues().getFirst().getMessage()).isEqualTo(expectedDisplay);
     } else {
       assertThat(context.getIssues()).isEmpty();
     }
@@ -87,5 +87,13 @@ class ScheduleReferenceClaimValidationTest {
     ClaimValidationContext context = ClaimValidationContext.builder().build();
     validator.validate(claim, context);
     assertThat(context.getIssues()).hasSize(1);
+  }
+
+  @Test
+  @DisplayName("ScheduleReferenceClaimValidator - priority, appliesTo and validator code")
+  void scheduleReferenceValidatorMetadata() {
+    assertThat(validator.priority()).isEqualTo(100);
+    assertThat(validator.appliesTo("any")).isTrue();
+    assertThat(validator.getValidatorCode()).isEqualTo("CLAIM_SCHEDULE_REFERENCE");
   }
 }

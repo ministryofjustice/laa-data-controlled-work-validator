@@ -242,4 +242,12 @@ class CaseDatesClaimValidationTest {
       assertTrue(context.getIssues().isEmpty());
     }
   }
+
+  @Test
+  @DisplayName("CaseDatesClaimValidator - priority, appliesTo and validator code")
+  void caseDatesValidatorMetadata() {
+    assertThat(validator.priority()).isEqualTo(100);
+    assertThat(validator.appliesTo("any")).isTrue();
+    assertThat(validator.getValidatorCode()).isEqualTo("CLAIM_CASE_DATES");
+  }
 }

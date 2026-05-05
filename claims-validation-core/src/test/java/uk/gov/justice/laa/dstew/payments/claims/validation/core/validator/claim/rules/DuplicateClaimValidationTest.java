@@ -116,4 +116,9 @@ class DuplicateClaimValidationTest {
   void priority_returns10000() {
     assertThat(validator.priority()).isEqualTo(10000);
   }
+
+  @Test
+  void appliesTo_returnsTrue() {
+    assertThat(validator.appliesTo("any")).isTrue();
+  }
 }

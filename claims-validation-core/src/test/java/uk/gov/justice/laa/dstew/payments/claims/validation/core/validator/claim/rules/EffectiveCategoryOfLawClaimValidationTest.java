@@ -109,4 +109,16 @@ class EffectiveCategoryOfLawClaimValidationTest {
     assertThat(context.getIssues().getFirst().toString())
         .contains(ClaimValidationError.TECHNICAL_ERROR_PROVIDER_DETAILS_API.name());
   }
+
+  @Test
+  @DisplayName("EffectiveCategoryOfLawClaimValidator - priority, appliesTo and validator code")
+  void effectiveCategoryOfLawValidatorMetadata() {
+    assertThat(validator.priority()).isEqualTo(1000);
+    // appliesTo: null, fee and all should be true; other scopes false
+    assertThat(validator.appliesTo(null)).isTrue();
+    assertThat(validator.appliesTo("fee")).isTrue();
+    assertThat(validator.appliesTo("all")).isTrue();
+    assertThat(validator.appliesTo("disbursement")).isFalse();
+    assertThat(validator.getValidatorCode()).isEqualTo("CLAIM_CATEGORY_OF_LAW");
+  }
 }

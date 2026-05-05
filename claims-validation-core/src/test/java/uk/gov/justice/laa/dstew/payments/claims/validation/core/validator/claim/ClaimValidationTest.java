@@ -315,6 +315,13 @@ class ClaimValidationTest {
     void hasCorrectValidatorCode() {
       assertThat(validator.getValidatorCode()).isEqualTo("CLAIM_MANDATORY_FIELD");
     }
+
+    @Test
+    @DisplayName("priority and appliesTo for MandatoryFieldClaimValidator")
+    void mandatoryFieldValidatorMetadata() {
+      assertThat(validator.priority()).isEqualTo(10);
+      assertThat(validator.appliesTo("any")).isTrue();
+    }
   }
 
   @Nested

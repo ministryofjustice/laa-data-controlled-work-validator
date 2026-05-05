@@ -50,6 +50,13 @@ class DuplicateSubmissionValidatorTest {
     Assertions.assertEquals(100, validator.priority());
   }
 
+  @DisplayName("appliesTo returns true and validator code is set")
+  @Test
+  void metadata() {
+    Assertions.assertTrue(validator.appliesTo("ANY_SCOPE"));
+    Assertions.assertEquals("SUBMISSION_DUPLICATE_VALIDATOR", validator.getValidatorCode());
+  }
+
   @Nested
   class Validate {
 

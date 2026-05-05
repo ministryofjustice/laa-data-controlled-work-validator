@@ -106,4 +106,12 @@ class OutcomeCodeClaimValidationTest {
     validator.validate(claim, context);
     assertThat(context.getIssues()).hasSize(1);
   }
+
+  @Test
+  @DisplayName("OutcomeCodeClaimValidator - priority, appliesTo and validator code")
+  void outcomeCodeValidatorMetadata() {
+    assertThat(validator.priority()).isEqualTo(100);
+    assertThat(validator.appliesTo("any-scope")).isTrue();
+    assertThat(validator.getValidatorCode()).isEqualTo("CLAIM_OUTCOME_CODE");
+  }
 }

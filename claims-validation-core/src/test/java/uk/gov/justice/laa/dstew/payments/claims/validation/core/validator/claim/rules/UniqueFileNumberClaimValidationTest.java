@@ -127,4 +127,12 @@ class UniqueFileNumberClaimValidationTest {
     assertThat(context.getIssues().getFirst().getCode())
         .isEqualTo(ClaimValidationError.INVALID_DATE_IN_UNIQUE_FILE_NUMBER.name());
   }
+
+  @Test
+  @DisplayName("UniqueFileNumberClaimValidator - priority, appliesTo and validator code")
+  void uniqueFileNumberValidatorMetadata() {
+    assertThat(validator.priority()).isEqualTo(100);
+    assertThat(validator.appliesTo("any-scope")).isTrue();
+    assertThat(validator.getValidatorCode()).isEqualTo("CLAIM_UNIQUE_FILE_NUMBER");
+  }
 }

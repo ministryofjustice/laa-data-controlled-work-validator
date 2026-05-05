@@ -5,6 +5,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import java.math.BigDecimal;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
@@ -51,5 +52,15 @@ class DisbursementsClaimValidationTest {
     } else {
       assertThat(context.getIssues().size()).isZero();
     }
+  }
+
+  @Test
+  @DisplayName("DisbursementsClaimValidator - priority, appliesTo and validator code")
+  void disbursementsValidatorMetadata() {
+    assertThat(validator.priority()).isEqualTo(100);
+    assertThat(validator.appliesTo(null)).isTrue();
+    assertThat(validator.appliesTo("disbursement")).isTrue();
+    assertThat(validator.appliesTo("all")).isTrue();
+    assertThat(validator.getValidatorCode()).isEqualTo("CLAIM_DISBURSEMENTS");
   }
 }

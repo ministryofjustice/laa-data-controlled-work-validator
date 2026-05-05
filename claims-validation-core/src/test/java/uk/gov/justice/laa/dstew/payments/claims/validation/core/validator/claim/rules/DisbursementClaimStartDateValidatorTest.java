@@ -7,6 +7,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
@@ -93,5 +94,15 @@ class DisbursementClaimStartDateValidatorTest {
                                     "Disbursement claims can only be submitted at least 3 calendar months after the Case Start Date %s",
                                     startDate.format(DATE_FORMATTER_FOR_DISPLAY_MESSAGE)))))
         .isTrue();
+  }
+
+  @Test
+  @DisplayName("DisbursementClaimStartDateValidator - priority, appliesTo and validator code")
+  void disbursementStartDateValidatorMetadata() {
+    assertThat(validator.priority()).isEqualTo(10);
+    assertThat(validator.appliesTo("disbursement")).isTrue();
+    assertThat(validator.appliesTo("all")).isTrue();
+    assertThat(validator.appliesTo("fee")).isFalse();
+    assertThat(validator.getValidatorCode()).isEqualTo("CLAIM_DISBURSEMENT_START_DATE");
   }
 }

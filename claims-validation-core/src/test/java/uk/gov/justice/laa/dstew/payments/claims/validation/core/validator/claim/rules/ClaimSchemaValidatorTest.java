@@ -92,6 +92,13 @@ class ClaimSchemaValidatorTest {
     void getValidatorCode_returnsClaimSchema() {
       assertThat(validator.getValidatorCode()).isEqualTo("CLAIM_SCHEMA");
     }
+
+    @Test
+    @DisplayName("appliesTo returns true for schema validator")
+    void appliesTo_returnsTrue() {
+      assertThat(validator.appliesTo("any")).isTrue();
+      assertThat(validator.appliesTo(null)).isTrue();
+    }
   }
 
   @Nested

@@ -80,6 +80,14 @@ class MatterTypeClaimValidationTest {
     validator.validate(claim, context);
 
     // Only one error should exist (no duplicate)
-    assertThat(context.getIssues().size()).isLessThanOrEqualTo(1);
+    assertThat(context.getIssues()).hasSizeLessThanOrEqualTo(1);
+  }
+
+  @Test
+  @DisplayName("MatterTypeClaimValidator - priority, appliesTo and validator code")
+  void matterTypeValidatorMetadata() {
+    assertThat(validator.priority()).isEqualTo(100);
+    assertThat(validator.appliesTo("any")).isTrue();
+    assertThat(validator.getValidatorCode()).isEqualTo("CLAIM_MATTER_TYPE");
   }
 }
