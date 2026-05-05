@@ -18,6 +18,7 @@ env:
 
 jobs:
   build:
+    # Only run the build to create the tag when the PR has been merged.
     if: ${{ github.event.pull_request.merged == true }}
     uses: ministryofjustice/laa-ccms-common-workflows/.github/workflows/gradle-build-and-publish.yml@dc4173bfc12f714d7e8cbdd9f524d00ef02e25c4 # v2
     permissions:
@@ -37,16 +38,6 @@ jobs:
     secrets:
       gh_token: ${{ secrets.GITHUB_TOKEN }}
       aws_region: ${{ vars.LAA_DATA_CLAIMS_EVENT_SERVICE_AWS_REGION }}
-
-  sca-scan:
-    needs:
-      - build
-    uses: ./.github/workflows/sca-analysis.yml
-    permissions:
-      contents: read
-      security-events: write
-    with:
-      java_version: *JAVA_VERSION
-      java_distribution:  *JDK_DISTRIBUTION
-    secrets:
-      gh_token: ${{ secrets.GITHUB_TOKEN }}
+      github_app_id: ${{ vars.LAA_CCMS_CAAB_SERVICE_APP_ID }}
+      github_app_private_key: ${{ secrets.LAA_CCMS_CAAB_SERVICE_KEY }}
+      github_app_organisation: 'ministryofjustice'
