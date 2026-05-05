@@ -69,11 +69,11 @@ publishing {
     }
     repositories {
         maven {
-            name = "gitHubPackages"
-            url = 'https://maven.pkg.github.com/ministryofjustice/laa-data-claims-validation-api-poc'
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/ministryofjustice/laa-data-claims-validation-api-poc")
             credentials {
-                username = System.getenv("GITHUB_ACTOR")?.trim() ?: settings.ext.find('project.ext.gitPackageUser')
-                password = System.getenv("GITHUB_TOKEN")?.trim() ?: settings.ext.find('project.ext.gitPackageKey')
+                username = System.getenv("GITHUB_ACTOR")
+                password = System.getenv("GITHUB_TOKEN")
             }
         }
     }
