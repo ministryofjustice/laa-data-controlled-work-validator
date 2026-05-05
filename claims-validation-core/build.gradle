@@ -61,6 +61,12 @@ tasks.register("checkstyleStaged", Checkstyle) {
 }
 
 publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+            artifactId = project.name
+        }
+    }
     repositories {
         maven {
             name = "GitHubPackages"
