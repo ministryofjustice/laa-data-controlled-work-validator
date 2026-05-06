@@ -70,3 +70,13 @@ java {
         languageVersion = JavaLanguageVersion.of(25)
     }
 }
+
+// publishing configuration: use parent/root version and group
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+            artifactId = project.name
+        }
+    }
+}

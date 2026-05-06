@@ -53,7 +53,7 @@ configure(subprojects) {
     spotless {
         java {
             target 'src/*/java/**/*.java'
-            targetExclude 'src/main/java/uk/gov/justice/laa/dstew/payments/claims/validation/core/error/ClaimValidationError.java'
+           // targetExclude 'src/main/java/uk/gov/justice/laa/dstew/payments/claims/validation/core/error/ClaimValidationError.java'
             importOrder()
             removeUnusedImports()
             cleanthat()
@@ -67,4 +67,12 @@ tasks.register("checkstyleStaged") {
     group = "verification"
     description = "Runs Checkstyle on staged files across all subprojects"
     dependsOn subprojects.findAll { it.tasks.findByName('checkstyleStaged') }.collect { it.tasks.checkstyleStaged }
+}
+
+// Make claims-validation-core publish tasks depend on the reference publish tasks
+project(':claims-validation-core') {
+    tasks.matching { it.name == 'publish' }.configureEach {
+        dependsOn(':reference-fee-scheme-platform-api:publish')
+        dependsOn(':reference-provider-details-api:publish')
+    }
 }
