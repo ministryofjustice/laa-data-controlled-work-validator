@@ -98,7 +98,7 @@ public class SubmissionSchemaValidator
    *
    * <p>{@link SubmissionValidator} uses a void/context-mutation contract rather than returning
    * issues. The bridge is a single {@code forEach} over the list returned by
-   * {@link #validateSubject(SubmissionResponse)}).
+   * #validateSubject(SubmissionResponse).
    */
   @Override
   public void validate(SubmissionResponse submission, SubmissionValidationContext context) {

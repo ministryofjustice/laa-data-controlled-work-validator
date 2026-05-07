@@ -13,12 +13,4 @@ import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.
  */
 public interface ClaimValidator extends Validator<Claim, ClaimValidationContext> {
 
-  /**
-   * A unique code identifying this validator. This method remains explicitly declared here to
-   * emphasise that claim validators must provide an identifier.
-   *
-   * @return the validator code
-   */
-  String getValidatorCode();
-
 }

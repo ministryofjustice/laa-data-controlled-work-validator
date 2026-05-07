@@ -1,10 +1,7 @@
 package uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim;
 
-import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
@@ -77,34 +74,37 @@ public class ClaimValidation {
     // Build validation context
     ClaimValidationContext context = buildValidationContext(scope, relatedClaims);
 
-    // Collect unique validation issues (LinkedHashSet preserves insertion order)
-    Set<ValidationIssue> issues = new LinkedHashSet<>();
-
-    // Run all validators in priority order
+    // Run all validators in priority order, using the context as the canonical store for
+    // validation issues. We capture the context size before/after each validator so we can
+    // log how many NEW issues that validator contributed (avoids repeated aggregation).
     validators.stream()
             .filter(v -> v.appliesTo(scope))
             .sorted(Comparator.comparingInt(ClaimValidator::priority))
             .forEach(
                     validator -> {
                       log.debug("Running validator: {}", validator.getValidatorCode());
+                      boolean debug = log.isDebugEnabled();
+                      int before = debug ? context.getIssueCount() : -1;
                       validator.validate(claim, context);
-                      issues.addAll(context.getIssues());
-                      log.debug(
-                              "Validator {} found {} issues",
-                              validator.getValidatorCode(),
-                              context.getIssues().size());
+                      if (debug) {
+                        int after = context.getIssueCount();
+                        log.debug(
+                            "Validator {} added {} new issues",
+                            validator.getValidatorCode(),
+                            Math.max(0, after - before));
+                      }
                     });
 
     // Determine if claim is valid (no ERROR severity issues)
-    boolean isValid =
-            issues.stream()
-                    .noneMatch(issue -> ValidationSeverity.ERROR.equals(issue.getSeverity()));
+    // Use the context as the canonical source for issues
+    List<ValidationIssue> finalIssues = context.getIssues();
+    boolean isValid = !context.hasErrors();
 
-    log.info("Validation completed. isValid: {}, total issues: {}", isValid, issues.size());
+    log.info("Validation completed. isValid: {}, total issues: {}", isValid, finalIssues.size());
 
     ValidationResult result = new ValidationResult();
     result.setIsValid(isValid);
-    result.setIssues(new ArrayList<>(issues));
+    result.setIssues(finalIssues);
     return result;
   }
 

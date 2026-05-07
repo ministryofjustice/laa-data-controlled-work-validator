@@ -171,6 +171,41 @@ class ClaimValidationTest {
     }
 
     @Test
+    @DisplayName("Deduplicates identical issues added by multiple validators and preserves order")
+    void deduplicatesAcrossValidatorsAndPreservesOrder() {
+      ValidationIssue issueA = ValidationIssue.builder().code("A").message("a").severity(ValidationSeverity.WARNING).build();
+      ValidationIssue issueB = ValidationIssue.builder().code("B").message("b").severity(ValidationSeverity.WARNING).build();
+
+      ClaimValidator v1 = new ClaimValidator() {
+        @Override public void validate(Claim c, ClaimValidationContext ctx) { ctx.addValidationIssue(issueA); }
+        @Override public int priority() { return 0; }
+        @Override public boolean appliesTo(String scope) { return true; }
+        @Override public String getValidatorCode() { return "V1"; }
+      };
+
+      ClaimValidator v2 = new ClaimValidator() {
+        @Override public void validate(Claim c, ClaimValidationContext ctx) { ctx.addValidationIssue(issueB); }
+        @Override public int priority() { return 10; }
+        @Override public boolean appliesTo(String scope) { return true; }
+        @Override public String getValidatorCode() { return "V2"; }
+      };
+
+      ClaimValidator v3 = new ClaimValidator() {
+        @Override public void validate(Claim c, ClaimValidationContext ctx) { ctx.addValidationIssue(ValidationIssue.builder().code("A").message("a").severity(ValidationSeverity.WARNING).build()); }
+        @Override public int priority() { return 20; }
+        @Override public boolean appliesTo(String scope) { return true; }
+        @Override public String getValidatorCode() { return "V3"; }
+      };
+
+      ClaimValidation pipeline = new ClaimValidation(List.of(v1, v2, v3));
+      var result = pipeline.validateClaim(Claim.builder().build(), "fee", List.of());
+
+      // Expect deduplication: only A and B should be present, in insertion order (A then B)
+      assertThat(result.getIssues()).hasSize(2);
+      assertThat(result.getIssues()).extracting(ValidationIssue::getCode).containsExactly("A", "B");
+    }
+
+    @Test
     @DisplayName("Returns MISSING_CLAIM error result when claim is null")
     void returnsMissingClaimErrorWhenClaimIsNull() {
       ClaimValidation pipeline = new ClaimValidation(List.of());
@@ -182,6 +217,38 @@ class ClaimValidationTest {
       assertThat(result.getIssues().getFirst().getCode()).isEqualTo("MISSING_CLAIM");
     }
   }
+
+    @Test
+    @DisplayName("ValidationResult.isValid reflects absence of ERROR issues")
+    void isValid_reflects_absenceOfErrorIssues() {
+      ClaimValidator warnValidator = new ClaimValidator() {
+        @Override public void validate(Claim c, ClaimValidationContext ctx) {
+          ctx.addValidationIssue(ValidationIssue.builder().code("W").message("w").severity(ValidationSeverity.WARNING).build());
+        }
+        @Override public int priority() { return 0; }
+        @Override public boolean appliesTo(String scope) { return true; }
+        @Override public String getValidatorCode() { return "WARN"; }
+      };
+
+      ClaimValidator errorValidator = new ClaimValidator() {
+        @Override public void validate(Claim c, ClaimValidationContext ctx) {
+          ctx.addValidationIssue(ValidationIssue.builder().code("E").message("e").severity(ValidationSeverity.ERROR).build());
+        }
+        @Override public int priority() { return 0; }
+        @Override public boolean appliesTo(String scope) { return true; }
+        @Override public String getValidatorCode() { return "ERROR"; }
+      };
+
+      // warning only -> valid
+      ClaimValidation pipelineWarn = new ClaimValidation(List.of(warnValidator));
+      var resultWarn = pipelineWarn.validateClaim(Claim.builder().build(), "fee", List.of());
+      assertThat(resultWarn.getIsValid()).isTrue();
+
+      // error present -> invalid
+      ClaimValidation pipelineError = new ClaimValidation(List.of(errorValidator));
+      var resultError = pipelineError.validateClaim(Claim.builder().build(), "fee", List.of());
+      assertThat(resultError.getIsValid()).isFalse();
+    }
 
   // ─────────────────────────────────────────────────────────────────────────
   // Validation context construction
