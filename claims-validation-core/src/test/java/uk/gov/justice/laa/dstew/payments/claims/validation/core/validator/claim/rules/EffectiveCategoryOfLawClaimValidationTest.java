@@ -17,11 +17,10 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
-import uk.gov.justice.laa.dstew.payments.claims.validation.core.client.FeeSchemeClient;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.provider.impl.HttpFeeSchemeProvider;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.provider.impl.HttpProviderDetailsProvider;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidationContext;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidationError;
@@ -38,7 +37,8 @@ class EffectiveCategoryOfLawClaimValidationTest {
 
   EffectiveCategoryOfLawClaimValidator validator;
 
-  @Mock FeeSchemeClient feeSchemeClient;
+  @Mock
+  HttpFeeSchemeProvider feeSchemeClient;
   @Mock
   HttpProviderDetailsProvider httpProviderDetailsProvider;
 
@@ -73,7 +73,7 @@ class EffectiveCategoryOfLawClaimValidationTest {
     FeeDetailsResponseV1 feeDetailsResponse = new FeeDetailsResponseV1();
     feeDetailsResponse.setCategoryOfLawCode("categoryOfLaw1");
     when(feeSchemeClient.getFeeDetails("feeCode1"))
-        .thenReturn(ResponseEntity.ok(feeDetailsResponse));
+        .thenReturn(Mono.just(feeDetailsResponse));
     ClaimValidationContext context = ClaimValidationContext.builder().build();
     validator.validate(claim, context);
     assertThat(context.getIssues()).isEmpty();

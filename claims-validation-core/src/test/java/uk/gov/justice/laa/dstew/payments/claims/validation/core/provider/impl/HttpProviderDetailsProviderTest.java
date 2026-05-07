@@ -1,6 +1,6 @@
 package uk.gov.justice.laa.dstew.payments.claims.validation.core.provider.impl;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import io.github.resilience4j.retry.Retry;
@@ -8,7 +8,10 @@ import io.github.resilience4j.retry.RetryConfig;
 import io.github.resilience4j.retry.RetryRegistry;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -22,6 +25,7 @@ import uk.gov.justice.laadata.providers.model.ProviderFirmOfficeContractAndSched
 import uk.gov.justice.laadata.providers.model.ProviderFirmOfficeSummary;
 
 @ExtendWith(MockitoExtension.class)
+@DisplayName("HttpProviderDetailsProvider - caching and in-flight behaviour")
 class HttpProviderDetailsProviderTest {
 
   @Mock private ProviderDetailsClient client;
@@ -42,6 +46,7 @@ class HttpProviderDetailsProviderTest {
   }
 
   @Test
+  @DisplayName("getProviderFirmSchedules returns provider schedules on success")
   void testGetProviderFirmSchedules() {
     // Arrange
     String officeCode = "Office1";
@@ -74,6 +79,7 @@ class HttpProviderDetailsProviderTest {
   }
 
   @Test
+  @DisplayName("getProviderFirmSchedules propagates remote errors")
   void testGetProviderFirmSchedules_withError() {
     // Arrange
     String officeCode = "OFF123";
@@ -99,6 +105,7 @@ class HttpProviderDetailsProviderTest {
   }
 
   @Test
+  @DisplayName("Uses positive cache when schedule window covers effective date")
   void testGetProviderFirmSchedules_usesCacheWhenDateCovered() {
     String officeCode = "Office1";
     LocalDate effectiveDate = LocalDate.of(2024, 5, 1);
@@ -129,6 +136,7 @@ class HttpProviderDetailsProviderTest {
   }
 
   @Test
+  @DisplayName("Negative responses are cached to avoid repeated remote calls")
   void testGetProviderFirmSchedules_negativeCache() {
     String officeCode = "Office2";
     LocalDate effectiveDate = LocalDate.of(2024, 7, 1);
@@ -145,6 +153,7 @@ class HttpProviderDetailsProviderTest {
   }
 
   @Test
+  @DisplayName("Negative cache is scoped to effective date and does not block other dates")
   void negativeCacheIsCheckedBeforePositiveCacheForDifferentDates() {
     String officeCode = "Office4";
     LocalDate positiveDate = LocalDate.of(2024, 1, 15);
@@ -180,6 +189,7 @@ class HttpProviderDetailsProviderTest {
   }
 
   @Test
+  @DisplayName("Cache gap between windows requires new remote call")
   void testGetProviderFirmSchedules_gapRequiresNewCall() {
     String officeCode = "Office3";
     LocalDate firstDate = LocalDate.of(2024, 2, 1);
@@ -214,6 +224,7 @@ class HttpProviderDetailsProviderTest {
   }
 
   @Test
+  @DisplayName("Merges schedule windows across multiple responses and reuses cached hits")
   void cacheMergesWindowsAcrossMultipleMissesAndReusesHits() {
     String officeCode = "0P322F";
 
@@ -285,6 +296,7 @@ class HttpProviderDetailsProviderTest {
   }
 
   @Test
+  @DisplayName("Negative cache keys are scoped to office and effective date")
   void negativeCacheIsScopedToEffectiveDate() {
     String officeCode = "NEG_OFFICE";
     LocalDate missingDate = LocalDate.of(2020, 1, 1);
@@ -307,6 +319,77 @@ class HttpProviderDetailsProviderTest {
     verify(client, times(1)).getProviderFirmSchedules(officeCode, missingDate);
     verify(client, times(1)).getProviderFirmSchedules(officeCode, otherDate);
     verifyNoMoreInteractions(client);
+  }
+
+  @Test
+  @DisplayName("Concurrent requests for same key are deduplicated (in-flight)")
+  void concurrentRequestsAreDeduped_inFlight() throws Exception {
+    String officeCode = "CONC_OFF";
+    LocalDate date = LocalDate.of(2024, 1, 1);
+    ProviderFirmOfficeContractAndScheduleDto dto = dtoWithWindow(officeCode, date, date);
+
+    CountDownLatch started = new CountDownLatch(1);
+    CountDownLatch release = new CountDownLatch(1);
+
+    when(client.getProviderFirmSchedules(officeCode, date))
+        .thenAnswer(ignored -> {
+          started.countDown();
+          try {
+            boolean ok = release.await(5, TimeUnit.SECONDS);
+            if (!ok) {
+              throw new RuntimeException("release latch timeout");
+            }
+          } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+          }
+          return Mono.just(dto);
+        });
+
+    Thread t1 = new Thread(() -> service.getProviderFirmSchedules(officeCode, date).block());
+    Thread t2 = new Thread(() -> service.getProviderFirmSchedules(officeCode, date).block());
+    t1.start();
+    assertTrue(started.await(2, TimeUnit.SECONDS));
+    t2.start();
+
+    release.countDown();
+
+    t1.join(5000);
+    t2.join(5000);
+
+    assertFalse(t1.isAlive(), "t1 did not finish");
+    assertFalse(t2.isAlive(), "t2 did not finish");
+
+    verify(client, times(1)).getProviderFirmSchedules(officeCode, date);
+  }
+
+  @Test
+  @DisplayName("Eviction/clear allows refreshed data to be fetched")
+  void evictClearsCaches() {
+    String officeCode = "EVICT_OFF";
+    LocalDate date = LocalDate.of(2024, 3, 1);
+
+    ProviderFirmOfficeContractAndScheduleDto dto1 = dtoWithWindow(officeCode, date, date);
+    ProviderFirmOfficeContractAndScheduleDto dto2 = dtoWithWindow(officeCode, date, date.plusDays(1));
+
+    when(client.getProviderFirmSchedules(officeCode, date)).thenReturn(Mono.just(dto1));
+
+    StepVerifier.create(service.getProviderFirmSchedules(officeCode, date))
+        .expectNext(dto1)
+        .verifyComplete();
+
+    verify(client, times(1)).getProviderFirmSchedules(officeCode, date);
+
+    // create a fresh provider instance to simulate cleared caches (new instance has empty caches)
+    HttpProviderDetailsProvider fresh = new HttpProviderDetailsProvider(client, retryRegistry);
+
+    // prepare new response
+    when(client.getProviderFirmSchedules(officeCode, date)).thenReturn(Mono.just(dto2));
+
+    StepVerifier.create(fresh.getProviderFirmSchedules(officeCode, date))
+        .expectNext(dto2)
+        .verifyComplete();
+
+    verify(client, times(2)).getProviderFirmSchedules(officeCode, date);
   }
 
   private ProviderFirmOfficeContractAndScheduleDto dtoWithWindow(

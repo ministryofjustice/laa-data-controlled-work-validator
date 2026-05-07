@@ -5,11 +5,10 @@ import java.util.Collections;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
-import uk.gov.justice.laa.dstew.payments.claims.validation.core.client.FeeSchemeClient;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.provider.impl.HttpFeeSchemeProvider;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.provider.impl.HttpProviderDetailsProvider;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.util.ClaimEffectiveDateUtil;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidationContext;
@@ -25,7 +24,7 @@ import uk.gov.justice.laadata.providers.model.ProviderFirmOfficeContractAndSched
 @Slf4j
 public class EffectiveCategoryOfLawClaimValidator implements ClaimValidator {
 
-  private final FeeSchemeClient feeSchemeClient;
+  private final HttpFeeSchemeProvider feeSchemeClient;
   private final HttpProviderDetailsProvider providerDetailsClient;
 
   @Override
@@ -117,16 +116,16 @@ public class EffectiveCategoryOfLawClaimValidator implements ClaimValidator {
 
     log.debug("Validating category of law for claim {}", claim.getId());
 
-    ResponseEntity<FeeDetailsResponseV1> response = feeSchemeClient.getFeeDetails(feeCode);
+    FeeDetailsResponseV1 feeDetails =
+            feeSchemeClient.getFeeDetails(feeCode).blockOptional().orElse(null);
 
-    if (response == null || response.getBody() == null) {
+    if (feeDetails == null) {
       // Fee details not found - this is an error
       context.addValidationIssue(
           ClaimValidationError.INVALID_CATEGORY_OF_LAW_AND_FEE_CODE.toValidationIssue(feeCode));
       return;
     }
 
-    FeeDetailsResponseV1 feeDetails = response.getBody();
     String categoryOfLaw = feeDetails.getCategoryOfLawCode();
 
     if (categoryOfLaw == null) {
