@@ -27,7 +27,7 @@ import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidationError;
 import uk.gov.justice.laa.dstew.payments.claimsdata.model.AreaOfLaw;
 import uk.gov.justice.laa.dstew.payments.claimsdata.model.ClaimStatus;
-import uk.gov.justice.laa.fee.scheme.model.FeeDetailsResponse;
+import uk.gov.justice.laa.fee.scheme.model.FeeDetailsResponseV1;
 import uk.gov.justice.laadata.providers.model.FirmOfficeContractAndScheduleDetails;
 import uk.gov.justice.laadata.providers.model.FirmOfficeContractAndScheduleLine;
 import uk.gov.justice.laadata.providers.model.ProviderFirmOfficeContractAndScheduleDto;
@@ -70,7 +70,7 @@ class EffectiveCategoryOfLawClaimValidationTest {
     when(httpProviderDetailsProvider.getProviderFirmSchedules(
             eq("officeAccountNumber"), any(LocalDate.class)))
         .thenReturn(Mono.just(data));
-    FeeDetailsResponse feeDetailsResponse = new FeeDetailsResponse();
+    FeeDetailsResponseV1 feeDetailsResponse = new FeeDetailsResponseV1();
     feeDetailsResponse.setCategoryOfLawCode("categoryOfLaw1");
     when(feeSchemeClient.getFeeDetails("feeCode1"))
         .thenReturn(ResponseEntity.ok(feeDetailsResponse));

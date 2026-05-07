@@ -14,7 +14,7 @@ import uk.gov.justice.laa.dstew.payments.claims.validation.core.provider.impl.Ht
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.util.ClaimEffectiveDateUtil;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidationContext;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidationError;
-import uk.gov.justice.laa.fee.scheme.model.FeeDetailsResponse;
+import uk.gov.justice.laa.fee.scheme.model.FeeDetailsResponseV1;
 import uk.gov.justice.laadata.providers.model.FirmOfficeContractAndScheduleDetails;
 import uk.gov.justice.laadata.providers.model.FirmOfficeContractAndScheduleLine;
 import uk.gov.justice.laadata.providers.model.ProviderFirmOfficeContractAndScheduleDto;
@@ -117,7 +117,7 @@ public class EffectiveCategoryOfLawClaimValidator implements ClaimValidator {
 
     log.debug("Validating category of law for claim {}", claim.getId());
 
-    ResponseEntity<FeeDetailsResponse> response = feeSchemeClient.getFeeDetails(feeCode);
+    ResponseEntity<FeeDetailsResponseV1> response = feeSchemeClient.getFeeDetails(feeCode);
 
     if (response == null || response.getBody() == null) {
       // Fee details not found - this is an error
@@ -126,7 +126,7 @@ public class EffectiveCategoryOfLawClaimValidator implements ClaimValidator {
       return;
     }
 
-    FeeDetailsResponse feeDetails = response.getBody();
+    FeeDetailsResponseV1 feeDetails = response.getBody();
     String categoryOfLaw = feeDetails.getCategoryOfLawCode();
 
     if (categoryOfLaw == null) {
