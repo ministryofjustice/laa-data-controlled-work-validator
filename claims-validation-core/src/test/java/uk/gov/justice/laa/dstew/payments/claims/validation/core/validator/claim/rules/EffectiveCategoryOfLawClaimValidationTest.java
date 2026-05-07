@@ -6,7 +6,6 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 import java.time.LocalDate;
-import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
@@ -22,8 +21,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.client.FeeSchemeClient;
-import uk.gov.justice.laa.dstew.payments.claims.validation.core.client.ProviderDetailsClient;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.provider.impl.HttpProviderDetailsProvider;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidationContext;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidationError;
 import uk.gov.justice.laa.dstew.payments.claimsdata.model.AreaOfLaw;
@@ -40,11 +39,13 @@ class EffectiveCategoryOfLawClaimValidationTest {
   EffectiveCategoryOfLawClaimValidator validator;
 
   @Mock FeeSchemeClient feeSchemeClient;
-  @Mock ProviderDetailsClient providerDetailsClient;
+  @Mock
+  HttpProviderDetailsProvider httpProviderDetailsProvider;
 
   @BeforeEach
   void beforeEach() {
-    validator = new EffectiveCategoryOfLawClaimValidator(feeSchemeClient, providerDetailsClient);
+    validator = new EffectiveCategoryOfLawClaimValidator(
+            feeSchemeClient, httpProviderDetailsProvider);
   }
 
   @Test
@@ -66,16 +67,16 @@ class EffectiveCategoryOfLawClaimValidationTest {
                 new FirmOfficeContractAndScheduleDetails()
                     .addScheduleLinesItem(
                         new FirmOfficeContractAndScheduleLine().categoryOfLaw("categoryOfLaw1")));
-    when(providerDetailsClient.getProviderFirmSchedules(
-            eq("officeAccountNumber"), eq(AreaOfLaw.LEGAL_HELP.getValue()), any(LocalDate.class)))
+    when(httpProviderDetailsProvider.getProviderFirmSchedules(
+            eq("officeAccountNumber"), any(LocalDate.class)))
         .thenReturn(Mono.just(data));
     FeeDetailsResponse feeDetailsResponse = new FeeDetailsResponse();
     feeDetailsResponse.setCategoryOfLawCode("categoryOfLaw1");
     when(feeSchemeClient.getFeeDetails("feeCode1"))
         .thenReturn(ResponseEntity.ok(feeDetailsResponse));
     ClaimValidationContext context = ClaimValidationContext.builder().build();
-    List<?> issues = validator.validate(claim, context);
-    assertThat(issues).isEmpty();
+    validator.validate(claim, context);
+    assertThat(context.getIssues()).isEmpty();
   }
 
   static Stream<Arguments> exceptionProvider() {
@@ -99,13 +100,25 @@ class EffectiveCategoryOfLawClaimValidationTest {
         .officeAccountNumber("officeAccountNumber")
         .areaOfLaw(AreaOfLaw.LEGAL_HELP)
         .build();
-    when(providerDetailsClient.getProviderFirmSchedules(
-            eq("officeAccountNumber"), eq(AreaOfLaw.LEGAL_HELP.getValue()), any(LocalDate.class)))
+    when(httpProviderDetailsProvider.getProviderFirmSchedules(
+            eq("officeAccountNumber"), any(LocalDate.class)))
         .thenReturn(Mono.error(exception));
     ClaimValidationContext context = ClaimValidationContext.builder().build();
-    List<?> issues = validator.validate(claim, context);
-    assertThat(issues).hasSize(1);
-    assertThat(issues.get(0).toString())
+    validator.validate(claim, context);
+    assertThat(context.getIssues()).hasSize(1);
+    assertThat(context.getIssues().getFirst().toString())
         .contains(ClaimValidationError.TECHNICAL_ERROR_PROVIDER_DETAILS_API.name());
+  }
+
+  @Test
+  @DisplayName("EffectiveCategoryOfLawClaimValidator - priority, appliesTo and validator code")
+  void effectiveCategoryOfLawValidatorMetadata() {
+    assertThat(validator.priority()).isEqualTo(1000);
+    // appliesTo: null, fee and all should be true; other scopes false
+    assertThat(validator.appliesTo(null)).isTrue();
+    assertThat(validator.appliesTo("fee")).isTrue();
+    assertThat(validator.appliesTo("all")).isTrue();
+    assertThat(validator.appliesTo("disbursement")).isFalse();
+    assertThat(validator.getValidatorCode()).isEqualTo("CLAIM_CATEGORY_OF_LAW");
   }
 }

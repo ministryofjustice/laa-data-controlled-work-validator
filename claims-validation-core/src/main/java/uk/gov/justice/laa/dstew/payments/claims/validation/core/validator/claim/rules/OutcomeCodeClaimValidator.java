@@ -1,10 +1,8 @@
 package uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.rules;
 
-import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
-import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationIssue;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidationContext;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidationError;
 import uk.gov.justice.laa.dstew.payments.claimsdata.model.AreaOfLaw;
@@ -23,11 +21,11 @@ public class OutcomeCodeClaimValidator implements ClaimValidator {
   protected static final String OUTCOME_CODE_MEDIATION_PATTERN = "(?i)^(A|B|S|C|P)?$";
 
   @Override
-  public List<ValidationIssue> validate(Claim claim, ClaimValidationContext context) {
+  public void validate(Claim claim, ClaimValidationContext context) {
     String outcomeCode = claim.getOutcomeCode();
     AreaOfLaw areaOfLaw = claim.getAreaOfLaw();
     if (outcomeCode == null || areaOfLaw == null) {
-      return List.of();
+      return;
     }
     String pattern = null;
     String displayMessage = null;
@@ -47,7 +45,7 @@ public class OutcomeCodeClaimValidator implements ClaimValidator {
         displayMessage = "Outcome Code must be a valid mediation outcome code or left blank";
       }
       default -> {
-        return List.of();
+        return;
       }
     }
     if (!outcomeCode.matches(pattern)) {
@@ -55,11 +53,10 @@ public class OutcomeCodeClaimValidator implements ClaimValidator {
           String.format(
               "outcome_code (%s): does not match the regex pattern %s (provided value: %s)",
               areaOfLaw.toString().replace('_', ' '), pattern, outcomeCode);
-      return List.of(
+      context.addValidationIssue(
           ClaimValidationError.INVALID_OUTCOME_CODE.toValidationIssueWithTechnicalMessage(
               technicalMessage, displayMessage));
     }
-    return List.of();
   }
 
   @Override
@@ -69,6 +66,11 @@ public class OutcomeCodeClaimValidator implements ClaimValidator {
 
   @Override
   public String getValidatorCode() {
-    return "OUTCOME_CODE";
+    return "CLAIM_OUTCOME_CODE";
+  }
+
+  @Override
+  public boolean appliesTo(String scope) {
+    return true;
   }
 }

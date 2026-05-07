@@ -38,7 +38,11 @@ dependencies {
     implementation 'com.github.ben-manes.caffeine:caffeine:3.2.4'
     implementation 'io.swagger.core.v3:swagger-annotations:2.2.49'
 
+    implementation 'io.github.resilience4j:resilience4j-spring-boot3:2.1.0'
+    implementation 'io.github.resilience4j:resilience4j-reactor:2.1.0'
+
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation("io.projectreactor:reactor-test:3.1.0.RELEASE")
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 

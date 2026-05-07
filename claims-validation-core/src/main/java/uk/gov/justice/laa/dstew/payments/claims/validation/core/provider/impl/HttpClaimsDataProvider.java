@@ -6,9 +6,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.client.DataClaimsClient;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.provider.ClaimsDataProvider;
+import uk.gov.justice.laa.dstew.payments.claimsdata.model.AreaOfLaw;
 import uk.gov.justice.laa.dstew.payments.claimsdata.model.ClaimResultSet;
 import uk.gov.justice.laa.dstew.payments.claimsdata.model.ClaimStatus;
+import uk.gov.justice.laa.dstew.payments.claimsdata.model.SubmissionBase;
 import uk.gov.justice.laa.dstew.payments.claimsdata.model.SubmissionStatus;
+import uk.gov.justice.laa.dstew.payments.claimsdata.model.SubmissionsResultSet;
 
 /**
  * HTTP-backed implementation of {@link ClaimsDataProvider}.
@@ -48,25 +51,6 @@ public class HttpClaimsDataProvider implements ClaimsDataProvider {
 
   private final DataClaimsClient dataClaimsClient;
 
-  /**
-   * Retrieves claims by delegating to {@link DataClaimsClient} and returning the response body.
-   *
-   * <p>Returns an empty {@link ClaimResultSet} if the response body is {@code null}, ensuring
-   * callers always receive a non-null result.
-   *
-   * @param officeCode the office account number (required)
-   * @param submissionId filter by parent submission id
-   * @param submissionStatuses filter by parent submission statuses
-   * @param feeCode filter by fee code
-   * @param uniqueFileNumber filter by unique file number
-   * @param uniqueClientNumber filter by unique client number
-   * @param uniqueCaseId filter by unique case id
-   * @param claimStatuses filter by claim statuses
-   * @param page zero-based page number for pagination
-   * @param size page size for pagination
-   * @param sort sort expression (e.g. {@code "createdAt,desc"})
-   * @return the matching claims; never {@code null}
-   */
   @Override
   public ClaimResultSet getClaims(
       String officeCode,
@@ -96,11 +80,30 @@ public class HttpClaimsDataProvider implements ClaimsDataProvider {
             sort);
 
     if (response == null || response.getBody() == null) {
-      log.debug("DataClaimsClient returned null body for officeCode={}; returning empty result set",
+      log.debug("DataClaimsClient getClaims returned null body for "
+                      + "officeCode={}; returning empty result set",
           officeCode);
       return new ClaimResultSet();
     }
 
     return response.getBody();
+  }
+
+  @Override
+  public List<SubmissionBase> getSubmissions(
+      List<String> officeCodes,
+      AreaOfLaw areaOfLaw,
+      String submissionPeriod) {
+    ResponseEntity<SubmissionsResultSet> response =
+            dataClaimsClient.getSubmissions(officeCodes, areaOfLaw, submissionPeriod);
+
+    if (response == null || response.getBody() == null || response.getBody().getContent() == null) {
+      log.debug("DataClaimsClient getSubmissions returned null body for "
+                      + "officeCode={}; returning empty result set",
+              officeCodes);
+      return List.of();
+    }
+
+    return response.getBody().getContent();
   }
 }

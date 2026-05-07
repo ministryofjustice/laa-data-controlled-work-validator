@@ -54,6 +54,9 @@ public abstract class DuplicateClaimValidation {
    */
   protected List<Claim> filterCurrentClaimWithValidStatus(
       Claim currentClaim, List<Claim> submissionClaims) {
+    // TODO this won't work on amend as the current claim will be in the list of
+    //  submission claims but with an old status - we need to filter
+    //  by claim id not object equality
     return submissionClaims.stream()
         .filter(submissionClaim -> !submissionClaim.equals(currentClaim))
         .filter(

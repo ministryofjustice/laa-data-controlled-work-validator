@@ -31,14 +31,13 @@ public interface ProviderDetailsClient {
    * </ul>
    *
    * @param officeCode The firm office code
-   * @param areaOfLaw The area of law code
    * @param effectiveDate The contract effective date for testing on lower environments. Should not
    *     be used for production environments.
    * @return The provider firm summary
    */
   default Mono<ProviderFirmOfficeContractAndScheduleDto> getProviderFirmSchedules(
-      final String officeCode, final String areaOfLaw, final LocalDate effectiveDate) {
-    return getProviderFirmSchedules(officeCode, areaOfLaw, effectiveDate, false);
+          final String officeCode, final LocalDate effectiveDate) {
+    return getProviderFirmSchedules(officeCode, effectiveDate, false);
   }
 
   /**
@@ -53,7 +52,6 @@ public interface ProviderDetailsClient {
    * </ul>
    *
    * @param officeCode The firm office code
-   * @param areaOfLaw The area of law code
    * @param effectiveDate The contract effective date for testing on lower environments. Should not
    *     be used for production environments.
    * @param requireOpenStatus If true, only returns schedules with open status, defaults to false.
@@ -61,10 +59,8 @@ public interface ProviderDetailsClient {
    */
   @GetExchange("/{officeCode}/schedules")
   Mono<ProviderFirmOfficeContractAndScheduleDto> getProviderFirmSchedules(
-      final @PathVariable("officeCode") String officeCode,
-      final @RequestParam(value = "areaOfLaw", required = false) String areaOfLaw,
-      final @RequestParam(value = "effectiveDate", required = false) @DateTimeFormat(
-              pattern = "dd-MM-yyyy") LocalDate effectiveDate,
-      final @RequestParam(value = "requireOpenStatus", defaultValue = "false") Boolean
-              requireOpenStatus);
+          final @PathVariable String officeCode,
+          final @RequestParam(required = false) @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate
+                  effectiveDate,
+          final @RequestParam(defaultValue = "false") Boolean requireOpenStatus);
 }

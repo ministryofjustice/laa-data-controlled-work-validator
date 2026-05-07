@@ -1,6 +1,8 @@
 package uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.submission.rules;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static uk.gov.justice.laa.dstew.payments.claims.validation.core.service.ValidationServiceTestUtils.assertContextClaimError;
 
 import java.time.Clock;
@@ -42,6 +44,14 @@ class SubmissionPeriodValidatorTest {
   void setUp() {
     DateUtils.setClock(FIXED_CLOCK);
     validator = new SubmissionPeriodValidator(MINIMUM_PERIOD);
+  }
+
+  @Test
+  @DisplayName("Validator metadata: priority, appliesTo and code")
+  void metadata() {
+    assertEquals(10, validator.priority());
+    assertTrue(validator.appliesTo("ANY_SCOPE"));
+    assertEquals("SUBMISSION_PERIOD_VALIDATOR", validator.getValidatorCode());
   }
 
   @AfterEach

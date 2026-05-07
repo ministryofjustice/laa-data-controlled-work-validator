@@ -63,3 +63,13 @@ tasks.named('bootRun') {
 tasks.withType(Test).configureEach {
     useJUnitPlatform()
 }
+
+// publishing configuration: use parent/root version and group
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+            artifactId = project.name
+        }
+    }
+}

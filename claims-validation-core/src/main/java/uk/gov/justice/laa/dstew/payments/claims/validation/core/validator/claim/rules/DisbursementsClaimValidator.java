@@ -1,12 +1,9 @@
 package uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.rules;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
-import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationIssue;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidationContext;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidationError;
 import uk.gov.justice.laa.dstew.payments.claimsdata.model.AreaOfLaw;
@@ -24,25 +21,24 @@ public class DisbursementsClaimValidator implements ClaimValidator {
   private static final BigDecimal MAX_VAT_MEDIATION = new BigDecimal("999999999.99");
 
   @Override
-  public List<ValidationIssue> validate(Claim claim, ClaimValidationContext context) {
-    List<ValidationIssue> issues = new ArrayList<>();
+  public void validate(Claim claim, ClaimValidationContext context) {
 
     log.debug("Validating disbursements");
 
     BigDecimal vatAmount = claim.getDisbursementsVatAmount();
     if (vatAmount == null) {
-      return issues; // No VAT amount to validate
+      return; // No VAT amount to validate
     }
 
     AreaOfLaw areaOfLaw = claim.getAreaOfLaw();
     BigDecimal maxAllowed = getMaxVatAmount(areaOfLaw);
 
     if (vatAmount.compareTo(maxAllowed) > 0) {
-      issues.add(ClaimValidationError.INVALID_DISBURSEMENT_VAT_AMOUNT.toValidationIssue());
+      context.addValidationIssue(
+              ClaimValidationError.INVALID_DISBURSEMENT_VAT_AMOUNT.toValidationIssue());
     }
 
-    log.debug("Disbursements validation completed, found {} issues", issues.size());
-    return issues;
+    log.debug("Disbursements validation completed, found {} issues", context.getIssues().size());
   }
 
   private BigDecimal getMaxVatAmount(AreaOfLaw areaOfLaw) {
@@ -70,6 +66,6 @@ public class DisbursementsClaimValidator implements ClaimValidator {
 
   @Override
   public String getValidatorCode() {
-    return "DISBURSEMENTS";
+    return "CLAIM_DISBURSEMENTS";
   }
 }

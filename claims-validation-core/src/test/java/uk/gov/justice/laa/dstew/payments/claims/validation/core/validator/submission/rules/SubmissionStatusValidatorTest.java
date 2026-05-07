@@ -1,5 +1,6 @@
 package uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.submission.rules;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static uk.gov.justice.laa.dstew.payments.claims.validation.core.service.ValidationServiceTestUtils.assertContextClaimError;
@@ -27,6 +28,14 @@ class SubmissionStatusValidatorTest {
   @BeforeEach
   void beforeEach() {
     validator = new SubmissionStatusValidator();
+  }
+
+  @Test
+  @DisplayName("Validator metadata: priority, appliesTo and code")
+  void metadata() {
+    assertEquals(1, validator.priority());
+    assertTrue(validator.appliesTo("ANY_SCOPE"));
+    assertEquals("SUBMISSION_STATUS_VALIDATOR", validator.getValidatorCode());
   }
 
   @Test

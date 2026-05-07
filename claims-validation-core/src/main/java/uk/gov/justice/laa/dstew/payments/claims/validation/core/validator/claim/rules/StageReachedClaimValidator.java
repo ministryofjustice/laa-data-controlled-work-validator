@@ -1,12 +1,9 @@
 package uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.rules;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.regex.Pattern;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
-import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationIssue;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidationContext;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidationError;
 import uk.gov.justice.laa.dstew.payments.claimsdata.model.AreaOfLaw;
@@ -25,12 +22,11 @@ public class StageReachedClaimValidator implements ClaimValidator {
           "^(INV[A-M]|PRI[A-E]|PRO[C-FH-LP-TUVW]|APP[ABC]|AS(MS|PL|AS)|YOU[EFKLXY]|VOID)$");
 
   @Override
-  public List<ValidationIssue> validate(Claim claim, ClaimValidationContext context) {
-    List<ValidationIssue> issues = new ArrayList<>();
+  public void validate(Claim claim, ClaimValidationContext context) {
 
     String stageReached = claim.getStageReachedCode();
     if (stageReached == null || stageReached.isBlank()) {
-      return issues; // Optional field
+      return; // Optional field
     }
 
     AreaOfLaw areaOfLaw = claim.getAreaOfLaw();
@@ -47,7 +43,7 @@ public class StageReachedClaimValidator implements ClaimValidator {
                   "stage_reached_code (LEGAL_HELP): "
                       + "does not match the regex pattern %s (provided value: %s)",
                   LEGAL_HELP_PATTERN.pattern(), stageReached);
-          issues.add(
+          context.addValidationIssue(
               ClaimValidationError.INVALID_STAGE_REACHED_LEGAL_HELP
                   .toValidationIssueWithTechnicalMessage(technicalMessage));
         }
@@ -57,15 +53,14 @@ public class StageReachedClaimValidator implements ClaimValidator {
                   "stage_reached_code (CRIME_LOWER): "
                       + "does not match the regex pattern %s (provided value: %s)",
                   CRIME_LOWER_PATTERN.pattern(), stageReached);
-          issues.add(
+          context.addValidationIssue(
               ClaimValidationError.INVALID_STAGE_REACHED_CRIME_LOWER
                   .toValidationIssueWithTechnicalMessage(technicalMessage));
         }
-        default -> issues.add(ClaimValidationError.INVALID_STAGE_REACHED.toValidationIssue());
+        default -> context.addValidationIssue(
+                ClaimValidationError.INVALID_STAGE_REACHED.toValidationIssue());
       }
     }
-
-    return issues;
   }
 
   private Pattern getPattern(AreaOfLaw areaOfLaw) {
@@ -87,6 +82,11 @@ public class StageReachedClaimValidator implements ClaimValidator {
 
   @Override
   public String getValidatorCode() {
-    return "STAGE_REACHED";
+    return "CLAIM_STAGE_REACHED";
+  }
+
+  @Override
+  public boolean appliesTo(String scope) {
+    return true;
   }
 }

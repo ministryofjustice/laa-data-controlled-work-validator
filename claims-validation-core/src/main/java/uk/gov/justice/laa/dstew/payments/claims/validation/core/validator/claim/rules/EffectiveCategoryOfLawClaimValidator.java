@@ -1,7 +1,6 @@
 package uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.rules;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -10,13 +9,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.client.FeeSchemeClient;
-import uk.gov.justice.laa.dstew.payments.claims.validation.core.client.ProviderDetailsClient;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
-import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationIssue;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.provider.impl.HttpProviderDetailsProvider;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.util.ClaimEffectiveDateUtil;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidationContext;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidationError;
-import uk.gov.justice.laa.dstew.payments.claimsdata.model.AreaOfLaw;
 import uk.gov.justice.laa.fee.scheme.model.FeeDetailsResponse;
 import uk.gov.justice.laadata.providers.model.FirmOfficeContractAndScheduleDetails;
 import uk.gov.justice.laadata.providers.model.FirmOfficeContractAndScheduleLine;
@@ -29,7 +26,7 @@ import uk.gov.justice.laadata.providers.model.ProviderFirmOfficeContractAndSched
 public class EffectiveCategoryOfLawClaimValidator implements ClaimValidator {
 
   private final FeeSchemeClient feeSchemeClient;
-  private final ProviderDetailsClient providerDetailsClient;
+  private final HttpProviderDetailsProvider providerDetailsClient;
 
   @Override
   public int priority() {
@@ -37,25 +34,23 @@ public class EffectiveCategoryOfLawClaimValidator implements ClaimValidator {
   }
 
   @Override
-  public List<ValidationIssue> validate(Claim claim, ClaimValidationContext context) {
-    List<ValidationIssue> issues = new ArrayList<>();
+  public void validate(Claim claim, ClaimValidationContext context) {
 
-    AreaOfLaw areaOfLaw = claim.getAreaOfLaw();
     String officeCode = claim.getOfficeAccountNumber();
     String feeCode = claim.getFeeCode();
 
     if (feeCode == null || feeCode.isBlank()) {
-      return issues; // MandatoryFieldValidator handles this
+      return; // MandatoryFieldValidator handles this
     }
 
     LocalDate effectiveDate = null;
     try {
       effectiveDate = ClaimEffectiveDateUtil.getEffectiveDate(claim);
       List<String> effectiveCategoriesOfLaw =
-          getEffectiveCategoriesOfLaw(officeCode, areaOfLaw, effectiveDate);
+          getEffectiveCategoriesOfLaw(officeCode, effectiveDate);
 
       // Get fee details and validate category of law
-      validateCategoryOfLaw(claim, feeCode, effectiveCategoriesOfLaw, issues);
+      validateCategoryOfLaw(claim, feeCode, effectiveCategoriesOfLaw, context);
 
     } catch (IllegalArgumentException e) {
       log.info(
@@ -65,42 +60,37 @@ public class EffectiveCategoryOfLawClaimValidator implements ClaimValidator {
     } catch (WebClientResponseException ex) {
       log.error(
           "Error calling provider details API: Status={}, Message={}, officeCode={}, "
-              + "areaOfLaw={}, effectiveDate={}, "
-              + "Please check if the API endpoint is configured correctly.",
+              + "effectiveDate={}, Please check if the API endpoint is "
+                  + "configured correctly.",
           ex.getStatusCode(),
           ex.getMessage(),
           officeCode,
-          areaOfLaw != null ? areaOfLaw.getValue() : null,
           effectiveDate);
-      handleProviderDetailsApiError(issues, ex);
+      handleProviderDetailsApiError(context, ex);
     } catch (Exception ex) {
       log.error(
           "Unexpected error during category of law validation for officeCode={}, "
-              + "areaOfLaw={}, effectiveDate={}",
+              + "effectiveDate={}",
           officeCode,
-          areaOfLaw != null ? areaOfLaw.getValue() : null,
           effectiveDate,
           ex);
-      handleProviderDetailsApiError(issues, ex);
+      handleProviderDetailsApiError(context, ex);
     }
-
-    return issues;
   }
 
   private List<String> getEffectiveCategoriesOfLaw(
-      String officeCode, AreaOfLaw areaOfLaw, LocalDate effectiveDate) {
-    if (officeCode == null || areaOfLaw == null || effectiveDate == null) {
+      String officeCode, LocalDate effectiveDate) {
+    if (officeCode == null || effectiveDate == null) {
       return Collections.emptyList();
     }
 
     log.debug(
-        "Calling Provider Details API: officeCode={}, areaOfLaw={}, effectiveDate={}",
+        "Calling Provider Details API: officeCode={}, effectiveDate={}",
         officeCode,
-        areaOfLaw.getValue(),
         effectiveDate);
 
     return providerDetailsClient
-        .getProviderFirmSchedules(officeCode, areaOfLaw.getValue(), effectiveDate)
+        .getProviderFirmSchedules(officeCode, effectiveDate)
         .blockOptional()
         .map(this::extractCategoriesFromSchedules)
         .orElse(Collections.emptyList());
@@ -123,7 +113,7 @@ public class EffectiveCategoryOfLawClaimValidator implements ClaimValidator {
       Claim claim,
       String feeCode,
       List<String> providerCategoriesOfLaw,
-      List<ValidationIssue> issues) {
+      ClaimValidationContext context) {
 
     log.debug("Validating category of law for claim {}", claim.getId());
 
@@ -131,7 +121,7 @@ public class EffectiveCategoryOfLawClaimValidator implements ClaimValidator {
 
     if (response == null || response.getBody() == null) {
       // Fee details not found - this is an error
-      issues.add(
+      context.addValidationIssue(
           ClaimValidationError.INVALID_CATEGORY_OF_LAW_AND_FEE_CODE.toValidationIssue(feeCode));
       return;
     }
@@ -140,7 +130,7 @@ public class EffectiveCategoryOfLawClaimValidator implements ClaimValidator {
     String categoryOfLaw = feeDetails.getCategoryOfLawCode();
 
     if (categoryOfLaw == null) {
-      issues.add(
+      context.addValidationIssue(
           ClaimValidationError.INVALID_CATEGORY_OF_LAW_AND_FEE_CODE.toValidationIssue(feeCode));
     } else if (!providerCategoriesOfLaw.contains(categoryOfLaw)) {
       log.info(
@@ -149,7 +139,7 @@ public class EffectiveCategoryOfLawClaimValidator implements ClaimValidator {
           categoryOfLaw,
           feeCode,
           providerCategoriesOfLaw);
-      issues.add(
+      context.addValidationIssue(
           ClaimValidationError.INVALID_CATEGORY_OF_LAW_NOT_AUTHORISED_FOR_PROVIDER
               .toValidationIssue());
     }
@@ -157,8 +147,8 @@ public class EffectiveCategoryOfLawClaimValidator implements ClaimValidator {
     log.debug("Category of law validation completed for claim {}", claim.getId());
   }
 
-  private void handleProviderDetailsApiError(List<ValidationIssue> issues, Exception ex) {
-    issues.add(
+  private void handleProviderDetailsApiError(ClaimValidationContext context, Exception ex) {
+    context.addValidationIssue(
         ClaimValidationError.TECHNICAL_ERROR_PROVIDER_DETAILS_API
             .toValidationIssueWithTechnicalMessage(ex.getMessage()));
   }
@@ -171,6 +161,6 @@ public class EffectiveCategoryOfLawClaimValidator implements ClaimValidator {
 
   @Override
   public String getValidatorCode() {
-    return "CATEGORY_OF_LAW";
+    return "CLAIM_CATEGORY_OF_LAW";
   }
 }

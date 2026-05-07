@@ -4,7 +4,6 @@ import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -14,7 +13,6 @@ import uk.gov.justice.laa.dstew.payments.claims.validation.core.config.Exclusion
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.config.MandatoryFieldsRegistry;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.FeeCalculationType;
-import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationIssue;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.util.StringCaseUtil;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidationContext;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidationError;
@@ -38,12 +36,11 @@ public class MandatoryFieldClaimValidator implements ClaimValidator {
   }
 
   @Override
-  public List<ValidationIssue> validate(Claim claim, ClaimValidationContext context) {
-    List<ValidationIssue> issues = new ArrayList<>();
+  public void validate(Claim claim, ClaimValidationContext context) {
 
     AreaOfLaw areaOfLaw = claim.getAreaOfLaw();
     if (areaOfLaw == null) {
-      return issues; // No area of law - no mandatory fields to check
+      return; // No area of law - no mandatory fields to check
     }
 
     String feeCalculationType = context.getFeeCalculationType();
@@ -52,7 +49,7 @@ public class MandatoryFieldClaimValidator implements ClaimValidator {
         mandatoryFieldsRegistry.getMandatoryFieldsByAreaOfLaw();
     List<String> mandatoryFields = mandatoryFieldsByAreaOfLaw.get(areaOfLaw);
     if (Objects.isNull(mandatoryFields)) {
-      return issues;
+      return;
     }
     boolean isDisbursementLegalHelpClaim =
         FeeCalculationType.DISB_ONLY.getValue().equals(feeCalculationType)
@@ -77,7 +74,7 @@ public class MandatoryFieldClaimValidator implements ClaimValidator {
         Object value = getter.invoke(claim);
 
         if (value == null || (value instanceof String s && s.trim().isEmpty())) {
-          issues.add(
+          context.addValidationIssue(
               ClaimValidationError.MISSING_MANDATORY_FIELD.toValidationIssue(
                   StringCaseUtil.toTitleCase(fieldName),
                   StringCaseUtil.toTitleCase(areaOfLaw.name())));
@@ -87,8 +84,6 @@ public class MandatoryFieldClaimValidator implements ClaimValidator {
         throw new IllegalStateException("Error accessing property in Claim: " + fieldName, e);
       }
     }
-
-    return issues;
   }
 
   @Override
@@ -98,6 +93,11 @@ public class MandatoryFieldClaimValidator implements ClaimValidator {
 
   @Override
   public String getValidatorCode() {
-    return "MANDATORY_FIELD";
+    return "CLAIM_MANDATORY_FIELD";
+  }
+
+  @Override
+  public boolean appliesTo(String scope) {
+    return true;
   }
 }

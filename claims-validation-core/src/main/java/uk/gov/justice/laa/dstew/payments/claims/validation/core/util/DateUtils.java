@@ -116,7 +116,7 @@ public final class DateUtils {
    *
    * @return the current {@link LocalDate}
    */
-  private static LocalDate now() {
+  public static LocalDate now() {
     return LocalDate.now(clock);
   }
 

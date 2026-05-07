@@ -49,9 +49,9 @@ class DuplicateClaimValidationTest {
     when(mockStrategy.validateDuplicateClaims(any(), any(), anyString(), any()))
         .thenReturn(Collections.emptyList());
 
-    List<ValidationIssue> issues = validator.validate(claim, context);
+    validator.validate(claim, context);
 
-    assertThat(issues).isEmpty();
+    assertThat(context.getIssues()).isEmpty();
   }
 
   @Test
@@ -74,10 +74,10 @@ class DuplicateClaimValidationTest {
     when(mockStrategy.validateDuplicateClaims(any(), any(), anyString(), any()))
         .thenReturn(List.of(duplicateIssue));
 
-    List<ValidationIssue> issues = validator.validate(claim, context);
+    validator.validate(claim, context);
 
-    assertThat(issues).hasSize(1);
-    assertThat(issues.getFirst().getCode())
+    assertThat(context.getIssues()).hasSize(1);
+    assertThat(context.getIssues().getFirst().getCode())
         .isEqualTo("INVALID_CLAIM_HAS_DUPLICATE_IN_ANOTHER_SUBMISSION");
   }
 
@@ -89,9 +89,9 @@ class DuplicateClaimValidationTest {
 
     ClaimValidationContext context = ClaimValidationContext.builder().build();
 
-    List<ValidationIssue> issues = validator.validate(claim, context);
+    validator.validate(claim, context);
 
-    assertThat(issues).isEmpty();
+    assertThat(context.getIssues()).isEmpty();
   }
 
   @Test
@@ -102,18 +102,23 @@ class DuplicateClaimValidationTest {
 
     ClaimValidationContext context = ClaimValidationContext.builder().build();
 
-    List<ValidationIssue> issues = validator.validate(claim, context);
+    validator.validate(claim, context);
 
-    assertThat(issues).isEmpty();
+    assertThat(context.getIssues()).isEmpty();
   }
 
   @Test
   void getValidatorCode_returnsDuplicateClaim() {
-    assertThat(validator.getValidatorCode()).isEqualTo("DUPLICATE_CLAIM");
+    assertThat(validator.getValidatorCode()).isEqualTo("CLAIM_DUPLICATE_CLAIM");
   }
 
   @Test
   void priority_returns10000() {
     assertThat(validator.priority()).isEqualTo(10000);
+  }
+
+  @Test
+  void appliesTo_returnsTrue() {
+    assertThat(validator.appliesTo("any")).isTrue();
   }
 }

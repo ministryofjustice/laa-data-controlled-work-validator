@@ -3,13 +3,12 @@ package uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 import java.math.BigDecimal;
-import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
-import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationIssue;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidationContext;
 import uk.gov.justice.laa.dstew.payments.claimsdata.model.AreaOfLaw;
 
@@ -45,14 +44,23 @@ class DisbursementsClaimValidationTest {
 
     ClaimValidationContext context = ClaimValidationContext.builder().build();
 
-    // Run validation
-    List<ValidationIssue> issues = validator.validate(claim, context);
+    validator.validate(claim, context);
 
     if (expectError) {
       String expectedMessage = "Disbursements VAT Amount has exceeded the maximum accepted value";
-      assertThat(issues.getFirst().getMessage()).isEqualTo(expectedMessage);
+      assertThat(context.getIssues().getFirst().getMessage()).isEqualTo(expectedMessage);
     } else {
-      assertThat(issues.size()).isZero();
+      assertThat(context.getIssues().size()).isZero();
     }
+  }
+
+  @Test
+  @DisplayName("DisbursementsClaimValidator - priority, appliesTo and validator code")
+  void disbursementsValidatorMetadata() {
+    assertThat(validator.priority()).isEqualTo(100);
+    assertThat(validator.appliesTo(null)).isTrue();
+    assertThat(validator.appliesTo("disbursement")).isTrue();
+    assertThat(validator.appliesTo("all")).isTrue();
+    assertThat(validator.getValidatorCode()).isEqualTo("CLAIM_DISBURSEMENTS");
   }
 }

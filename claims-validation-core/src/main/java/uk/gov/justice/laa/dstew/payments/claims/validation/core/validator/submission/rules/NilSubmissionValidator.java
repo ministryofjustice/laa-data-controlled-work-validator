@@ -28,12 +28,12 @@ public class NilSubmissionValidator implements SubmissionValidator {
 
     if (Boolean.TRUE.equals(submission.getIsNilSubmission())) {
       if (submission.getClaims() != null && !submission.getClaims().isEmpty()) {
-        context.addValidationError(
+        context.addValidationIssue(
             SubmissionValidationError.INVALID_NIL_SUBMISSION_CONTAINS_CLAIMS.toValidationIssue());
       }
     } else if (Boolean.FALSE.equals(submission.getIsNilSubmission())
         && (submission.getClaims() == null || submission.getClaims().isEmpty())) {
-      context.addValidationError(
+      context.addValidationIssue(
           SubmissionValidationError.NON_NIL_SUBMISSION_CONTAINS_NO_CLAIMS.toValidationIssue());
     }
 
@@ -43,5 +43,15 @@ public class NilSubmissionValidator implements SubmissionValidator {
   @Override
   public int priority() {
     return 10;
+  }
+
+  @Override
+  public boolean appliesTo(String scope) {
+    return true;
+  }
+
+  @Override
+  public String getValidatorCode() {
+    return "SUBMISSION_NIL_VALIDATOR";
   }
 }

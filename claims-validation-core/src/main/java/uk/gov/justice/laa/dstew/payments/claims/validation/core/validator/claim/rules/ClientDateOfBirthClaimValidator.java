@@ -1,13 +1,10 @@
 package uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.rules;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
-import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationIssue;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.util.DateUtils;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidationContext;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidationError;
@@ -21,21 +18,21 @@ import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.
 public class ClientDateOfBirthClaimValidator implements ClaimValidator {
 
   @Override
-  public List<ValidationIssue> validate(Claim claim, ClaimValidationContext context) {
-    List<ValidationIssue> issues = new ArrayList<>();
+  public void validate(Claim claim, ClaimValidationContext context) {
 
     log.debug("Validating client dates of birth");
 
     // Client 1 Date of Birth
     validateDateOfBirth(
-        claim.getClientDateOfBirth(), ClaimValidationError.INVALID_CLIENT_DATE_OF_BIRTH, issues);
+        claim.getClientDateOfBirth(),
+            ClaimValidationError.INVALID_CLIENT_DATE_OF_BIRTH, context);
 
     // Client 2 Date of Birth (if present)
     validateDateOfBirth(
-        claim.getClient2DateOfBirth(), ClaimValidationError.INVALID_CLIENT_2_DATE_OF_BIRTH, issues);
+        claim.getClient2DateOfBirth(),
+            ClaimValidationError.INVALID_CLIENT_2_DATE_OF_BIRTH, context);
 
-    log.debug("Client DOB validation completed, found {} issues", issues.size());
-    return issues;
+    log.debug("Client DOB validation completed, found {} issues", context.getIssues().size());
   }
 
   /**
@@ -43,10 +40,10 @@ public class ClientDateOfBirthClaimValidator implements ClaimValidator {
    *
    * @param dateOfBirthString the date of birth string to validate
    * @param error the ClaimValidationError to use if validation fails
-   * @param issues the list to add validation issues to
+   * @param context the list to add validation issues to
    */
   private void validateDateOfBirth(
-      String dateOfBirthString, ClaimValidationError error, List<ValidationIssue> issues) {
+      String dateOfBirthString, ClaimValidationError error, ClaimValidationContext context) {
 
     if (!StringUtils.hasText(dateOfBirthString)) {
       return; // Not present, skip validation
@@ -55,12 +52,12 @@ public class ClientDateOfBirthClaimValidator implements ClaimValidator {
     LocalDate dateOfBirth = DateUtils.parseDate(dateOfBirthString);
 
     if (!DateUtils.isValidDate(dateOfBirth)) {
-      issues.add(error.toValidationIssue(dateOfBirthString));
+      context.addValidationIssue(error.toValidationIssue(dateOfBirthString));
       return;
     }
 
     if (!DateUtils.isValidDateOfBirth(dateOfBirth)) {
-      issues.add(error.toValidationIssue(dateOfBirthString));
+      context.addValidationIssue(error.toValidationIssue(dateOfBirthString));
     }
   }
 
@@ -71,6 +68,11 @@ public class ClientDateOfBirthClaimValidator implements ClaimValidator {
 
   @Override
   public String getValidatorCode() {
-    return "CLIENT_DATE_OF_BIRTH";
+    return "CCLAIM_LIENT_DATE_OF_BIRTH";
+  }
+
+  @Override
+  public boolean appliesTo(String scope) {
+    return true;
   }
 }
