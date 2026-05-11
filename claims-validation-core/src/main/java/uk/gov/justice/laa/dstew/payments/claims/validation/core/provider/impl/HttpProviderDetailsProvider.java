@@ -74,11 +74,9 @@ public class HttpProviderDetailsProvider {
 
     Optional<Mono<ProviderFirmOfficeContractAndScheduleDto>> positiveCacheHit =
         handlePositiveCache(cacheKey, effectiveDate);
-    if (positiveCacheHit.isPresent()) {
-      return positiveCacheHit.get();
-    }
+    return positiveCacheHit.orElseGet(() ->
+            fetchAndCache(officeCode, effectiveDate, cacheKey, negativeKey));
 
-    return fetchAndCache(officeCode, effectiveDate, cacheKey, negativeKey);
   }
 
   private Mono<ProviderFirmOfficeContractAndScheduleDto> cacheNegative(String negativeKey) {

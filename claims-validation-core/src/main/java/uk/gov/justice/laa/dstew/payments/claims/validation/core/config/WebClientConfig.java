@@ -15,7 +15,6 @@ import org.springframework.web.reactive.function.client.support.WebClientAdapter
 import org.springframework.web.service.invoker.HttpServiceProxyFactory;
 import reactor.core.publisher.Mono;
 import reactor.netty.http.client.HttpClient;
-import uk.gov.justice.laa.dstew.payments.claims.validation.core.client.CachedFeeSchemeClient;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.client.DataClaimsClient;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.client.FeeSchemeClient;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.client.ProviderDetailsClient;
@@ -31,6 +30,8 @@ import uk.gov.justice.laa.dstew.payments.claims.validation.core.provider.impl.Ht
 public class WebClientConfig {
 
   private static final String SERVICE_NAME_HEADER = "X-Service-Name";
+  // TODO: this needs to be configurable if we want to use the same
+  //  WebClientConfig in other services
   private static final String SERVICE_NAME = "laa-data-claims-validation-api";
 
   /**
@@ -39,22 +40,12 @@ public class WebClientConfig {
    * @param properties The configuration properties for the Fee Scheme Platform API
    * @return An instance of {@link FeeSchemeClient}
    */
-  private FeeSchemeClient createRawFeeSchemeClient(
-      final FeeSchemeApiConfig properties) {
+  @Bean
+  public FeeSchemeClient feeSchemeClient(final FeeSchemeApiConfig properties) {
     final WebClient webClient = createWebClient(properties);
     final WebClientAdapter webClientAdapter = WebClientAdapter.create(webClient);
     HttpServiceProxyFactory factory = HttpServiceProxyFactory.builderFor(webClientAdapter).build();
     return factory.createClient(FeeSchemeClient.class);
-  }
-
-  /**
-   * Expose a cached FeeSchemeClient bean using Caffeine for response caching. Cache duration is set
-   * to 5 minutes for demonstration. TODO move duration to config.
-   */
-  @Bean
-  public FeeSchemeClient feeSchemeClient(final FeeSchemeApiConfig properties) {
-    FeeSchemeClient rawClient = createRawFeeSchemeClient(properties);
-    return new CachedFeeSchemeClient(rawClient, 5);
   }
 
   /**
@@ -64,8 +55,7 @@ public class WebClientConfig {
    * @return An instance of {@link ProviderDetailsClient}
    */
   @Bean
-  public ProviderDetailsClient providerDetailsClient(
-      final ProviderDetailsApiConfig properties) {
+  public ProviderDetailsClient providerDetailsClient(final ProviderDetailsApiConfig properties) {
     final WebClient webClient = createWebClient(properties);
     final WebClientAdapter webClientAdapter = WebClientAdapter.create(webClient);
     HttpServiceProxyFactory factory = HttpServiceProxyFactory.builderFor(webClientAdapter).build();

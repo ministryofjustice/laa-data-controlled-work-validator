@@ -1,6 +1,7 @@
 package uk.gov.justice.laa.dstew.payments.claims.validation.core.util;
 
 import java.time.Clock;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
@@ -118,6 +119,11 @@ public final class DateUtils {
    */
   public static LocalDate now() {
     return LocalDate.now(clock);
+  }
+
+  /** Returns the current instant using the configured {@link Clock}. */
+  public static Instant nowInstant() {
+    return Instant.now(clock);
   }
 
   /**

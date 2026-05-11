@@ -3,6 +3,7 @@ package uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim
 import java.util.List;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.Setter;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.AbstractValidationContext;
 
@@ -30,6 +31,10 @@ public class ClaimValidationContext extends AbstractValidationContext {
   /** The fee calculation type (e.g., "HOURLY", "FIXED", "DISB_ONLY"). */
   private final String feeCalculationType;
 
+  @Setter
+  private String authorisedCategoryOfLawCode;
+
   /** Other claims in the same submission (for duplicate checking). */
-  @Builder.Default private final List<Claim> relatedClaims = List.of();
+  @Builder.Default
+  private final List<Claim> relatedClaims = List.of();
 }
