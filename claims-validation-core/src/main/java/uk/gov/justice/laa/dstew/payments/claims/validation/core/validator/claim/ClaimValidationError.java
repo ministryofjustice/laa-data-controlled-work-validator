@@ -125,6 +125,11 @@ public enum ClaimValidationError implements ValidationError {
       "A technical error occurred when attempting to make a request to the Provider Details API",
       ValidationSeverity.ERROR
   ),
+  TECHNICAL_ERROR_FEE_SCHEME_API(
+      "A technical error occurred, please try again after some time",
+      "A technical error occurred when attempting to make a request to the Fee Scheme API",
+      ValidationSeverity.ERROR
+  ),
   TECHNICAL_ERROR_DATA_CLAIMS_API(
       "Unable to complete duplicate claim check due to a technical error. Please try again later.",
       "Data Claims API error",

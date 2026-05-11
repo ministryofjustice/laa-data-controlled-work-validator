@@ -6,7 +6,11 @@ import static org.mockito.Mockito.*;
 import io.github.resilience4j.retry.Retry;
 import io.github.resilience4j.retry.RetryConfig;
 import io.github.resilience4j.retry.RetryRegistry;
+import java.time.Clock;
+import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -20,6 +24,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.client.ProviderDetailsClient;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.util.DateUtils;
 import uk.gov.justice.laadata.providers.model.FirmOfficeContractAndScheduleDetails;
 import uk.gov.justice.laadata.providers.model.ProviderFirmOfficeContractAndScheduleDto;
 import uk.gov.justice.laadata.providers.model.ProviderFirmOfficeSummary;
@@ -390,6 +395,65 @@ class HttpProviderDetailsProviderTest {
         .verifyComplete();
 
     verify(client, times(2)).getProviderFirmSchedules(officeCode, date);
+  }
+
+  @Test
+  @DisplayName("Positive cache expires and triggers refetch for provider details")
+  void positiveCacheExpiresAndRefetches() {
+    String officeCode = "REFETCH1";
+    LocalDate date = LocalDate.of(2025, 1, 1);
+
+    Instant base = Instant.parse("2025-01-01T00:00:00Z");
+    DateUtils.setClock(Clock.fixed(base, ZoneOffset.UTC));
+
+    ProviderFirmOfficeContractAndScheduleDto dto1 = dtoWithWindow(officeCode, date, date);
+    when(client.getProviderFirmSchedules(officeCode, date)).thenReturn(Mono.just(dto1));
+
+    StepVerifier.create(service.getProviderFirmSchedules(officeCode, date))
+        .expectNext(dto1)
+        .verifyComplete();
+
+    verify(client, times(1)).getProviderFirmSchedules(officeCode, date);
+
+    // advance beyond positive TTL (10 minutes)
+    DateUtils.setClock(Clock.fixed(base.plus(Duration.ofMinutes(11)), ZoneOffset.UTC));
+
+    ProviderFirmOfficeContractAndScheduleDto dto2 = dtoWithWindow(officeCode, date, date.plusDays(1));
+    when(client.getProviderFirmSchedules(officeCode, date)).thenReturn(Mono.just(dto2));
+
+    StepVerifier.create(service.getProviderFirmSchedules(officeCode, date))
+        .expectNext(dto2)
+        .verifyComplete();
+
+    verify(client, times(2)).getProviderFirmSchedules(officeCode, date);
+    DateUtils.resetClock();
+  }
+
+  @Test
+  @DisplayName("Negative cache expires and triggers refetch for provider details")
+  void negativeCacheExpiresAndRefetches() {
+    String officeCode = "NEGREF";
+    LocalDate date = LocalDate.of(2025, 2, 1);
+
+    Instant base = Instant.parse("2025-02-01T00:00:00Z");
+    DateUtils.setClock(Clock.fixed(base, ZoneOffset.UTC));
+
+    when(client.getProviderFirmSchedules(officeCode, date)).thenReturn(Mono.empty());
+    StepVerifier.create(service.getProviderFirmSchedules(officeCode, date)).verifyComplete();
+    verify(client, times(1)).getProviderFirmSchedules(officeCode, date);
+
+    // advance beyond negative TTL (5 minutes)
+    DateUtils.setClock(Clock.fixed(base.plus(Duration.ofMinutes(6)), ZoneOffset.UTC));
+
+    ProviderFirmOfficeContractAndScheduleDto dto = dtoWithWindow(officeCode, date, date);
+    when(client.getProviderFirmSchedules(officeCode, date)).thenReturn(Mono.just(dto));
+
+    StepVerifier.create(service.getProviderFirmSchedules(officeCode, date))
+        .expectNext(dto)
+        .verifyComplete();
+
+    verify(client, times(2)).getProviderFirmSchedules(officeCode, date);
+    DateUtils.resetClock();
   }
 
   private ProviderFirmOfficeContractAndScheduleDto dtoWithWindow(

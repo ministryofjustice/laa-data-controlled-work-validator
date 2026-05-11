@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.client.FeeSchemeClient;
-import uk.gov.justice.laa.fee.scheme.model.FeeDetailsResponseV1;
+import uk.gov.justice.laa.fee.scheme.model.FeeDetailsResponseV2;
 
 /**
  * Caching provider for Fee Scheme API. Uses the same positive/negative cache + in-flight dedupe
@@ -17,10 +17,10 @@ import uk.gov.justice.laa.fee.scheme.model.FeeDetailsResponseV1;
  */
 @Slf4j
 @Service
-public class HttpFeeSchemeProvider extends AbstractHttpCachingProvider<FeeDetailsResponseV1> {
+public class HttpFeeSchemeProvider extends AbstractHttpCachingProvider<FeeDetailsResponseV2> {
 
   private static final Duration POSITIVE_CACHE_TTL = Duration.ofMinutes(10);
-  private static final Duration NEGATIVE_CACHE_TTL = Duration.ofMinutes(5);
+  private static final Duration NEGATIVE_CACHE_TTL = Duration.ofSeconds(10);
   private static final String RETRY_NAME = "feeSchemeRetry";
 
   private final FeeSchemeClient feeSchemeClient;
@@ -31,11 +31,11 @@ public class HttpFeeSchemeProvider extends AbstractHttpCachingProvider<FeeDetail
   }
 
   /**
-   * Returns a cached FeeDetailsResponseV1 for the given fee code, or fetches and caches it.
+   * Returns a cached FeeDetailsResponseV2 for the given fee code, or fetches and caches it.
    *
    * <p>Not-found responses are cached as negative entries for a short TTL.
    */
-  public Mono<FeeDetailsResponseV1> getFeeDetails(final String feeCode) {
+  public Mono<FeeDetailsResponseV2> getFeeDetails(final String feeCode) {
 
     // negative short-circuit
     if (getNegativeCached(feeCode).isPresent()) {
@@ -73,7 +73,7 @@ public class HttpFeeSchemeProvider extends AbstractHttpCachingProvider<FeeDetail
         .doFinally(sig -> inFlightCalls.remove(feeCode));
   }
 
-  private static FeeDetailsResponseV1 mapResponse(ResponseEntity<FeeDetailsResponseV1> resp) {
+  private static FeeDetailsResponseV2 mapResponse(ResponseEntity<FeeDetailsResponseV2> resp) {
     if (resp == null) {
       return null;
     }

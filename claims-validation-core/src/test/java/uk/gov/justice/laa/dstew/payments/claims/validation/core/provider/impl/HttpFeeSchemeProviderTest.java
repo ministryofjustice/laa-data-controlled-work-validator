@@ -4,6 +4,11 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.times;
 
 import io.github.resilience4j.retry.RetryRegistry;
+import java.time.Clock;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.ZoneOffset;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.DisplayName;
@@ -14,7 +19,8 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.ResponseEntity;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.client.FeeSchemeClient;
-import uk.gov.justice.laa.fee.scheme.model.FeeDetailsResponseV1;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.util.DateUtils;
+import uk.gov.justice.laa.fee.scheme.model.FeeDetailsResponseV2;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("HttpFeeSchemeProvider - fee details caching")
@@ -28,13 +34,13 @@ class HttpFeeSchemeProviderTest {
     RetryRegistry registry = RetryRegistry.ofDefaults();
     HttpFeeSchemeProvider provider = new HttpFeeSchemeProvider(feeSchemeClient, registry);
 
-    FeeDetailsResponseV1 dto = new FeeDetailsResponseV1("CAT");
+    FeeDetailsResponseV2 dto = new FeeDetailsResponseV2().categoryOfLawCodes(List.of("CAT"));
     Mockito.when(feeSchemeClient.getFeeDetails("F1")).thenReturn(ResponseEntity.ok(dto));
 
-    FeeDetailsResponseV1 first = provider.getFeeDetails("F1").block();
+    FeeDetailsResponseV2 first = provider.getFeeDetails("F1").block();
     assertNotNull(first);
 
-    FeeDetailsResponseV1 second = provider.getFeeDetails("F1").block();
+    FeeDetailsResponseV2 second = provider.getFeeDetails("F1").block();
     assertNotNull(second);
 
     Mockito.verify(feeSchemeClient, times(1)).getFeeDetails("F1");
@@ -60,7 +66,7 @@ class HttpFeeSchemeProviderTest {
     RetryRegistry registry = RetryRegistry.ofDefaults();
     HttpFeeSchemeProvider provider = new HttpFeeSchemeProvider(feeSchemeClient, registry);
 
-    FeeDetailsResponseV1 dto = new FeeDetailsResponseV1("CAT");
+    FeeDetailsResponseV2 dto = new FeeDetailsResponseV2().categoryOfLawCodes(List.of("CAT"));
 
     CountDownLatch started = new CountDownLatch(1);
     CountDownLatch release = new CountDownLatch(1);
@@ -98,5 +104,58 @@ class HttpFeeSchemeProviderTest {
     assertFalse(t2.isAlive(), "t2 did not finish");
 
     Mockito.verify(feeSchemeClient, times(1)).getFeeDetails("F2");
+  }
+
+  @Test
+  @DisplayName("Positive cache expires and triggers refetch")
+  void positiveCacheExpiresAndRefetches() {
+    Instant base = Instant.parse("2025-01-01T00:00:00Z");
+    DateUtils.setClock(Clock.fixed(base, ZoneOffset.UTC));
+
+    RetryRegistry registry = RetryRegistry.ofDefaults();
+    HttpFeeSchemeProvider provider = new HttpFeeSchemeProvider(feeSchemeClient, registry);
+
+    FeeDetailsResponseV2 dto = new FeeDetailsResponseV2().categoryOfLawCodes(List.of("CAT"));
+    Mockito.when(feeSchemeClient.getFeeDetails("FP1")).thenReturn(ResponseEntity.ok(dto));
+
+    provider.getFeeDetails("FP1").blockOptional();
+    Mockito.verify(feeSchemeClient, times(1)).getFeeDetails("FP1");
+
+    // advance beyond positive TTL (10 minutes)
+    DateUtils.setClock(Clock.fixed(base.plus(Duration.ofMinutes(11)), ZoneOffset.UTC));
+
+    FeeDetailsResponseV2 dto2 = new FeeDetailsResponseV2().categoryOfLawCodes(List.of("CAT2"));
+    Mockito.when(feeSchemeClient.getFeeDetails("FP1")).thenReturn(ResponseEntity.ok(dto2));
+
+    provider.getFeeDetails("FP1").blockOptional();
+    Mockito.verify(feeSchemeClient, times(2)).getFeeDetails("FP1");
+
+    DateUtils.resetClock();
+  }
+
+  @Test
+  @DisplayName("Negative cache expires and triggers refetch")
+  void negativeCacheExpiresAndRefetches() {
+    Instant base = Instant.parse("2025-02-01T00:00:00Z");
+    DateUtils.setClock(Clock.fixed(base, ZoneOffset.UTC));
+
+    RetryRegistry registry = RetryRegistry.ofDefaults();
+    HttpFeeSchemeProvider provider = new HttpFeeSchemeProvider(feeSchemeClient, registry);
+
+    Mockito.when(feeSchemeClient.getFeeDetails("NF1")).thenReturn(ResponseEntity.status(404).build());
+
+    assertTrue(provider.getFeeDetails("NF1").blockOptional().isEmpty());
+    Mockito.verify(feeSchemeClient, times(1)).getFeeDetails("NF1");
+
+    // advance beyond negative TTL (5 minutes)
+    DateUtils.setClock(Clock.fixed(base.plus(Duration.ofMinutes(6)), ZoneOffset.UTC));
+
+    FeeDetailsResponseV2 dto = new FeeDetailsResponseV2().categoryOfLawCodes(List.of("NEW"));
+    Mockito.when(feeSchemeClient.getFeeDetails("NF1")).thenReturn(ResponseEntity.ok(dto));
+
+    assertTrue(provider.getFeeDetails("NF1").blockOptional().isPresent());
+    Mockito.verify(feeSchemeClient, times(2)).getFeeDetails("NF1");
+
+    DateUtils.resetClock();
   }
 }
