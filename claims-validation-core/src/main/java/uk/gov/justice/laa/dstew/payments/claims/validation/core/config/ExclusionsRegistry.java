@@ -1,17 +1,14 @@
 package uk.gov.justice.laa.dstew.payments.claims.validation.core.config;
 
 import java.util.List;
-import lombok.Getter;
 
-/** Registry of field exclusions for specific validation scenarios. */
-@Getter
-public class ExclusionsRegistry {
+/** Compile-time constants defining field exclusions for specific validation scenarios. */
+public final class ExclusionsRegistry {
 
   /**
-   * List of field names that should be excluded from mandatory field validation for
-   * disbursement-only claims.
+   * Field names excluded from mandatory field validation for disbursement-only claims.
    */
-  private final List<String> disbursementOnlyExclusions =
+  public static final List<String> DISBURSEMENT_ONLY_EXCLUSIONS =
       List.of(
           "travelWaitingCostsAmount",
           "adviceTime",
@@ -20,4 +17,6 @@ public class ExclusionsRegistry {
           "netCounselCostsAmount",
           "netProfitCostsAmount",
           "isVatApplicable");
+
+  private ExclusionsRegistry() {}
 }

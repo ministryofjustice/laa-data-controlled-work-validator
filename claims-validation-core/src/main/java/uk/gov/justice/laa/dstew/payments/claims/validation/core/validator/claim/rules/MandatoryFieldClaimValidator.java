@@ -24,15 +24,6 @@ import uk.gov.justice.laa.dstew.payments.claimsdata.model.AreaOfLaw;
 @Slf4j
 public class MandatoryFieldClaimValidator implements ClaimValidator {
 
-  private final MandatoryFieldsRegistry mandatoryFieldsRegistry;
-  private final ExclusionsRegistry exclusionsRegistry;
-
-  public MandatoryFieldClaimValidator(
-      MandatoryFieldsRegistry mandatoryFieldsRegistry, ExclusionsRegistry exclusionsRegistry) {
-    this.exclusionsRegistry = exclusionsRegistry;
-    this.mandatoryFieldsRegistry = mandatoryFieldsRegistry;
-  }
-
   @Override
   public void validate(Claim claim, ClaimValidationContext context) {
 
@@ -44,7 +35,7 @@ public class MandatoryFieldClaimValidator implements ClaimValidator {
     String feeCalculationType = context.getFeeCalculationType();
 
     Map<AreaOfLaw, List<String>> mandatoryFieldsByAreaOfLaw =
-        mandatoryFieldsRegistry.getMandatoryFieldsByAreaOfLaw();
+        MandatoryFieldsRegistry.MANDATORY_FIELDS_BY_AREA_OF_LAW;
     List<String> mandatoryFields = mandatoryFieldsByAreaOfLaw.get(areaOfLaw);
     if (Objects.isNull(mandatoryFields)) {
       return;
@@ -52,7 +43,7 @@ public class MandatoryFieldClaimValidator implements ClaimValidator {
     boolean isDisbursementLegalHelpClaim =
         FeeCalculationType.DISB_ONLY.getValue().equals(feeCalculationType)
             && AreaOfLaw.LEGAL_HELP.equals(areaOfLaw);
-    List<String> disbursementExclusions = exclusionsRegistry.getDisbursementOnlyExclusions();
+    List<String> disbursementExclusions = ExclusionsRegistry.DISBURSEMENT_ONLY_EXCLUSIONS;
 
     for (String fieldName : mandatoryFields) {
       if (isDisbursementLegalHelpClaim && disbursementExclusions.contains(fieldName)) {

@@ -9,8 +9,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import uk.gov.justice.laa.dstew.payments.claims.validation.core.config.ExclusionsRegistry;
-import uk.gov.justice.laa.dstew.payments.claims.validation.core.config.MandatoryFieldsRegistry;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationIssue;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationSeverity;
@@ -334,8 +332,7 @@ class ClaimValidationTest {
 
     @BeforeEach
     void setUp() {
-      validator = new MandatoryFieldClaimValidator(
-          new MandatoryFieldsRegistry(), new ExclusionsRegistry());
+      validator = new MandatoryFieldClaimValidator();
     }
 
     @Test

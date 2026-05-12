@@ -7,6 +7,7 @@ import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 /**
@@ -31,6 +32,7 @@ public class ValidationResult implements Serializable {
   /**
    * Indicates whether the validation was successful.
    */
+  @Getter
   private Boolean isValid;
 
   /**

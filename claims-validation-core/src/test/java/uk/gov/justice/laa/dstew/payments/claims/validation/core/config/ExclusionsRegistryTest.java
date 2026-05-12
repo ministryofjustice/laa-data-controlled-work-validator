@@ -12,32 +12,30 @@ import org.junit.jupiter.params.provider.ValueSource;
 /**
  * Tests for {@link ExclusionsRegistry}.
  *
- * <p>Verifies that the registry holds the correct set of field names excluded from
+ * <p>Verifies that the constant holds the correct set of field names excluded from
  * mandatory-field validation for disbursement-only claims, and that the list is immutable.
  */
 @DisplayName("ExclusionsRegistry")
 class ExclusionsRegistryTest {
 
-  private final ExclusionsRegistry registry = new ExclusionsRegistry();
-
   // ─────────────────────────────────────────────────────────────────────────
-  // disbursementOnlyExclusions — content
+  // DISBURSEMENT_ONLY_EXCLUSIONS — content
   // ─────────────────────────────────────────────────────────────────────────
 
   @Nested
-  @DisplayName("disbursementOnlyExclusions — content")
+  @DisplayName("DISBURSEMENT_ONLY_EXCLUSIONS — content")
   class DisbursementOnlyExclusionsContent {
 
     @Test
     @DisplayName("List is not null")
     void listIsNotNull() {
-      assertThat(registry.getDisbursementOnlyExclusions()).isNotNull();
+      assertThat(ExclusionsRegistry.DISBURSEMENT_ONLY_EXCLUSIONS).isNotNull();
     }
 
     @Test
     @DisplayName("List contains exactly 7 entries")
     void listHasCorrectSize() {
-      assertThat(registry.getDisbursementOnlyExclusions()).hasSize(7);
+      assertThat(ExclusionsRegistry.DISBURSEMENT_ONLY_EXCLUSIONS).hasSize(7);
     }
 
     @ParameterizedTest(name = "contains ''{0}''")
@@ -52,14 +50,13 @@ class ExclusionsRegistryTest {
         "isVatApplicable"
     })
     void listContainsExpectedField(String fieldName) {
-      assertThat(registry.getDisbursementOnlyExclusions()).contains(fieldName);
+      assertThat(ExclusionsRegistry.DISBURSEMENT_ONLY_EXCLUSIONS).contains(fieldName);
     }
 
     @Test
     @DisplayName("List does not contain unexpected fields")
     void listDoesNotContainUnexpectedFields() {
-      List<String> exclusions = registry.getDisbursementOnlyExclusions();
-      assertThat(exclusions).doesNotContain(
+      assertThat(ExclusionsRegistry.DISBURSEMENT_ONLY_EXCLUSIONS).doesNotContain(
           "uniqueFileNumber",
           "caseStartDate",
           "clientForename",
@@ -71,7 +68,7 @@ class ExclusionsRegistryTest {
     @Test
     @DisplayName("List preserves insertion order")
     void listPreservesOrder() {
-      assertThat(registry.getDisbursementOnlyExclusions()).containsExactly(
+      assertThat(ExclusionsRegistry.DISBURSEMENT_ONLY_EXCLUSIONS).containsExactly(
           "travelWaitingCostsAmount",
           "adviceTime",
           "travelTime",
@@ -84,17 +81,17 @@ class ExclusionsRegistryTest {
   }
 
   // ─────────────────────────────────────────────────────────────────────────
-  // disbursementOnlyExclusions — immutability
+  // DISBURSEMENT_ONLY_EXCLUSIONS — immutability
   // ─────────────────────────────────────────────────────────────────────────
 
   @Nested
-  @DisplayName("disbursementOnlyExclusions — immutability")
+  @DisplayName("DISBURSEMENT_ONLY_EXCLUSIONS — immutability")
   class DisbursementOnlyExclusionsImmutability {
 
     @Test
     @DisplayName("List is unmodifiable — add throws UnsupportedOperationException")
     void listIsUnmodifiableAdd() {
-      List<String> exclusions = registry.getDisbursementOnlyExclusions();
+      List<String> exclusions = ExclusionsRegistry.DISBURSEMENT_ONLY_EXCLUSIONS;
       org.junit.jupiter.api.Assertions.assertThrows(
           UnsupportedOperationException.class,
           () -> exclusions.add("newField")
@@ -104,7 +101,7 @@ class ExclusionsRegistryTest {
     @Test
     @DisplayName("List is unmodifiable — remove throws UnsupportedOperationException")
     void listIsUnmodifiableRemove() {
-      List<String> exclusions = registry.getDisbursementOnlyExclusions();
+      List<String> exclusions = ExclusionsRegistry.DISBURSEMENT_ONLY_EXCLUSIONS;
       org.junit.jupiter.api.Assertions.assertThrows(
           UnsupportedOperationException.class,
           () -> exclusions.remove("adviceTime")
@@ -112,27 +109,10 @@ class ExclusionsRegistryTest {
     }
 
     @Test
-    @DisplayName("Same instance is returned on multiple calls")
+    @DisplayName("Static constant always returns the same instance")
     void sameInstanceReturnedOnMultipleCalls() {
-      assertThat(registry.getDisbursementOnlyExclusions())
-          .isSameAs(registry.getDisbursementOnlyExclusions());
-    }
-  }
-
-  // ─────────────────────────────────────────────────────────────────────────
-  // Multiple registry instances
-  // ─────────────────────────────────────────────────────────────────────────
-
-  @Nested
-  @DisplayName("Multiple registry instances")
-  class MultipleRegistryInstances {
-
-    @Test
-    @DisplayName("Two separate instances return equal lists")
-    void twoInstancesReturnEqualLists() {
-      ExclusionsRegistry other = new ExclusionsRegistry();
-      assertThat(registry.getDisbursementOnlyExclusions())
-          .isEqualTo(other.getDisbursementOnlyExclusions());
+      assertThat(ExclusionsRegistry.DISBURSEMENT_ONLY_EXCLUSIONS)
+          .isSameAs(ExclusionsRegistry.DISBURSEMENT_ONLY_EXCLUSIONS);
     }
   }
 }

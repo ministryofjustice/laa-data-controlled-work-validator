@@ -7,7 +7,6 @@ import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Import;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.client.DataClaimsClient;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.client.FeeSchemeClient;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.client.ProviderDetailsClient;
@@ -31,7 +30,11 @@ import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.rules.ScheduleReferenceClaimValidator;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.rules.StageReachedClaimValidator;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.rules.UniqueFileNumberClaimValidator;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.rules.duplicate.DuplicateClaimCrimeLowerValidationServiceStrategy;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.rules.duplicate.DuplicateClaimLegalHelpDisbursementValidationStrategy;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.rules.duplicate.DuplicateClaimLegalHelpValidationServiceStrategy;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.rules.duplicate.DuplicateClaimValidationStrategy;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.rules.duplicate.DuplicatePreviousClaimLegalHelpValidationServiceStrategy;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.submission.SubmissionValidation;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.submission.rules.DuplicateSubmissionValidator;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.submission.rules.NilSubmissionValidator;
@@ -41,7 +44,7 @@ import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.submis
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.submission.rules.SubmissionValidator;
 
 /**
- * Spring Boot auto-configuration entry point for the claims-validation-core library.
+ * Spring Boot autoconfiguration entry point for the claims-validation-core library.
  *
  * <p>This class is the single controlled activation point for all library beans. It replaces the
  * previous use of &#64;Component and &#64;Service annotations scattered across internal classes,
@@ -56,8 +59,14 @@ import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.submis
  *   <li>Every bean carries {@link ConditionalOnMissingBean} so importing applications can
  *       override any individual piece (e.g. provide their own {@link ClaimsDataProvider}
  *       backed by a repository rather than HTTP).</li>
- *   <li>Sub-configurations ({@link WebClientConfig} and {@link DuplicateClaimValidationConfig})
- *       are imported explicitly via {@link Import}, not via component scan.</li>
+ *   <li>Sub-configurations have been merged directly into this class to avoid {@code @Import}
+ *       ordering issues with {@link ConditionalOnMissingBean}. All bean wiring is in one
+ *       place.</li>
+ *   <li>All beans use an explicit {@code core} prefix in their bean name (e.g.
+ *       {@code coreMandatoryFieldsRegistry}) to avoid collisions with same-named classes in
+ *       consuming services. The {@link ConditionalOnMissingBean} condition still checks by
+ *       <em>type</em>, so a consuming service registering its own bean of the same type will
+ *       still suppress the core one correctly.</li>
  * </ul>
  *
  * <h2>Required application properties</h2>
@@ -72,26 +81,7 @@ import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.submis
 @AutoConfiguration
 @EnableConfigurationProperties({DataClaimsApiConfig.class, FeeSchemeApiConfig.class,
     ProviderDetailsApiConfig.class})
-@Import(DuplicateClaimValidationConfig.class)
 public class ClaimsValidationAutoConfiguration {
-
-  // ─────────────────────────────────────────────────────────────────────────
-  // Registries
-  // ─────────────────────────────────────────────────────────────────────────
-
-  /** Provides the registry of mandatory fields per area of law. */
-  @Bean
-  @ConditionalOnMissingBean
-  public MandatoryFieldsRegistry mandatoryFieldsRegistry() {
-    return new MandatoryFieldsRegistry();
-  }
-
-  /** Provides the registry of field exclusions for disbursement-only claims. */
-  @Bean
-  @ConditionalOnMissingBean
-  public ExclusionsRegistry exclusionsRegistry() {
-    return new ExclusionsRegistry();
-  }
 
   // ─────────────────────────────────────────────────────────────────────────
   // HTTP Providers
@@ -101,9 +91,9 @@ public class ClaimsValidationAutoConfiguration {
    * HTTP-backed provider for resolving provider firm schedules.
    * Automatically skipped if the importing application registers its own bean.
    */
-  @Bean
-  @ConditionalOnMissingBean
-  public HttpProviderDetailsProvider httpProviderDetailsProvider(
+  @Bean("coreHttpProviderDetailsProvider")
+  @ConditionalOnMissingBean(HttpProviderDetailsProvider.class)
+  public HttpProviderDetailsProvider coreHttpProviderDetailsProvider(
       ProviderDetailsClient providerDetailsClient, RetryRegistry retryRegistry) {
     return new HttpProviderDetailsProvider(providerDetailsClient, retryRegistry);
   }
@@ -112,9 +102,9 @@ public class ClaimsValidationAutoConfiguration {
    * HTTP-backed provider for resolving fee scheme details.
    * Automatically skipped if the importing application registers its own bean.
    */
-  @Bean
-  @ConditionalOnMissingBean
-  public HttpFeeSchemeProvider httpFeeSchemeProvider(
+  @Bean("coreHttpFeeSchemeProvider")
+  @ConditionalOnMissingBean(HttpFeeSchemeProvider.class)
+  public HttpFeeSchemeProvider coreHttpFeeSchemeProvider(
       FeeSchemeClient feeSchemeClient, RetryRegistry retryRegistry) {
     return new HttpFeeSchemeProvider(feeSchemeClient, retryRegistry);
   }
@@ -124,9 +114,9 @@ public class ClaimsValidationAutoConfiguration {
    * Services that embed this library with direct database access should register their own
    * {@link ClaimsDataProvider} bean instead, which causes this bean to be skipped entirely.
    */
-  @Bean
+  @Bean("coreClaimsDataProvider")
   @ConditionalOnMissingBean(ClaimsDataProvider.class)
-  public ClaimsDataProvider claimsDataProvider(DataClaimsClient dataClaimsClient) {
+  public ClaimsDataProvider coreClaimsDataProvider(DataClaimsClient dataClaimsClient) {
     return new HttpClaimsDataProvider(dataClaimsClient);
   }
 
@@ -139,9 +129,9 @@ public class ClaimsValidationAutoConfiguration {
    * the {@code X-Service-Name} header on all outbound HTTP calls. Defaults to the value of
    * {@code spring.application.name} if {@code claims.validation.service-name} is not set.
    */
-  @Bean
-  @ConditionalOnMissingBean
-  public WebClientConfig webClientConfig(
+  @Bean("coreWebClientConfig")
+  @ConditionalOnMissingBean(WebClientConfig.class)
+  public WebClientConfig coreWebClientConfig(
       @Value("${claims.validation.service-name:${spring.application.name:claims-validation-core}}")
       String serviceName) {
     return new WebClientConfig(serviceName);
@@ -151,9 +141,9 @@ public class ClaimsValidationAutoConfiguration {
    * Creates a {@link FeeSchemeClient} via the {@link WebClientConfig} factory.
    * Automatically skipped if the importing application provides its own {@link FeeSchemeClient}.
    */
-  @Bean
-  @ConditionalOnMissingBean
-  public FeeSchemeClient feeSchemeClient(WebClientConfig webClientConfig,
+  @Bean("coreFeeSchemeClient")
+  @ConditionalOnMissingBean(FeeSchemeClient.class)
+  public FeeSchemeClient coreFeeSchemeClient(WebClientConfig webClientConfig,
       FeeSchemeApiConfig properties) {
     return webClientConfig.feeSchemeClient(properties);
   }
@@ -162,9 +152,9 @@ public class ClaimsValidationAutoConfiguration {
    * Creates a {@link ProviderDetailsClient} via the {@link WebClientConfig} factory.
    * Automatically skipped if the importing application provides its own bean.
    */
-  @Bean
-  @ConditionalOnMissingBean
-  public ProviderDetailsClient providerDetailsClient(WebClientConfig webClientConfig,
+  @Bean("coreProviderDetailsClient")
+  @ConditionalOnMissingBean(ProviderDetailsClient.class)
+  public ProviderDetailsClient coreProviderDetailsClient(WebClientConfig webClientConfig,
       ProviderDetailsApiConfig properties) {
     return webClientConfig.providerDetailsClient(properties);
   }
@@ -173,9 +163,9 @@ public class ClaimsValidationAutoConfiguration {
    * Creates a {@link DataClaimsClient} via the {@link WebClientConfig} factory.
    * Automatically skipped if the importing application provides its own bean.
    */
-  @Bean
-  @ConditionalOnMissingBean
-  public DataClaimsClient dataClaimsClient(WebClientConfig webClientConfig,
+  @Bean("coreDataClaimsClient")
+  @ConditionalOnMissingBean(DataClaimsClient.class)
+  public DataClaimsClient coreDataClaimsClient(WebClientConfig webClientConfig,
       DataClaimsApiConfig properties) {
     return webClientConfig.dataClaimsClient(properties);
   }
@@ -184,121 +174,158 @@ public class ClaimsValidationAutoConfiguration {
   // Claim validators
   // ─────────────────────────────────────────────────────────────────────────
 
-  @Bean
-  @ConditionalOnMissingBean
-  public ClaimSchemaValidator claimSchemaValidator() {
+  @Bean("coreClaimSchemaValidator")
+  @ConditionalOnMissingBean(ClaimSchemaValidator.class)
+  public ClaimSchemaValidator coreClaimSchemaValidator() {
     return new ClaimSchemaValidator();
   }
 
-  @Bean
-  @ConditionalOnMissingBean
-  public MandatoryFieldClaimValidator mandatoryFieldClaimValidator(
-      MandatoryFieldsRegistry mandatoryFieldsRegistry, ExclusionsRegistry exclusionsRegistry) {
-    return new MandatoryFieldClaimValidator(mandatoryFieldsRegistry, exclusionsRegistry);
+  @Bean("coreMandatoryFieldClaimValidator")
+  @ConditionalOnMissingBean(MandatoryFieldClaimValidator.class)
+  public MandatoryFieldClaimValidator coreMandatoryFieldClaimValidator() {
+    return new MandatoryFieldClaimValidator();
   }
 
-  @Bean
-  @ConditionalOnMissingBean
-  public CaseDatesClaimValidator caseDatesClaimValidator() {
+  @Bean("coreCaseDatesClaimValidator")
+  @ConditionalOnMissingBean(CaseDatesClaimValidator.class)
+  public CaseDatesClaimValidator coreCaseDatesClaimValidator() {
     return new CaseDatesClaimValidator();
   }
 
-  @Bean
-  @ConditionalOnMissingBean
-  public ClientDateOfBirthClaimValidator clientDateOfBirthClaimValidator() {
+  @Bean("coreClientDateOfBirthClaimValidator")
+  @ConditionalOnMissingBean(ClientDateOfBirthClaimValidator.class)
+  public ClientDateOfBirthClaimValidator coreClientDateOfBirthClaimValidator() {
     return new ClientDateOfBirthClaimValidator();
   }
 
-  @Bean
-  @ConditionalOnMissingBean
-  public DisbursementClaimStartDateValidator disbursementClaimStartDateValidator() {
+  @Bean("coreDisbursementClaimStartDateValidator")
+  @ConditionalOnMissingBean(DisbursementClaimStartDateValidator.class)
+  public DisbursementClaimStartDateValidator coreDisbursementClaimStartDateValidator() {
     return new DisbursementClaimStartDateValidator();
   }
 
-  @Bean
-  @ConditionalOnMissingBean
-  public DisbursementsClaimValidator disbursementsClaimValidator() {
+  @Bean("coreDisbursementsClaimValidator")
+  @ConditionalOnMissingBean(DisbursementsClaimValidator.class)
+  public DisbursementsClaimValidator coreDisbursementsClaimValidator() {
     return new DisbursementsClaimValidator();
   }
 
-  @Bean
-  @ConditionalOnMissingBean
-  public MatterTypeClaimValidator matterTypeClaimValidator() {
+  @Bean("coreMatterTypeClaimValidator")
+  @ConditionalOnMissingBean(MatterTypeClaimValidator.class)
+  public MatterTypeClaimValidator coreMatterTypeClaimValidator() {
     return new MatterTypeClaimValidator();
   }
 
-  @Bean
-  @ConditionalOnMissingBean
-  public OutcomeCodeClaimValidator outcomeCodeClaimValidator() {
+  @Bean("coreOutcomeCodeClaimValidator")
+  @ConditionalOnMissingBean(OutcomeCodeClaimValidator.class)
+  public OutcomeCodeClaimValidator coreOutcomeCodeClaimValidator() {
     return new OutcomeCodeClaimValidator();
   }
 
-  @Bean
-  @ConditionalOnMissingBean
-  public ScheduleReferenceClaimValidator scheduleReferenceClaimValidator() {
+  @Bean("coreScheduleReferenceClaimValidator")
+  @ConditionalOnMissingBean(ScheduleReferenceClaimValidator.class)
+  public ScheduleReferenceClaimValidator coreScheduleReferenceClaimValidator() {
     return new ScheduleReferenceClaimValidator();
   }
 
-  @Bean
-  @ConditionalOnMissingBean
-  public StageReachedClaimValidator stageReachedClaimValidator() {
+  @Bean("coreStageReachedClaimValidator")
+  @ConditionalOnMissingBean(StageReachedClaimValidator.class)
+  public StageReachedClaimValidator coreStageReachedClaimValidator() {
     return new StageReachedClaimValidator();
   }
 
-  @Bean
-  @ConditionalOnMissingBean
-  public UniqueFileNumberClaimValidator uniqueFileNumberClaimValidator() {
+  @Bean("coreUniqueFileNumberClaimValidator")
+  @ConditionalOnMissingBean(UniqueFileNumberClaimValidator.class)
+  public UniqueFileNumberClaimValidator coreUniqueFileNumberClaimValidator() {
     return new UniqueFileNumberClaimValidator();
   }
 
-  @Bean
-  @ConditionalOnMissingBean
-  public EffectiveCategoryOfLawClaimValidator effectiveCategoryOfLawClaimValidator(
+  @Bean("coreEffectiveCategoryOfLawClaimValidator")
+  @ConditionalOnMissingBean(EffectiveCategoryOfLawClaimValidator.class)
+  public EffectiveCategoryOfLawClaimValidator coreEffectiveCategoryOfLawClaimValidator(
       HttpFeeSchemeProvider httpFeeSchemeProvider,
       HttpProviderDetailsProvider httpProviderDetailsProvider) {
     return new EffectiveCategoryOfLawClaimValidator(httpFeeSchemeProvider,
         httpProviderDetailsProvider);
   }
 
-  @Bean
-  @ConditionalOnMissingBean
-  public DuplicateClaimValidator duplicateClaimValidator(
+  @Bean("coreDuplicateClaimValidator")
+  @ConditionalOnMissingBean(DuplicateClaimValidator.class)
+  public DuplicateClaimValidator coreDuplicateClaimValidator(
       List<DuplicateClaimValidationStrategy> strategyList) {
     return new DuplicateClaimValidator(strategyList);
+  }
+
+  // Duplicate claim strategies
+
+  /** Crime Lower duplicate claim validation strategy. */
+  @Bean("coreDuplicateClaimCrimeLowerValidationServiceStrategy")
+  @ConditionalOnMissingBean(DuplicateClaimCrimeLowerValidationServiceStrategy.class)
+  public DuplicateClaimCrimeLowerValidationServiceStrategy
+      coreDuplicateClaimCrimeLowerValidationServiceStrategy(
+          ClaimsDataProvider claimsDataProvider) {
+    return new DuplicateClaimCrimeLowerValidationServiceStrategy(claimsDataProvider);
+  }
+
+  /** Legal Help duplicate claim validation strategy. */
+  @Bean("coreDuplicateClaimLegalHelpValidationServiceStrategy")
+  @ConditionalOnMissingBean(DuplicateClaimLegalHelpValidationServiceStrategy.class)
+  public DuplicateClaimLegalHelpValidationServiceStrategy
+      coreDuplicateClaimLegalHelpValidationServiceStrategy(
+          ClaimsDataProvider claimsDataProvider) {
+    return new DuplicateClaimLegalHelpValidationServiceStrategy(claimsDataProvider);
+  }
+
+  /** Legal Help previous claim duplicate validation strategy. */
+  @Bean("coreDuplicatePreviousClaimLegalHelpValidationServiceStrategy")
+  @ConditionalOnMissingBean(DuplicatePreviousClaimLegalHelpValidationServiceStrategy.class)
+  public DuplicatePreviousClaimLegalHelpValidationServiceStrategy
+      coreDuplicatePreviousClaimLegalHelpValidationServiceStrategy(
+          ClaimsDataProvider claimsDataProvider) {
+    return new DuplicatePreviousClaimLegalHelpValidationServiceStrategy(claimsDataProvider);
+  }
+
+  /** Legal Help disbursement duplicate claim validation strategy. */
+  @Bean("coreDuplicateClaimLegalHelpDisbursementValidationStrategy")
+  @ConditionalOnMissingBean(DuplicateClaimLegalHelpDisbursementValidationStrategy.class)
+  public DuplicateClaimLegalHelpDisbursementValidationStrategy
+      coreDuplicateClaimLegalHelpDisbursementValidationStrategy(
+          ClaimsDataProvider claimsDataProvider) {
+    return new DuplicateClaimLegalHelpDisbursementValidationStrategy(claimsDataProvider);
   }
 
   // ─────────────────────────────────────────────────────────────────────────
   // Submission validators
   // ─────────────────────────────────────────────────────────────────────────
 
-  @Bean
-  @ConditionalOnMissingBean
-  public SubmissionSchemaValidator submissionSchemaValidator() {
+  @Bean("coreSubmissionSchemaValidator")
+  @ConditionalOnMissingBean(SubmissionSchemaValidator.class)
+  public SubmissionSchemaValidator coreSubmissionSchemaValidator() {
     return new SubmissionSchemaValidator();
   }
 
-  @Bean
-  @ConditionalOnMissingBean
-  public SubmissionStatusValidator submissionStatusValidator() {
+  @Bean("coreSubmissionStatusValidator")
+  @ConditionalOnMissingBean(SubmissionStatusValidator.class)
+  public SubmissionStatusValidator coreSubmissionStatusValidator() {
     return new SubmissionStatusValidator();
   }
 
-  @Bean
-  @ConditionalOnMissingBean
-  public NilSubmissionValidator nilSubmissionValidator() {
+  @Bean("coreNilSubmissionValidator")
+  @ConditionalOnMissingBean(NilSubmissionValidator.class)
+  public NilSubmissionValidator coreNilSubmissionValidator() {
     return new NilSubmissionValidator();
   }
 
-  @Bean
-  @ConditionalOnMissingBean
-  public SubmissionPeriodValidator submissionPeriodValidator(
+  @Bean("coreSubmissionPeriodValidator")
+  @ConditionalOnMissingBean(SubmissionPeriodValidator.class)
+  public SubmissionPeriodValidator coreSubmissionPeriodValidator(
       @Value("${submission.validation.minimum-period}") String minimumPeriod) {
     return new SubmissionPeriodValidator(minimumPeriod);
   }
 
-  @Bean
-  @ConditionalOnMissingBean
-  public DuplicateSubmissionValidator duplicateSubmissionValidator(
+  @Bean("coreDuplicateSubmissionValidator")
+  @ConditionalOnMissingBean(DuplicateSubmissionValidator.class)
+  public DuplicateSubmissionValidator coreDuplicateSubmissionValidator(
       ClaimsDataProvider claimsDataProvider) {
     return new DuplicateSubmissionValidator(claimsDataProvider);
   }
@@ -311,9 +338,9 @@ public class ClaimsValidationAutoConfiguration {
    * Assembles the claim validation pipeline from all registered {@link ClaimValidator} beans.
    * Importers can add or replace individual validators before this bean is constructed.
    */
-  @Bean
-  @ConditionalOnMissingBean
-  public ClaimValidation claimValidation(List<ClaimValidator> claimValidators) {
+  @Bean("coreClaimValidation")
+  @ConditionalOnMissingBean(ClaimValidation.class)
+  public ClaimValidation coreClaimValidation(List<ClaimValidator> claimValidators) {
     return new ClaimValidation(claimValidators);
   }
 
@@ -321,9 +348,10 @@ public class ClaimsValidationAutoConfiguration {
    * Assembles the submission validation pipeline from all registered {@link SubmissionValidator}
    * beans.
    */
-  @Bean
-  @ConditionalOnMissingBean
-  public SubmissionValidation submissionValidation(List<SubmissionValidator> submissionValidators) {
+  @Bean("coreSubmissionValidation")
+  @ConditionalOnMissingBean(SubmissionValidation.class)
+  public SubmissionValidation coreSubmissionValidation(
+      List<SubmissionValidator> submissionValidators) {
     return new SubmissionValidation(submissionValidators);
   }
 
@@ -335,9 +363,9 @@ public class ClaimsValidationAutoConfiguration {
    * The primary entry point for validation. Importers that need to wrap or decorate
    * {@link ValidationService} can register their own bean; this one will be skipped.
    */
-  @Bean
-  @ConditionalOnMissingBean
-  public ValidationService validationService(ClaimValidation claimValidation,
+  @Bean("coreValidationService")
+  @ConditionalOnMissingBean(ValidationService.class)
+  public ValidationService coreValidationService(ClaimValidation claimValidation,
       SubmissionValidation submissionValidation) {
     return new ValidationService(claimValidation, submissionValidation);
   }

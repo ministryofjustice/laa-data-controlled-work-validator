@@ -112,20 +112,6 @@ class ClaimsValidationAutoConfigurationTest {
     }
 
     @Test
-    @DisplayName("MandatoryFieldsRegistry bean is present")
-    void mandatoryFieldsRegistryIsPresent() {
-      contextRunner.run(ctx ->
-          assertThat(ctx).hasSingleBean(MandatoryFieldsRegistry.class));
-    }
-
-    @Test
-    @DisplayName("ExclusionsRegistry bean is present")
-    void exclusionsRegistryIsPresent() {
-      contextRunner.run(ctx ->
-          assertThat(ctx).hasSingleBean(ExclusionsRegistry.class));
-    }
-
-    @Test
     @DisplayName("ClaimsDataProvider defaults to HttpClaimsDataProvider")
     void claimsDataProviderDefaultsToHttp() {
       contextRunner.run(ctx ->
@@ -235,27 +221,6 @@ class ClaimsValidationAutoConfigurationTest {
             assertThat(ctx.getBean(ValidationService.class))
                 .isSameAs(CustomValidationServiceConfig.CUSTOM_INSTANCE);
           });
-    }
-
-    /** Custom MandatoryFieldsRegistry simulating an importer changing mandatory fields. */
-    @TestConfiguration
-    static class CustomMandatoryFieldsRegistryConfig {
-      @Bean
-      public MandatoryFieldsRegistry mandatoryFieldsRegistry() {
-        return new MandatoryFieldsRegistry(); // could be a subclass in real usage
-      }
-    }
-
-    @Test
-    @DisplayName("Only one MandatoryFieldsRegistry bean exists when custom one is provided")
-    void onlyOneMandatoryFieldsRegistryBeanExists() {
-      new ApplicationContextRunner()
-          .withConfiguration(AutoConfigurations.of(ClaimsValidationAutoConfiguration.class))
-          .withUserConfiguration(ExternalDependenciesConfig.class,
-              CustomMandatoryFieldsRegistryConfig.class)
-          .withPropertyValues(REQUIRED_PROPERTIES)
-          .run(ctx ->
-              assertThat(ctx).hasSingleBean(MandatoryFieldsRegistry.class));
     }
   }
 
