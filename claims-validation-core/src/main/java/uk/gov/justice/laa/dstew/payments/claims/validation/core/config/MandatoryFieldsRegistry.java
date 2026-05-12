@@ -3,11 +3,9 @@ package uk.gov.justice.laa.dstew.payments.claims.validation.core.config;
 import java.util.List;
 import java.util.Map;
 import lombok.Getter;
-import org.springframework.stereotype.Component;
 import uk.gov.justice.laa.dstew.payments.claimsdata.model.AreaOfLaw;
 
 /** Registry of mandatory fields by area of law. */
-@Component
 @Getter
 public class MandatoryFieldsRegistry {
 

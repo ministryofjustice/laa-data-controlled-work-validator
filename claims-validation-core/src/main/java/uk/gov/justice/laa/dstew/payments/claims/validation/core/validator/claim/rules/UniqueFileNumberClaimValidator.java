@@ -3,7 +3,6 @@ package uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim
 import java.time.DateTimeException;
 import java.time.LocalDate;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.util.DateUtils;
@@ -14,7 +13,6 @@ import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.
  * Validator for checking the Unique File Number (UFN) date validity. UFN must be in format
  * DDMMYY/NNN where the date is in the past.
  */
-@Component
 @Slf4j
 public class UniqueFileNumberClaimValidator implements ClaimValidator {
 

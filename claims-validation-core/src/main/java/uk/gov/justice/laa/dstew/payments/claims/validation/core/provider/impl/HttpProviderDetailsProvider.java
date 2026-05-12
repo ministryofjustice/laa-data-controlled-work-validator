@@ -15,7 +15,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.client.ProviderDetailsClient;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.provider.impl.model.ProviderDetailsCachedSchedules;
@@ -30,7 +29,6 @@ import uk.gov.justice.laadata.providers.model.ProviderFirmOfficeContractAndSched
  */
 @Slf4j
 @RequiredArgsConstructor
-@Service
 public class HttpProviderDetailsProvider {
 
   private final ProviderDetailsClient providerDetailsRestClient;

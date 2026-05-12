@@ -3,8 +3,6 @@ package uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.submi
 import java.util.List;
 import java.util.Objects;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.provider.ClaimsDataProvider;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.submission.SubmissionValidationContext;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.submission.SubmissionValidationError;
@@ -13,13 +11,11 @@ import uk.gov.justice.laa.dstew.payments.claimsdata.model.SubmissionResponse;
 import uk.gov.justice.laa.dstew.payments.claimsdata.model.SubmissionStatus;
 
 /** Check for duplicates based on the combination of Office × Area of Law × Submission Period. */
-@Component
 @Slf4j
 public class DuplicateSubmissionValidator implements SubmissionValidator {
-  protected final ClaimsDataProvider claimsDataProvider;
+  public final ClaimsDataProvider claimsDataProvider;
 
-  @Autowired
-  protected DuplicateSubmissionValidator(ClaimsDataProvider claimsDataProvider) {
+  public DuplicateSubmissionValidator(ClaimsDataProvider claimsDataProvider) {
     this.claimsDataProvider = claimsDataProvider;
   }
 

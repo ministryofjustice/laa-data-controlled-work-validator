@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.config.ExclusionsRegistry;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.config.MandatoryFieldsRegistry;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
@@ -22,7 +21,6 @@ import uk.gov.justice.laa.dstew.payments.claimsdata.model.AreaOfLaw;
  * Checks if all mandatory fields for a given area of law are populated in the provided Claim
  * object. If a mandatory field is missing or invalid, an error is added to the validation issues.
  */
-@Component
 @Slf4j
 public class MandatoryFieldClaimValidator implements ClaimValidator {
 

@@ -2,10 +2,8 @@ package uk.gov.justice.laa.dstew.payments.claims.validation.core.config;
 
 import java.util.List;
 import lombok.Getter;
-import org.springframework.stereotype.Component;
 
 /** Registry of field exclusions for specific validation scenarios. */
-@Component
 @Getter
 public class ExclusionsRegistry {
 

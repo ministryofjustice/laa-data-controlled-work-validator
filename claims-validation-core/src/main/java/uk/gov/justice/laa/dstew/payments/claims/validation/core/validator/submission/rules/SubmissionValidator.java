@@ -15,5 +15,4 @@ import uk.gov.justice.laa.dstew.payments.claimsdata.model.SubmissionResponse;
  */
 public interface SubmissionValidator extends
         Validator<SubmissionResponse, SubmissionValidationContext> {
-
 }

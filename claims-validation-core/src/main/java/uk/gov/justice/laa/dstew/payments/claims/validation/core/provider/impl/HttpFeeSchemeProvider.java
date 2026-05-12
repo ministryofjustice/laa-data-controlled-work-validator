@@ -5,7 +5,6 @@ import java.time.Duration;
 import java.util.Objects;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.client.FeeSchemeClient;
@@ -16,7 +15,6 @@ import uk.gov.justice.laa.fee.scheme.model.FeeDetailsResponseV2;
  * pattern established in {@code HttpProviderDetailsProvider} but specialised for fee details.
  */
 @Slf4j
-@Service
 public class HttpFeeSchemeProvider extends AbstractHttpCachingProvider<FeeDetailsResponseV2> {
 
   private static final Duration POSITIVE_CACHE_TTL = Duration.ofMinutes(10);

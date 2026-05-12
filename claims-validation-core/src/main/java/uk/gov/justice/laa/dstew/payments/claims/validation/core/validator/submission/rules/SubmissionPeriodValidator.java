@@ -4,8 +4,6 @@ import java.time.YearMonth;
 import java.util.Objects;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.util.DateUtils;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.submission.SubmissionValidationContext;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.submission.SubmissionValidationError;
@@ -17,7 +15,6 @@ import uk.gov.justice.laa.dstew.payments.claimsdata.model.SubmissionResponse;
  *
  * @author Jamie Briggs
  */
-@Component
 @Slf4j
 public class SubmissionPeriodValidator implements SubmissionValidator {
 
@@ -29,8 +26,7 @@ public class SubmissionPeriodValidator implements SubmissionValidator {
    *
    * @param submissionValidationMinimumPeriod the minimum submission period allowed
    */
-  public SubmissionPeriodValidator(
-      @Value("${submission.validation.minimum-period}") String submissionValidationMinimumPeriod) {
+  public SubmissionPeriodValidator(String submissionValidationMinimumPeriod) {
     this.submissionValidationMinimumPeriod = submissionValidationMinimumPeriod;
     this.submissionValidationMinimumPeriodYearMonth =
             DateUtils.parseSubmissionPeriod(submissionValidationMinimumPeriod);

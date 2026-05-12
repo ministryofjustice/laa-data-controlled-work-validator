@@ -1,7 +1,6 @@
 package uk.gov.justice.laa.dstew.payments.claims.validation.core.config;
 
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.provider.ClaimsDataProvider;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.rules.duplicate.DuplicateClaimCrimeLowerValidationServiceStrategy;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.rules.duplicate.DuplicateClaimLegalHelpDisbursementValidationStrategy;
@@ -13,7 +12,6 @@ import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.
  * ClaimsDataProvider.
  * This makes the dependencies and wiring clear and testable.
  */
-@Configuration
 public class DuplicateClaimValidationConfig {
 
   /**

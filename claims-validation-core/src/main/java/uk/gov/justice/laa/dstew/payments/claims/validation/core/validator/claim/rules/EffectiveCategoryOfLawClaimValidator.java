@@ -7,7 +7,6 @@ import java.util.Objects;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
@@ -29,7 +28,6 @@ import uk.gov.justice.laadata.providers.model.ProviderFirmOfficeContractAndSched
  * {@link #validate(Claim, ClaimValidationContext)} is invoked from a worker thread (not a
  * Netty/Reactor event-loop) because it uses {@code blockOptional()} on reactive providers.
  */
-@Component
 @RequiredArgsConstructor
 @Slf4j
 public class EffectiveCategoryOfLawClaimValidator implements ClaimValidator {

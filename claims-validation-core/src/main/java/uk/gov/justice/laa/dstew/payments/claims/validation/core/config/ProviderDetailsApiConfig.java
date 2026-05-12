@@ -3,10 +3,8 @@ package uk.gov.justice.laa.dstew.payments.claims.validation.core.config;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.Configuration;
 
 /** Configuration properties for the Provider Details API. */
-@Configuration
 @ConfigurationProperties(prefix = "laa.provider-details-api")
 @Getter
 @Setter

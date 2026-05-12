@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.schema.AbstractSchemaValidator;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.submission.SubmissionValidationContext;
 import uk.gov.justice.laa.dstew.payments.claimsdata.model.SubmissionResponse;
@@ -31,7 +30,6 @@ import uk.gov.justice.laa.dstew.payments.claimsdata.model.SubmissionResponse;
  * the {@link SubmissionValidationContext} rather than returned. The bridge is a single
  * {@code forEach} in {@link #validate(SubmissionResponse, SubmissionValidationContext)}.
  */
-@Component
 @Slf4j
 public class SubmissionSchemaValidator
     extends AbstractSchemaValidator<SubmissionResponse>

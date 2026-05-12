@@ -5,7 +5,6 @@ import static uk.gov.justice.laa.dstew.payments.claims.validation.core.util.Date
 
 import java.time.LocalDate;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidationContext;
@@ -15,7 +14,6 @@ import uk.gov.justice.laa.dstew.payments.claimsdata.model.AreaOfLaw;
  * Validator for case-related dates. Validates case start date, case concluded date, transfer date,
  * and representation order date.
  */
-@Component
 @Slf4j
 public class CaseDatesClaimValidator implements ClaimValidator {
 
