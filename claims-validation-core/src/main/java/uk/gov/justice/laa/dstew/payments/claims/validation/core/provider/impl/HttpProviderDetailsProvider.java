@@ -161,8 +161,8 @@ public class HttpProviderDetailsProvider {
                         })
                     .switchIfEmpty(Mono.defer(() -> cacheNegative(negativeKey)))
                     .transformDeferred(RetryOperator.of(retry))
-                    .cache())
-        .doFinally(signalType -> inFlightCalls.remove(cacheKey));
+                    .doFinally(signalType -> inFlightCalls.remove(cacheKey))
+                    .cache());
   }
 
   /**

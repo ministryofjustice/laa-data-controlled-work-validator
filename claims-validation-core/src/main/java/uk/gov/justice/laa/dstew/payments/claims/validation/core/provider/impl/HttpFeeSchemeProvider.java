@@ -67,8 +67,8 @@ public class HttpFeeSchemeProvider extends AbstractHttpCachingProvider<FeeDetail
                       return Mono.empty();
                     }))
                     .transformDeferred(retryOperator(RETRY_NAME))
-                    .cache())
-        .doFinally(sig -> inFlightCalls.remove(feeCode));
+                    .doFinally(sig -> inFlightCalls.remove(feeCode))
+                    .cache());
   }
 
   private static FeeDetailsResponseV2 mapResponse(ResponseEntity<FeeDetailsResponseV2> resp) {
