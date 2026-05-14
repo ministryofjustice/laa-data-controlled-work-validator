@@ -1,7 +1,5 @@
 package uk.gov.justice.laa.dstew.payments.claims.validation.core.provider.impl;
 
-import io.github.resilience4j.reactor.retry.RetryOperator;
-import io.github.resilience4j.retry.Retry;
 import io.github.resilience4j.retry.RetryRegistry;
 import java.time.Duration;
 import java.time.LocalDate;
@@ -12,10 +10,9 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.FutureTask;
 import java.util.stream.Stream;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.client.ProviderDetailsClient;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.provider.impl.model.ProviderDetailsCachedSchedules;
@@ -24,147 +21,94 @@ import uk.gov.justice.laadata.providers.model.FirmOfficeContractAndScheduleDetai
 import uk.gov.justice.laadata.providers.model.ProviderFirmOfficeContractAndScheduleDto;
 
 /**
- * Service layer for ProviderDetailsRestClient, in order to apply the retry backoff.
- *
- * @author Jose Carlos Arinero Adam
+ * HTTP-backed provider for resolving provider firm schedules, with positive/negative caching
+ * and in-flight deduplication via {@link AbstractHttpCachingProvider#fetchDeduped}.
  */
 @Slf4j
-@RequiredArgsConstructor
-@Service
-public class HttpProviderDetailsProvider {
+public class HttpProviderDetailsProvider
+    extends AbstractHttpCachingProvider<ProviderFirmOfficeContractAndScheduleDto> {
+
+  private static final Duration NEGATIVE_CACHE_TIME_TO_LIVE = Duration.ofMinutes(5);
+  private static final Duration POSITIVE_CACHE_TIME_TO_LIVE = Duration.ofMinutes(10);
+  private static final String RETRY_NAME = "pdaRetry";
 
   private final ProviderDetailsClient providerDetailsRestClient;
-  private final RetryRegistry retryRegistry;
+
+  // Richer positive cache with date-range coverage windows — kept separate from the base
+  // class positiveCache because it requires schedule merging and coverage-window logic.
   private final Map<String, ProviderDetailsCachedSchedules> scheduleCache =
       new ConcurrentHashMap<>();
-  private final Map<String, ProviderDetailsCachedSchedules> negativeCache =
-      new ConcurrentHashMap<>();
-  // Prevent concurrent cache-miss calls for the same office.
-  private final Map<String, Mono<ProviderFirmOfficeContractAndScheduleDto>> inFlightCalls =
-      new ConcurrentHashMap<>();
 
-  // Short-lived negative cache to avoid hammering PDA when no schedules exist for a key.
-  private static final Duration NEGATIVE_CACHE_TIME_TO_LIVE = Duration.ofMinutes(5);
-  // Positive cache window for successful schedule responses.
-  private static final Duration POSITIVE_CACHE_TIME_TO_LIVE = Duration.ofMinutes(10);
+  public HttpProviderDetailsProvider(
+      ProviderDetailsClient providerDetailsRestClient, RetryRegistry retryRegistry) {
+    super(retryRegistry, POSITIVE_CACHE_TIME_TO_LIVE, NEGATIVE_CACHE_TIME_TO_LIVE);
+    this.providerDetailsRestClient = Objects.requireNonNull(providerDetailsRestClient);
+  }
 
   /**
-   * Retrieves the provider firm office contract and schedule information for a given office and
-   * effective date.
+   * Retrieves provider firm office contract and schedule information for the given office and
+   * effective date, using positive/negative caching and in-flight deduplication.
    *
-   * <p>This method delegates the call to the underlying client and applies a retry mechanism
-   * defined by the {@code pdaRetry} configuration.
-   *
-   * @param officeCode the unique code identifying the office (must not be {@code null})
-   * @param effectiveDate the date from which the schedule should be effective (must not be {@code
-   *     null})
-   * @return a {@link Mono} emitting {@link ProviderFirmOfficeContractAndScheduleDto} containing the
-   *     contract and schedule details for the specified parameters
-   * @throws IllegalArgumentException if any of the parameters are invalid
+   * <p>Returns an empty {@link Optional} when the provider has no schedules for the given
+   * parameters. Throws on technical API failure.
    */
-  public Mono<ProviderFirmOfficeContractAndScheduleDto> getProviderFirmSchedules(
+  public Optional<ProviderFirmOfficeContractAndScheduleDto> getProviderFirmSchedules(
       String officeCode, LocalDate effectiveDate) {
-    String cacheKey = cacheKey(officeCode);
-    String negativeKey = negativeCacheKey(officeCode, effectiveDate);
-    Optional<Mono<ProviderFirmOfficeContractAndScheduleDto>> negativeCacheHit =
-        handleNegativeCache(negativeKey);
-    if (negativeCacheHit.isPresent()) {
-      return negativeCacheHit.get();
-    }
-
-    Optional<Mono<ProviderFirmOfficeContractAndScheduleDto>> positiveCacheHit =
-        handlePositiveCache(cacheKey, effectiveDate);
-    return positiveCacheHit.orElseGet(() ->
-            fetchAndCache(officeCode, effectiveDate, cacheKey, negativeKey));
-
-  }
-
-  private Mono<ProviderFirmOfficeContractAndScheduleDto> cacheNegative(String negativeKey) {
-    negativeCache.put(
-        negativeKey, ProviderDetailsCachedSchedules.negative(NEGATIVE_CACHE_TIME_TO_LIVE));
-    return Mono.empty();
-  }
-
-  /** Returns a cached negative result if it is still valid, otherwise clears it. */
-  private Optional<Mono<ProviderFirmOfficeContractAndScheduleDto>> handleNegativeCache(
-      String negativeKey) {
-    ProviderDetailsCachedSchedules cachedNegative = negativeCache.get(negativeKey);
-    if (cachedNegative == null) {
-      return Optional.empty();
-    }
-    if (!cachedNegative.isValid()) {
-      log.debug("ProviderDetails negative cache expired for key {}", negativeKey);
-      negativeCache.remove(negativeKey);
-      return Optional.empty();
-    }
-    log.debug("ProviderDetails negative cache hit for key {}", negativeKey);
-    return Optional.of(Mono.empty());
+    return fetchProviderFirmSchedules(officeCode, effectiveDate).blockOptional();
   }
 
   /**
-   * Returns a cached positive result when valid and covering the requested date; refreshes TTL on
-   * hit.
+   * Reactive implementation of the provider lookup, exposed as package-private for testing.
+   *
+   * <p>The public entry-point {@link #getProviderFirmSchedules} simply calls
+   * {@code .blockOptional()} on this method. The reactive layer exists because in-flight
+   * deduplication is implemented in {@link AbstractHttpCachingProvider#fetchDeduped} using 
+   * {@link reactor.core.publisher.Sinks.One}, which broadcasts one remote-API result to all
+   * concurrent subscribers without blocking any thread. See the ADR on {@code fetchDeduped}
+   * for why {@code Sinks.One} was chosen over {@link FutureTask}.
+   *
+   * <p>This method is package-private rather than private so that unit tests can subscribe to the
+   * {@link Mono} directly and assert reactive behaviour (cache hits, deduplication, empty signals)
+   * without going through the blocking {@code .blockOptional()} boundary.
    */
-  private Optional<Mono<ProviderFirmOfficeContractAndScheduleDto>> handlePositiveCache(
-      String cacheKey, LocalDate effectiveDate) {
-    ProviderDetailsCachedSchedules cached = scheduleCache.get(cacheKey);
-    if (cached == null) {
-      log.debug("ProviderDetails cache miss for key {}", cacheKey);
-      return Optional.empty();
-    }
-    if (!cached.isValid()) {
-      log.debug("ProviderDetails cache expired for key {}", cacheKey);
-      scheduleCache.remove(cacheKey);
-      return Optional.empty();
-    }
-    if (cached.isNegative()) {
-      log.debug("ProviderDetails negative cache hit for key {}", cacheKey);
-      return Optional.of(Mono.empty());
-    }
-    log.debug(
-        "ProviderDetails coverage windows for key {} when checking effective date {}: {}",
-        cacheKey,
-        effectiveDate,
-        cached.windows());
-    if (cached.covers(effectiveDate)) {
-      log.debug(
-          "ProviderDetails cache hit for key {} covering effective date {}",
-          cacheKey,
-          effectiveDate);
-      scheduleCache.put(cacheKey, cached.refresh(POSITIVE_CACHE_TIME_TO_LIVE));
-      return Optional.of(Mono.just(cached.value()));
-    }
-    log.debug(
-        "ProviderDetails cache miss for key {}: date {} not covered", cacheKey, effectiveDate);
-    return Optional.empty();
-  }
+  Mono<ProviderFirmOfficeContractAndScheduleDto> fetchProviderFirmSchedules(
+      String officeCode, LocalDate effectiveDate) {
+    String cacheKey = officeCode;
+    String negativeKey = officeCode + "|" + effectiveDate;
 
-  /** Invokes PDA, then caches positive or negative results, sharing in-flight calls. */
-  private Mono<ProviderFirmOfficeContractAndScheduleDto> fetchAndCache(
-      String officeCode, LocalDate effectiveDate, String cacheKey, String negativeKey) {
-    Retry retry = retryRegistry.retry("pdaRetry");
-    return inFlightCalls
-        .computeIfAbsent(
-            cacheKey,
-            key ->
-                providerDetailsRestClient
-                    .getProviderFirmSchedules(officeCode, effectiveDate)
-                    .doOnSubscribe(
-                        subscription ->
-                            log.debug(
-                                "Calling PDA getProviderFirmSchedules "
-                                        + "for officeCode {}, effectiveDate {}",
-                                officeCode,
-                                effectiveDate))
-                    .map(
-                        dto -> {
-                          cacheWindows(cacheKey, dto);
-                          return dto;
-                        })
-                    .switchIfEmpty(Mono.defer(() -> cacheNegative(negativeKey)))
-                    .transformDeferred(RetryOperator.of(retry))
-                    .cache())
-        .doFinally(signalType -> inFlightCalls.remove(cacheKey));
+    // negative short-circuit — uses inherited negativeCache keyed by (officeCode|effectiveDate)
+    if (getNegativeCached(negativeKey).isPresent()) {
+      log.debug("ProviderDetails negative cache hit for key {}", negativeKey);
+      return Mono.empty();
+    }
+
+    // positive short-circuit
+    ProviderDetailsCachedSchedules cached = scheduleCache.get(cacheKey);
+    if (cached != null) {
+      if (!cached.isValid()) {
+        log.debug("ProviderDetails cache expired for key {}", cacheKey);
+        scheduleCache.remove(cacheKey);
+      } else if (cached.isNegative()) {
+        log.debug("ProviderDetails negative cache hit for key {}", cacheKey);
+        return Mono.empty();
+      } else if (cached.covers(effectiveDate)) {
+        log.debug("ProviderDetails cache hit for key {} covering effectiveDate {}",
+            cacheKey, effectiveDate);
+        scheduleCache.put(cacheKey, cached.refresh(POSITIVE_CACHE_TIME_TO_LIVE));
+        return Mono.just(cached.value());
+      } else {
+        log.debug("ProviderDetails cache miss for key {}: date {} not covered",
+            cacheKey, effectiveDate);
+      }
+    }
+
+    // cache miss — deduplicate concurrent remote calls scoped to (officeCode, effectiveDate)
+    return fetchDedupedWithCaching(negativeKey, RETRY_NAME, () ->
+        providerDetailsRestClient.getProviderFirmSchedules(officeCode, effectiveDate)
+            .map(dto -> {
+              cacheWindows(cacheKey, dto);
+              return dto;
+            }));
   }
 
   /**
@@ -240,15 +184,6 @@ public class HttpProviderDetailsProvider {
     return left.isAfter(right) ? left : right;
   }
 
-  /** Creates a cache key for positive cache lookups. */
-  private String cacheKey(String officeCode) {
-    return officeCode;
-  }
-
-  /** Creates a cache key for negative cache scoped to the effective date. */
-  private String negativeCacheKey(String officeCode, LocalDate effectiveDate) {
-    return officeCode + "|" + effectiveDate;
-  }
 
   /** Cache the response along with its merged coverage windows. */
   private void cacheWindows(String cacheKey, ProviderFirmOfficeContractAndScheduleDto dto) {

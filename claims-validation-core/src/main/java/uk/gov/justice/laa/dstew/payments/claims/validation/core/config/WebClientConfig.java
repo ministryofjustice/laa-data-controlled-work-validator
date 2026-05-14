@@ -5,7 +5,6 @@ import java.time.Duration;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.web.reactive.function.client.ClientRequest;
 import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
@@ -26,13 +25,19 @@ import uk.gov.justice.laa.dstew.payments.claims.validation.core.provider.impl.Ht
  * APIs.
  */
 @Slf4j
-@Configuration
 public class WebClientConfig {
 
   private static final String SERVICE_NAME_HEADER = "X-Service-Name";
-  // TODO: this needs to be configurable if we want to use the same
-  //  WebClientConfig in other services
-  private static final String SERVICE_NAME = "laa-data-claims-validation-api";
+  private final String serviceName;
+
+  public WebClientConfig(String serviceName) {
+    this.serviceName = serviceName;
+  }
+
+  /** Default constructor uses a generic service name; prefer the parameterised constructor. */
+  public WebClientConfig() {
+    this("claims-validation-core");
+  }
 
   /**
    * Creates a {@link FeeSchemeClient} bean to communicate with the Fee Scheme Platform API.
@@ -41,6 +46,7 @@ public class WebClientConfig {
    * @return An instance of {@link FeeSchemeClient}
    */
   @Bean
+  @ConditionalOnMissingBean
   public FeeSchemeClient feeSchemeClient(final FeeSchemeApiConfig properties) {
     final WebClient webClient = createWebClient(properties);
     final WebClientAdapter webClientAdapter = WebClientAdapter.create(webClient);
@@ -55,6 +61,7 @@ public class WebClientConfig {
    * @return An instance of {@link ProviderDetailsClient}
    */
   @Bean
+  @ConditionalOnMissingBean
   public ProviderDetailsClient providerDetailsClient(final ProviderDetailsApiConfig properties) {
     final WebClient webClient = createWebClient(properties);
     final WebClientAdapter webClientAdapter = WebClientAdapter.create(webClient);
@@ -69,6 +76,7 @@ public class WebClientConfig {
    * @return An instance of {@link DataClaimsClient}
    */
   @Bean
+  @ConditionalOnMissingBean
   public DataClaimsClient dataClaimsClient(final DataClaimsApiConfig properties) {
     final WebClient webClient = createWebClient(properties);
     final WebClientAdapter webClientAdapter = WebClientAdapter.create(webClient);
@@ -142,7 +150,7 @@ public class WebClientConfig {
   /**
    * Creates an ExchangeFilterFunction that logs outgoing requests.
    */
-  private static ExchangeFilterFunction logRequest() {
+  private ExchangeFilterFunction logRequest() {
     return ExchangeFilterFunction.ofRequestProcessor(
         clientRequest -> {
           log.info(
@@ -152,7 +160,7 @@ public class WebClientConfig {
           // Add the requestId and service name as headers for correlation
           return Mono.just(
               ClientRequest.from(clientRequest)
-                  .header(SERVICE_NAME_HEADER, SERVICE_NAME)
+                  .header(SERVICE_NAME_HEADER, serviceName)
                   .build());
         });
   }

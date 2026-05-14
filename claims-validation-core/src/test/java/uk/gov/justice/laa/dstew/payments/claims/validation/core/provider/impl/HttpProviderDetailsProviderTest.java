@@ -68,7 +68,7 @@ class HttpProviderDetailsProviderTest {
 
     // Act
     Mono<ProviderFirmOfficeContractAndScheduleDto> result =
-        service.getProviderFirmSchedules(officeCode, effectiveDate);
+        service.fetchProviderFirmSchedules(officeCode, effectiveDate);
 
     // Assert
     StepVerifier.create(result)
@@ -96,7 +96,7 @@ class HttpProviderDetailsProviderTest {
 
     // Act
     Mono<ProviderFirmOfficeContractAndScheduleDto> result =
-        service.getProviderFirmSchedules(officeCode, effectiveDate);
+        service.fetchProviderFirmSchedules(officeCode, effectiveDate);
 
     // Assert
     StepVerifier.create(result)
@@ -129,11 +129,11 @@ class HttpProviderDetailsProviderTest {
     when(client.getProviderFirmSchedules(officeCode, effectiveDate))
         .thenReturn(Mono.just(expectedDto));
 
-    StepVerifier.create(service.getProviderFirmSchedules(officeCode, effectiveDate))
+    StepVerifier.create(service.fetchProviderFirmSchedules(officeCode, effectiveDate))
         .expectNext(expectedDto)
         .verifyComplete();
 
-    StepVerifier.create(service.getProviderFirmSchedules(officeCode, effectiveDate))
+    StepVerifier.create(service.fetchProviderFirmSchedules(officeCode, effectiveDate))
         .expectNext(expectedDto)
         .verifyComplete();
 
@@ -148,10 +148,10 @@ class HttpProviderDetailsProviderTest {
 
     when(client.getProviderFirmSchedules(officeCode, effectiveDate)).thenReturn(Mono.empty());
 
-    StepVerifier.create(service.getProviderFirmSchedules(officeCode, effectiveDate))
+    StepVerifier.create(service.fetchProviderFirmSchedules(officeCode, effectiveDate))
         .verifyComplete();
 
-    StepVerifier.create(service.getProviderFirmSchedules(officeCode, effectiveDate))
+    StepVerifier.create(service.fetchProviderFirmSchedules(officeCode, effectiveDate))
         .verifyComplete();
 
     verify(client, times(1)).getProviderFirmSchedules(officeCode, effectiveDate);
@@ -179,14 +179,14 @@ class HttpProviderDetailsProviderTest {
     when(client.getProviderFirmSchedules(officeCode, positiveDate))
         .thenReturn(Mono.just(januaryDto));
 
-    StepVerifier.create(service.getProviderFirmSchedules(officeCode, negativeDate))
+    StepVerifier.create(service.fetchProviderFirmSchedules(officeCode, negativeDate))
         .verifyComplete();
 
-    StepVerifier.create(service.getProviderFirmSchedules(officeCode, positiveDate))
+    StepVerifier.create(service.fetchProviderFirmSchedules(officeCode, positiveDate))
         .expectNext(januaryDto)
         .verifyComplete();
 
-    StepVerifier.create(service.getProviderFirmSchedules(officeCode, negativeDate))
+    StepVerifier.create(service.fetchProviderFirmSchedules(officeCode, negativeDate))
         .verifyComplete();
 
     verify(client, times(1)).getProviderFirmSchedules(officeCode, negativeDate);
@@ -218,11 +218,11 @@ class HttpProviderDetailsProviderTest {
     when(client.getProviderFirmSchedules(officeCode, firstDate)).thenReturn(Mono.just(firstDto));
     when(client.getProviderFirmSchedules(officeCode, gapDate)).thenReturn(Mono.empty());
 
-    StepVerifier.create(service.getProviderFirmSchedules(officeCode, firstDate))
+    StepVerifier.create(service.fetchProviderFirmSchedules(officeCode, firstDate))
         .expectNext(firstDto)
         .verifyComplete();
 
-    StepVerifier.create(service.getProviderFirmSchedules(officeCode, gapDate)).verifyComplete();
+    StepVerifier.create(service.fetchProviderFirmSchedules(officeCode, gapDate)).verifyComplete();
 
     verify(client, times(1)).getProviderFirmSchedules(officeCode, firstDate);
     verify(client, times(1)).getProviderFirmSchedules(officeCode, gapDate);
@@ -255,23 +255,23 @@ class HttpProviderDetailsProviderTest {
         .thenReturn(Mono.just(apr17ToMar18));
     when(client.getProviderFirmSchedules(officeCode, gapFill)).thenReturn(Mono.just(apr17ToAug20));
 
-    StepVerifier.create(service.getProviderFirmSchedules(officeCode, initial))
+    StepVerifier.create(service.fetchProviderFirmSchedules(officeCode, initial))
         .expectNext(sept18ToAug19)
         .verifyComplete();
 
-    StepVerifier.create(service.getProviderFirmSchedules(officeCode, covered))
+    StepVerifier.create(service.fetchProviderFirmSchedules(officeCode, covered))
         .expectNext(sept18ToAug19)
         .verifyComplete();
 
-    StepVerifier.create(service.getProviderFirmSchedules(officeCode, extendEnd))
+    StepVerifier.create(service.fetchProviderFirmSchedules(officeCode, extendEnd))
         .expectNext(sept18ToAug20)
         .verifyComplete();
 
-    StepVerifier.create(service.getProviderFirmSchedules(officeCode, extendStart))
+    StepVerifier.create(service.fetchProviderFirmSchedules(officeCode, extendStart))
         .expectNext(apr17ToMar18)
         .verifyComplete();
 
-    StepVerifier.create(service.getProviderFirmSchedules(officeCode, gapFill))
+    StepVerifier.create(service.fetchProviderFirmSchedules(officeCode, gapFill))
         .expectNext(apr17ToAug20)
         .verifyComplete();
 
@@ -289,7 +289,7 @@ class HttpProviderDetailsProviderTest {
 
     cachedDates.forEach(
         date ->
-            StepVerifier.create(service.getProviderFirmSchedules(officeCode, date))
+            StepVerifier.create(service.fetchProviderFirmSchedules(officeCode, date))
                 .expectNextMatches(dto -> dto.getSchedules().size() == 4 && covers(dto, date))
                 .verifyComplete());
 
@@ -313,11 +313,11 @@ class HttpProviderDetailsProviderTest {
     when(client.getProviderFirmSchedules(officeCode, missingDate)).thenReturn(Mono.empty());
     when(client.getProviderFirmSchedules(officeCode, otherDate)).thenReturn(Mono.just(dto));
 
-    StepVerifier.create(service.getProviderFirmSchedules(officeCode, missingDate)).verifyComplete();
+    StepVerifier.create(service.fetchProviderFirmSchedules(officeCode, missingDate)).verifyComplete();
 
-    StepVerifier.create(service.getProviderFirmSchedules(officeCode, missingDate)).verifyComplete();
+    StepVerifier.create(service.fetchProviderFirmSchedules(officeCode, missingDate)).verifyComplete();
 
-    StepVerifier.create(service.getProviderFirmSchedules(officeCode, otherDate))
+    StepVerifier.create(service.fetchProviderFirmSchedules(officeCode, otherDate))
         .expectNext(dto)
         .verifyComplete();
 
@@ -334,27 +334,37 @@ class HttpProviderDetailsProviderTest {
     ProviderFirmOfficeContractAndScheduleDto dto = dtoWithWindow(officeCode, date, date);
 
     CountDownLatch started = new CountDownLatch(1);
+    CountDownLatch t2Ready = new CountDownLatch(1);
     CountDownLatch release = new CountDownLatch(1);
 
     when(client.getProviderFirmSchedules(officeCode, date))
         .thenAnswer(ignored -> {
           started.countDown();
+          // wait until t2 has subscribed to the shared sink before releasing
           try {
-            boolean ok = release.await(5, TimeUnit.SECONDS);
-            if (!ok) {
-              throw new RuntimeException("release latch timeout");
-            }
+            boolean ok = t2Ready.await(5, TimeUnit.SECONDS);
+            if (!ok) throw new RuntimeException("t2Ready latch timeout");
+            boolean rel = release.await(5, TimeUnit.SECONDS);
+            if (!rel) throw new RuntimeException("release latch timeout");
           } catch (InterruptedException e) {
             throw new RuntimeException(e);
           }
           return Mono.just(dto);
         });
 
-    Thread t1 = new Thread(() -> service.getProviderFirmSchedules(officeCode, date).block());
-    Thread t2 = new Thread(() -> service.getProviderFirmSchedules(officeCode, date).block());
+    Thread t1 = new Thread(() -> service.fetchProviderFirmSchedules(officeCode, date).block());
+    Thread t2 = new Thread(() -> {
+      service.fetchProviderFirmSchedules(officeCode, date).block();
+    });
+
     t1.start();
+    // wait until t1 is inside the remote call (sink is in the map)
     assertTrue(started.await(2, TimeUnit.SECONDS));
+
     t2.start();
+    // give t2 time to reach sink.asMono()
+    Thread.sleep(100);
+    t2Ready.countDown();
 
     release.countDown();
 
@@ -378,7 +388,7 @@ class HttpProviderDetailsProviderTest {
 
     when(client.getProviderFirmSchedules(officeCode, date)).thenReturn(Mono.just(dto1));
 
-    StepVerifier.create(service.getProviderFirmSchedules(officeCode, date))
+    StepVerifier.create(service.fetchProviderFirmSchedules(officeCode, date))
         .expectNext(dto1)
         .verifyComplete();
 
@@ -390,7 +400,7 @@ class HttpProviderDetailsProviderTest {
     // prepare new response
     when(client.getProviderFirmSchedules(officeCode, date)).thenReturn(Mono.just(dto2));
 
-    StepVerifier.create(fresh.getProviderFirmSchedules(officeCode, date))
+    StepVerifier.create(fresh.fetchProviderFirmSchedules(officeCode, date))
         .expectNext(dto2)
         .verifyComplete();
 
@@ -409,7 +419,7 @@ class HttpProviderDetailsProviderTest {
     ProviderFirmOfficeContractAndScheduleDto dto1 = dtoWithWindow(officeCode, date, date);
     when(client.getProviderFirmSchedules(officeCode, date)).thenReturn(Mono.just(dto1));
 
-    StepVerifier.create(service.getProviderFirmSchedules(officeCode, date))
+    StepVerifier.create(service.fetchProviderFirmSchedules(officeCode, date))
         .expectNext(dto1)
         .verifyComplete();
 
@@ -421,7 +431,7 @@ class HttpProviderDetailsProviderTest {
     ProviderFirmOfficeContractAndScheduleDto dto2 = dtoWithWindow(officeCode, date, date.plusDays(1));
     when(client.getProviderFirmSchedules(officeCode, date)).thenReturn(Mono.just(dto2));
 
-    StepVerifier.create(service.getProviderFirmSchedules(officeCode, date))
+    StepVerifier.create(service.fetchProviderFirmSchedules(officeCode, date))
         .expectNext(dto2)
         .verifyComplete();
 
@@ -439,7 +449,7 @@ class HttpProviderDetailsProviderTest {
     DateUtils.setClock(Clock.fixed(base, ZoneOffset.UTC));
 
     when(client.getProviderFirmSchedules(officeCode, date)).thenReturn(Mono.empty());
-    StepVerifier.create(service.getProviderFirmSchedules(officeCode, date)).verifyComplete();
+    StepVerifier.create(service.fetchProviderFirmSchedules(officeCode, date)).verifyComplete();
     verify(client, times(1)).getProviderFirmSchedules(officeCode, date);
 
     // advance beyond negative TTL (5 minutes)
@@ -448,7 +458,7 @@ class HttpProviderDetailsProviderTest {
     ProviderFirmOfficeContractAndScheduleDto dto = dtoWithWindow(officeCode, date, date);
     when(client.getProviderFirmSchedules(officeCode, date)).thenReturn(Mono.just(dto));
 
-    StepVerifier.create(service.getProviderFirmSchedules(officeCode, date))
+    StepVerifier.create(service.fetchProviderFirmSchedules(officeCode, date))
         .expectNext(dto)
         .verifyComplete();
 

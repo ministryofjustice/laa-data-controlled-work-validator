@@ -2,16 +2,12 @@ package uk.gov.justice.laa.dstew.payments.claims.validation.core.config;
 
 import java.util.List;
 import java.util.Map;
-import lombok.Getter;
-import org.springframework.stereotype.Component;
 import uk.gov.justice.laa.dstew.payments.claimsdata.model.AreaOfLaw;
 
-/** Registry of mandatory fields by area of law. */
-@Component
-@Getter
-public class MandatoryFieldsRegistry {
+/** Compile-time constants defining mandatory fields by area of law. */
+public final class MandatoryFieldsRegistry {
 
-  private final List<String> legalHelpMandatoryFields =
+  public static final List<String> LEGAL_HELP_MANDATORY_FIELDS =
       List.of(
           "uniqueFileNumber",
           "caseStartDate",
@@ -37,14 +33,14 @@ public class MandatoryFieldsRegistry {
           "netProfitCostsAmount",
           "isVatApplicable");
 
-  private final List<String> crimeLowerMandatoryFields =
+  public static final List<String> CRIME_LOWER_MANDATORY_FIELDS =
       List.of(
           "caseConcludedDate",
           "stageReachedCode",
           "netProfitCostsAmount",
           "disbursementsVatAmount");
 
-  private final List<String> mediationMandatoryFields =
+  public static final List<String> MEDIATION_MANDATORY_FIELDS =
       List.of(
           "outreachLocation",
           "referralSource",
@@ -64,9 +60,11 @@ public class MandatoryFieldsRegistry {
           "matterTypeCode",
           "uniqueCaseId");
 
-  private final Map<AreaOfLaw, List<String>> mandatoryFieldsByAreaOfLaw =
+  public static final Map<AreaOfLaw, List<String>> MANDATORY_FIELDS_BY_AREA_OF_LAW =
       Map.of(
-          AreaOfLaw.LEGAL_HELP, legalHelpMandatoryFields,
-          AreaOfLaw.CRIME_LOWER, crimeLowerMandatoryFields,
-          AreaOfLaw.MEDIATION, mediationMandatoryFields);
+          AreaOfLaw.LEGAL_HELP, LEGAL_HELP_MANDATORY_FIELDS,
+          AreaOfLaw.CRIME_LOWER, CRIME_LOWER_MANDATORY_FIELDS,
+          AreaOfLaw.MEDIATION, MEDIATION_MANDATORY_FIELDS);
+
+  private MandatoryFieldsRegistry() {}
 }

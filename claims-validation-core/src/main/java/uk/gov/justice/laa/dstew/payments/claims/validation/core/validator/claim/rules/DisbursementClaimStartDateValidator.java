@@ -6,7 +6,6 @@ import static uk.gov.justice.laa.dstew.payments.claims.validation.core.util.FeeT
 import java.time.LocalDate;
 import java.time.YearMonth;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.util.DateUtils;
@@ -22,7 +21,6 @@ import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.
  * against the last calendar day of the submission period month.
  */
 @Slf4j
-@Component
 public final class DisbursementClaimStartDateValidator implements ClaimValidator {
 
   @Override

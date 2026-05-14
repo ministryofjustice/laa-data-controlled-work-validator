@@ -2,7 +2,6 @@ package uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim
 
 import java.math.BigDecimal;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidationContext;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidationError;
@@ -12,7 +11,6 @@ import uk.gov.justice.laa.dstew.payments.claimsdata.model.AreaOfLaw;
  * Validator for disbursement-related fields. Validates that disbursement VAT amounts are within
  * acceptable limits.
  */
-@Component
 @Slf4j
 public class DisbursementsClaimValidator implements ClaimValidator {
 

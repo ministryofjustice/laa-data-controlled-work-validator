@@ -15,33 +15,31 @@ import uk.gov.justice.laa.dstew.payments.claimsdata.model.AreaOfLaw;
 /**
  * Tests for {@link MandatoryFieldsRegistry}.
  *
- * <p>Verifies that each area-of-law list contains the correct mandatory fields,
+ * <p>Verifies that each area-of-law constant contains the correct mandatory fields,
  * that the map correctly maps areas of law to their respective field lists,
  * and that all lists are immutable.
  */
 @DisplayName("MandatoryFieldsRegistry")
 class MandatoryFieldsRegistryTest {
 
-  private final MandatoryFieldsRegistry registry = new MandatoryFieldsRegistry();
-
   // ─────────────────────────────────────────────────────────────────────────
-  // legalHelpMandatoryFields
+  // LEGAL_HELP_MANDATORY_FIELDS
   // ─────────────────────────────────────────────────────────────────────────
 
   @Nested
-  @DisplayName("legalHelpMandatoryFields")
+  @DisplayName("LEGAL_HELP_MANDATORY_FIELDS")
   class LegalHelpMandatoryFields {
 
     @Test
     @DisplayName("List is not null")
     void listIsNotNull() {
-      assertThat(registry.getLegalHelpMandatoryFields()).isNotNull();
+      assertThat(MandatoryFieldsRegistry.LEGAL_HELP_MANDATORY_FIELDS).isNotNull();
     }
 
     @Test
     @DisplayName("List contains exactly 23 entries")
     void listHasCorrectSize() {
-      assertThat(registry.getLegalHelpMandatoryFields()).hasSize(23);
+      assertThat(MandatoryFieldsRegistry.LEGAL_HELP_MANDATORY_FIELDS).hasSize(23);
     }
 
     @ParameterizedTest(name = "contains ''{0}''")
@@ -72,20 +70,20 @@ class MandatoryFieldsRegistryTest {
         "isVatApplicable"
     })
     void listContainsExpectedField(String fieldName) {
-      assertThat(registry.getLegalHelpMandatoryFields()).contains(fieldName);
+      assertThat(MandatoryFieldsRegistry.LEGAL_HELP_MANDATORY_FIELDS).contains(fieldName);
     }
 
     @Test
     @DisplayName("List does not contain Crime Lower specific fields")
     void listDoesNotContainCrimeLowerFields() {
-      assertThat(registry.getLegalHelpMandatoryFields())
+      assertThat(MandatoryFieldsRegistry.LEGAL_HELP_MANDATORY_FIELDS)
           .doesNotContain("stageReachedCode", "disbursementsVatAmount");
     }
 
     @Test
     @DisplayName("List is unmodifiable")
     void listIsUnmodifiable() {
-      List<String> fields = registry.getLegalHelpMandatoryFields();
+      List<String> fields = MandatoryFieldsRegistry.LEGAL_HELP_MANDATORY_FIELDS;
       org.junit.jupiter.api.Assertions.assertThrows(
           UnsupportedOperationException.class,
           () -> fields.add("newField")
@@ -94,23 +92,23 @@ class MandatoryFieldsRegistryTest {
   }
 
   // ─────────────────────────────────────────────────────────────────────────
-  // crimeLowerMandatoryFields
+  // CRIME_LOWER_MANDATORY_FIELDS
   // ─────────────────────────────────────────────────────────────────────────
 
   @Nested
-  @DisplayName("crimeLowerMandatoryFields")
+  @DisplayName("CRIME_LOWER_MANDATORY_FIELDS")
   class CrimeLowerMandatoryFields {
 
     @Test
     @DisplayName("List is not null")
     void listIsNotNull() {
-      assertThat(registry.getCrimeLowerMandatoryFields()).isNotNull();
+      assertThat(MandatoryFieldsRegistry.CRIME_LOWER_MANDATORY_FIELDS).isNotNull();
     }
 
     @Test
     @DisplayName("List contains exactly 4 entries")
     void listHasCorrectSize() {
-      assertThat(registry.getCrimeLowerMandatoryFields()).hasSize(4);
+      assertThat(MandatoryFieldsRegistry.CRIME_LOWER_MANDATORY_FIELDS).hasSize(4);
     }
 
     @ParameterizedTest(name = "contains ''{0}''")
@@ -122,13 +120,13 @@ class MandatoryFieldsRegistryTest {
         "disbursementsVatAmount"
     })
     void listContainsExpectedField(String fieldName) {
-      assertThat(registry.getCrimeLowerMandatoryFields()).contains(fieldName);
+      assertThat(MandatoryFieldsRegistry.CRIME_LOWER_MANDATORY_FIELDS).contains(fieldName);
     }
 
     @Test
     @DisplayName("List does not contain Legal Help specific fields")
     void listDoesNotContainLegalHelpFields() {
-      assertThat(registry.getCrimeLowerMandatoryFields())
+      assertThat(MandatoryFieldsRegistry.CRIME_LOWER_MANDATORY_FIELDS)
           .doesNotContain(
               "uniqueFileNumber",
               "clientForename",
@@ -141,7 +139,7 @@ class MandatoryFieldsRegistryTest {
     @Test
     @DisplayName("List is unmodifiable")
     void listIsUnmodifiable() {
-      List<String> fields = registry.getCrimeLowerMandatoryFields();
+      List<String> fields = MandatoryFieldsRegistry.CRIME_LOWER_MANDATORY_FIELDS;
       org.junit.jupiter.api.Assertions.assertThrows(
           UnsupportedOperationException.class,
           () -> fields.add("newField")
@@ -150,23 +148,23 @@ class MandatoryFieldsRegistryTest {
   }
 
   // ─────────────────────────────────────────────────────────────────────────
-  // mediationMandatoryFields
+  // MEDIATION_MANDATORY_FIELDS
   // ─────────────────────────────────────────────────────────────────────────
 
   @Nested
-  @DisplayName("mediationMandatoryFields")
+  @DisplayName("MEDIATION_MANDATORY_FIELDS")
   class MediationMandatoryFields {
 
     @Test
     @DisplayName("List is not null")
     void listIsNotNull() {
-      assertThat(registry.getMediationMandatoryFields()).isNotNull();
+      assertThat(MandatoryFieldsRegistry.MEDIATION_MANDATORY_FIELDS).isNotNull();
     }
 
     @Test
     @DisplayName("List contains exactly 17 entries")
     void listHasCorrectSize() {
-      assertThat(registry.getMediationMandatoryFields()).hasSize(17);
+      assertThat(MandatoryFieldsRegistry.MEDIATION_MANDATORY_FIELDS).hasSize(17);
     }
 
     @ParameterizedTest(name = "contains ''{0}''")
@@ -191,13 +189,13 @@ class MandatoryFieldsRegistryTest {
         "uniqueCaseId"
     })
     void listContainsExpectedField(String fieldName) {
-      assertThat(registry.getMediationMandatoryFields()).contains(fieldName);
+      assertThat(MandatoryFieldsRegistry.MEDIATION_MANDATORY_FIELDS).contains(fieldName);
     }
 
     @Test
     @DisplayName("List does not contain Crime Lower or Legal Help specific fields")
     void listDoesNotContainOtherAreaFields() {
-      assertThat(registry.getMediationMandatoryFields())
+      assertThat(MandatoryFieldsRegistry.MEDIATION_MANDATORY_FIELDS)
           .doesNotContain(
               "stageReachedCode",
               "disbursementsVatAmount",
@@ -210,7 +208,7 @@ class MandatoryFieldsRegistryTest {
     @Test
     @DisplayName("List is unmodifiable")
     void listIsUnmodifiable() {
-      List<String> fields = registry.getMediationMandatoryFields();
+      List<String> fields = MandatoryFieldsRegistry.MEDIATION_MANDATORY_FIELDS;
       org.junit.jupiter.api.Assertions.assertThrows(
           UnsupportedOperationException.class,
           () -> fields.add("newField")
@@ -219,57 +217,57 @@ class MandatoryFieldsRegistryTest {
   }
 
   // ─────────────────────────────────────────────────────────────────────────
-  // mandatoryFieldsByAreaOfLaw map
+  // MANDATORY_FIELDS_BY_AREA_OF_LAW map
   // ─────────────────────────────────────────────────────────────────────────
 
   @Nested
-  @DisplayName("mandatoryFieldsByAreaOfLaw map")
+  @DisplayName("MANDATORY_FIELDS_BY_AREA_OF_LAW map")
   class MandatoryFieldsByAreaOfLaw {
 
     @Test
     @DisplayName("Map is not null")
     void mapIsNotNull() {
-      assertThat(registry.getMandatoryFieldsByAreaOfLaw()).isNotNull();
+      assertThat(MandatoryFieldsRegistry.MANDATORY_FIELDS_BY_AREA_OF_LAW).isNotNull();
     }
 
     @Test
     @DisplayName("Map contains exactly 3 entries")
     void mapHasCorrectSize() {
-      assertThat(registry.getMandatoryFieldsByAreaOfLaw()).hasSize(3);
+      assertThat(MandatoryFieldsRegistry.MANDATORY_FIELDS_BY_AREA_OF_LAW).hasSize(3);
     }
 
     @ParameterizedTest(name = "map contains key {0}")
     @DisplayName("Map contains an entry for each supported AreaOfLaw")
     @EnumSource(value = AreaOfLaw.class, names = {"LEGAL_HELP", "CRIME_LOWER", "MEDIATION"})
     void mapContainsExpectedKeys(AreaOfLaw areaOfLaw) {
-      assertThat(registry.getMandatoryFieldsByAreaOfLaw()).containsKey(areaOfLaw);
+      assertThat(MandatoryFieldsRegistry.MANDATORY_FIELDS_BY_AREA_OF_LAW).containsKey(areaOfLaw);
     }
 
     @Test
-    @DisplayName("LEGAL_HELP key maps to the legalHelpMandatoryFields list")
+    @DisplayName("LEGAL_HELP key maps to the LEGAL_HELP_MANDATORY_FIELDS constant")
     void legalHelpKeyMapsToCorrectList() {
-      assertThat(registry.getMandatoryFieldsByAreaOfLaw().get(AreaOfLaw.LEGAL_HELP))
-          .isSameAs(registry.getLegalHelpMandatoryFields());
+      assertThat(MandatoryFieldsRegistry.MANDATORY_FIELDS_BY_AREA_OF_LAW.get(AreaOfLaw.LEGAL_HELP))
+          .isSameAs(MandatoryFieldsRegistry.LEGAL_HELP_MANDATORY_FIELDS);
     }
 
     @Test
-    @DisplayName("CRIME_LOWER key maps to the crimeLowerMandatoryFields list")
+    @DisplayName("CRIME_LOWER key maps to the CRIME_LOWER_MANDATORY_FIELDS constant")
     void crimeLowerKeyMapsToCorrectList() {
-      assertThat(registry.getMandatoryFieldsByAreaOfLaw().get(AreaOfLaw.CRIME_LOWER))
-          .isSameAs(registry.getCrimeLowerMandatoryFields());
+      assertThat(MandatoryFieldsRegistry.MANDATORY_FIELDS_BY_AREA_OF_LAW.get(AreaOfLaw.CRIME_LOWER))
+          .isSameAs(MandatoryFieldsRegistry.CRIME_LOWER_MANDATORY_FIELDS);
     }
 
     @Test
-    @DisplayName("MEDIATION key maps to the mediationMandatoryFields list")
+    @DisplayName("MEDIATION key maps to the MEDIATION_MANDATORY_FIELDS constant")
     void mediationKeyMapsToCorrectList() {
-      assertThat(registry.getMandatoryFieldsByAreaOfLaw().get(AreaOfLaw.MEDIATION))
-          .isSameAs(registry.getMediationMandatoryFields());
+      assertThat(MandatoryFieldsRegistry.MANDATORY_FIELDS_BY_AREA_OF_LAW.get(AreaOfLaw.MEDIATION))
+          .isSameAs(MandatoryFieldsRegistry.MEDIATION_MANDATORY_FIELDS);
     }
 
     @Test
     @DisplayName("Map is unmodifiable")
     void mapIsUnmodifiable() {
-      Map<AreaOfLaw, List<String>> map = registry.getMandatoryFieldsByAreaOfLaw();
+      Map<AreaOfLaw, List<String>> map = MandatoryFieldsRegistry.MANDATORY_FIELDS_BY_AREA_OF_LAW;
       org.junit.jupiter.api.Assertions.assertThrows(
           UnsupportedOperationException.class,
           () -> map.put(AreaOfLaw.LEGAL_HELP, List.of())
@@ -279,9 +277,9 @@ class MandatoryFieldsRegistryTest {
     @Test
     @DisplayName("Areas of law have non-overlapping mandatory field sets")
     void areasOfLawHaveNonOverlappingFields() {
-      List<String> legalHelp = registry.getLegalHelpMandatoryFields();
-      List<String> crimeLower = registry.getCrimeLowerMandatoryFields();
-      List<String> mediation = registry.getMediationMandatoryFields();
+      List<String> legalHelp = MandatoryFieldsRegistry.LEGAL_HELP_MANDATORY_FIELDS;
+      List<String> crimeLower = MandatoryFieldsRegistry.CRIME_LOWER_MANDATORY_FIELDS;
+      List<String> mediation = MandatoryFieldsRegistry.MEDIATION_MANDATORY_FIELDS;
 
       // stageReachedCode is exclusively in crimeLower
       assertThat(legalHelp).doesNotContain("stageReachedCode");
@@ -294,27 +292,6 @@ class MandatoryFieldsRegistryTest {
       // isVatApplicable is exclusively in legalHelp
       assertThat(crimeLower).doesNotContain("isVatApplicable");
       assertThat(mediation).doesNotContain("isVatApplicable");
-    }
-  }
-
-  // ─────────────────────────────────────────────────────────────────────────
-  // Multiple registry instances
-  // ─────────────────────────────────────────────────────────────────────────
-
-  @Nested
-  @DisplayName("Multiple registry instances")
-  class MultipleRegistryInstances {
-
-    @Test
-    @DisplayName("Two separate instances return equal field lists for each area of law")
-    void twoInstancesReturnEqualLists() {
-      MandatoryFieldsRegistry other = new MandatoryFieldsRegistry();
-      assertThat(registry.getLegalHelpMandatoryFields())
-          .isEqualTo(other.getLegalHelpMandatoryFields());
-      assertThat(registry.getCrimeLowerMandatoryFields())
-          .isEqualTo(other.getCrimeLowerMandatoryFields());
-      assertThat(registry.getMediationMandatoryFields())
-          .isEqualTo(other.getMediationMandatoryFields());
     }
   }
 }

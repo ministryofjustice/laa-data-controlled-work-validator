@@ -2,7 +2,6 @@ package uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim
 
 import java.time.LocalDate;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.util.DateUtils;
@@ -13,7 +12,6 @@ import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.
  * Validator for client date of birth fields. Validates that client DOB is in the past and after
  * 1900.
  */
-@Component
 @Slf4j
 public class ClientDateOfBirthClaimValidator implements ClaimValidator {
 

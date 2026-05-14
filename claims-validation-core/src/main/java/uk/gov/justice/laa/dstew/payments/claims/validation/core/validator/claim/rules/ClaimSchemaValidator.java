@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidationContext;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.schema.AbstractSchemaValidator;
@@ -28,7 +27,6 @@ import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.schema
  * {@link AbstractSchemaValidator} in the same way and implement the relevant validator
  * interface.
  */
-@Component
 @Slf4j
 public class ClaimSchemaValidator
     extends AbstractSchemaValidator<Claim>

@@ -14,7 +14,8 @@ import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.rules.duplicate.DuplicatePreviousClaimLegalHelpValidationServiceStrategy;
 
 /**
- * Tests for {@link DuplicateClaimValidationConfig}.
+ * Tests for duplicate claim validation strategy beans wired in
+ * {@link ClaimsValidationAutoConfiguration}.
  *
  * <p>Verifies that each {@code @Bean} factory method:
  * <ul>
@@ -23,15 +24,15 @@ import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.
  *   <li>Returns a new (distinct) instance on each call, not a shared singleton.
  * </ul>
  */
-@DisplayName("DuplicateClaimValidationConfig")
+@DisplayName("Duplicate claim validation strategy beans (ClaimsValidationAutoConfiguration)")
 class DuplicateClaimValidationConfigTest {
 
-  private DuplicateClaimValidationConfig config;
+  private ClaimsValidationAutoConfiguration config;
   private ClaimsDataProvider claimsDataProvider;
 
   @BeforeEach
   void setUp() {
-    config = new DuplicateClaimValidationConfig();
+    config = new ClaimsValidationAutoConfiguration();
     claimsDataProvider = mock(ClaimsDataProvider.class);
   }
 
@@ -46,14 +47,14 @@ class DuplicateClaimValidationConfigTest {
     @Test
     @DisplayName("Returns a non-null DuplicateClaimCrimeLowerValidationServiceStrategy")
     void returnsNonNull() {
-      assertThat(config.duplicateClaimCrimeLowerValidationServiceStrategy(claimsDataProvider))
+      assertThat(config.coreDuplicateClaimCrimeLowerValidationServiceStrategy(claimsDataProvider))
           .isNotNull();
     }
 
     @Test
     @DisplayName("Returns correct strategy type")
     void returnsCorrectType() {
-      assertThat(config.duplicateClaimCrimeLowerValidationServiceStrategy(claimsDataProvider))
+      assertThat(config.coreDuplicateClaimCrimeLowerValidationServiceStrategy(claimsDataProvider))
           .isInstanceOf(DuplicateClaimCrimeLowerValidationServiceStrategy.class);
     }
 
@@ -61,9 +62,9 @@ class DuplicateClaimValidationConfigTest {
     @DisplayName("Returns a new instance on each call")
     void returnsNewInstanceEachCall() {
       DuplicateClaimCrimeLowerValidationServiceStrategy first =
-          config.duplicateClaimCrimeLowerValidationServiceStrategy(claimsDataProvider);
+          config.coreDuplicateClaimCrimeLowerValidationServiceStrategy(claimsDataProvider);
       DuplicateClaimCrimeLowerValidationServiceStrategy second =
-          config.duplicateClaimCrimeLowerValidationServiceStrategy(claimsDataProvider);
+          config.coreDuplicateClaimCrimeLowerValidationServiceStrategy(claimsDataProvider);
       assertThat(first).isNotSameAs(second);
     }
 
@@ -72,9 +73,9 @@ class DuplicateClaimValidationConfigTest {
     void differentProvidersProduceDifferentStrategies() {
       ClaimsDataProvider otherProvider = mock(ClaimsDataProvider.class);
       DuplicateClaimCrimeLowerValidationServiceStrategy strategyA =
-          config.duplicateClaimCrimeLowerValidationServiceStrategy(claimsDataProvider);
+          config.coreDuplicateClaimCrimeLowerValidationServiceStrategy(claimsDataProvider);
       DuplicateClaimCrimeLowerValidationServiceStrategy strategyB =
-          config.duplicateClaimCrimeLowerValidationServiceStrategy(otherProvider);
+          config.coreDuplicateClaimCrimeLowerValidationServiceStrategy(otherProvider);
       assertThat(strategyA).isNotSameAs(strategyB);
     }
   }
@@ -90,14 +91,14 @@ class DuplicateClaimValidationConfigTest {
     @Test
     @DisplayName("Returns a non-null DuplicateClaimLegalHelpValidationServiceStrategy")
     void returnsNonNull() {
-      assertThat(config.duplicateClaimLegalHelpValidationServiceStrategy(claimsDataProvider))
+      assertThat(config.coreDuplicateClaimLegalHelpValidationServiceStrategy(claimsDataProvider))
           .isNotNull();
     }
 
     @Test
     @DisplayName("Returns correct strategy type")
     void returnsCorrectType() {
-      assertThat(config.duplicateClaimLegalHelpValidationServiceStrategy(claimsDataProvider))
+      assertThat(config.coreDuplicateClaimLegalHelpValidationServiceStrategy(claimsDataProvider))
           .isInstanceOf(DuplicateClaimLegalHelpValidationServiceStrategy.class);
     }
 
@@ -105,9 +106,9 @@ class DuplicateClaimValidationConfigTest {
     @DisplayName("Returns a new instance on each call")
     void returnsNewInstanceEachCall() {
       DuplicateClaimLegalHelpValidationServiceStrategy first =
-          config.duplicateClaimLegalHelpValidationServiceStrategy(claimsDataProvider);
+          config.coreDuplicateClaimLegalHelpValidationServiceStrategy(claimsDataProvider);
       DuplicateClaimLegalHelpValidationServiceStrategy second =
-          config.duplicateClaimLegalHelpValidationServiceStrategy(claimsDataProvider);
+          config.coreDuplicateClaimLegalHelpValidationServiceStrategy(claimsDataProvider);
       assertThat(first).isNotSameAs(second);
     }
   }
@@ -124,7 +125,7 @@ class DuplicateClaimValidationConfigTest {
     @DisplayName("Returns a non-null DuplicatePreviousClaimLegalHelpValidationServiceStrategy")
     void returnsNonNull() {
       assertThat(
-          config.duplicatePreviousClaimLegalHelpValidationServiceStrategy(claimsDataProvider))
+          config.coreDuplicatePreviousClaimLegalHelpValidationServiceStrategy(claimsDataProvider))
           .isNotNull();
     }
 
@@ -132,7 +133,7 @@ class DuplicateClaimValidationConfigTest {
     @DisplayName("Returns correct strategy type")
     void returnsCorrectType() {
       assertThat(
-          config.duplicatePreviousClaimLegalHelpValidationServiceStrategy(claimsDataProvider))
+          config.coreDuplicatePreviousClaimLegalHelpValidationServiceStrategy(claimsDataProvider))
           .isInstanceOf(DuplicatePreviousClaimLegalHelpValidationServiceStrategy.class);
     }
 
@@ -140,9 +141,9 @@ class DuplicateClaimValidationConfigTest {
     @DisplayName("Returns a new instance on each call")
     void returnsNewInstanceEachCall() {
       DuplicatePreviousClaimLegalHelpValidationServiceStrategy first =
-          config.duplicatePreviousClaimLegalHelpValidationServiceStrategy(claimsDataProvider);
+          config.coreDuplicatePreviousClaimLegalHelpValidationServiceStrategy(claimsDataProvider);
       DuplicatePreviousClaimLegalHelpValidationServiceStrategy second =
-          config.duplicatePreviousClaimLegalHelpValidationServiceStrategy(claimsDataProvider);
+          config.coreDuplicatePreviousClaimLegalHelpValidationServiceStrategy(claimsDataProvider);
       assertThat(first).isNotSameAs(second);
     }
   }
@@ -159,7 +160,7 @@ class DuplicateClaimValidationConfigTest {
     @DisplayName("Returns a non-null DuplicateClaimLegalHelpDisbursementValidationStrategy")
     void returnsNonNull() {
       assertThat(
-          config.duplicateClaimLegalHelpDisbursementValidationStrategy(claimsDataProvider))
+          config.coreDuplicateClaimLegalHelpDisbursementValidationStrategy(claimsDataProvider))
           .isNotNull();
     }
 
@@ -167,7 +168,7 @@ class DuplicateClaimValidationConfigTest {
     @DisplayName("Returns correct strategy type")
     void returnsCorrectType() {
       assertThat(
-          config.duplicateClaimLegalHelpDisbursementValidationStrategy(claimsDataProvider))
+          config.coreDuplicateClaimLegalHelpDisbursementValidationStrategy(claimsDataProvider))
           .isInstanceOf(DuplicateClaimLegalHelpDisbursementValidationStrategy.class);
     }
 
@@ -175,9 +176,9 @@ class DuplicateClaimValidationConfigTest {
     @DisplayName("Returns a new instance on each call")
     void returnsNewInstanceEachCall() {
       DuplicateClaimLegalHelpDisbursementValidationStrategy first =
-          config.duplicateClaimLegalHelpDisbursementValidationStrategy(claimsDataProvider);
+          config.coreDuplicateClaimLegalHelpDisbursementValidationStrategy(claimsDataProvider);
       DuplicateClaimLegalHelpDisbursementValidationStrategy second =
-          config.duplicateClaimLegalHelpDisbursementValidationStrategy(claimsDataProvider);
+          config.coreDuplicateClaimLegalHelpDisbursementValidationStrategy(claimsDataProvider);
       assertThat(first).isNotSameAs(second);
     }
   }
@@ -193,10 +194,10 @@ class DuplicateClaimValidationConfigTest {
     @Test
     @DisplayName("Each bean method produces a different concrete type")
     void eachBeanMethodProducesDifferentConcreteType() {
-      Object crimeLower = config.duplicateClaimCrimeLowerValidationServiceStrategy(claimsDataProvider);
-      Object legalHelp = config.duplicateClaimLegalHelpValidationServiceStrategy(claimsDataProvider);
-      Object previousLegalHelp = config.duplicatePreviousClaimLegalHelpValidationServiceStrategy(claimsDataProvider);
-      Object disbursement = config.duplicateClaimLegalHelpDisbursementValidationStrategy(claimsDataProvider);
+      Object crimeLower = config.coreDuplicateClaimCrimeLowerValidationServiceStrategy(claimsDataProvider);
+      Object legalHelp = config.coreDuplicateClaimLegalHelpValidationServiceStrategy(claimsDataProvider);
+      Object previousLegalHelp = config.coreDuplicatePreviousClaimLegalHelpValidationServiceStrategy(claimsDataProvider);
+      Object disbursement = config.coreDuplicateClaimLegalHelpDisbursementValidationStrategy(claimsDataProvider);
 
       assertThat(crimeLower.getClass())
           .isNotEqualTo(legalHelp.getClass())

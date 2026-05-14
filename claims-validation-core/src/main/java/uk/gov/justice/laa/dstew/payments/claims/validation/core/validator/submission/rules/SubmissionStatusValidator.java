@@ -3,7 +3,6 @@ package uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.submi
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.submission.SubmissionValidationContext;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.submission.SubmissionValidationError;
 import uk.gov.justice.laa.dstew.payments.claimsdata.model.SubmissionResponse;
@@ -16,7 +15,6 @@ import uk.gov.justice.laa.dstew.payments.claimsdata.model.SubmissionStatus;
  * just validate the status and log appropriately.
  */
 @Slf4j
-@Component
 @RequiredArgsConstructor
 public class SubmissionStatusValidator implements SubmissionValidator {
 

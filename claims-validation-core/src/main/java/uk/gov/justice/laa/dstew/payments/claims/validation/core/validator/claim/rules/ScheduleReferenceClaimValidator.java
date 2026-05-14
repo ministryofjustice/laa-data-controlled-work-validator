@@ -2,7 +2,6 @@ package uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim
 
 import java.util.regex.Pattern;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidationContext;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidationError;
@@ -12,7 +11,6 @@ import uk.gov.justice.laa.dstew.payments.claimsdata.model.AreaOfLaw;
  * Validator for schedule reference. Validates that the schedule reference matches the expected
  * format.
  */
-@Component
 @Slf4j
 public class ScheduleReferenceClaimValidator implements ClaimValidator {
 

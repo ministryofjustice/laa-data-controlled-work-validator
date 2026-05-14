@@ -7,7 +7,6 @@ import java.util.Objects;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
@@ -23,13 +22,7 @@ import uk.gov.justice.laadata.providers.model.ProviderFirmOfficeContractAndSched
 
 /**
  * Validates that a claim's effective category of law is valid.
- *
- * <p>NOTE: This validator performs a blocking call to external provider APIs via
- * {@code HttpProviderDetailsProvider} and {@code HttpFeeSchemeProvider}. Callers must ensure that
- * {@link #validate(Claim, ClaimValidationContext)} is invoked from a worker thread (not a
- * Netty/Reactor event-loop) because it uses {@code blockOptional()} on reactive providers.
  */
-@Component
 @RequiredArgsConstructor
 @Slf4j
 public class EffectiveCategoryOfLawClaimValidator implements ClaimValidator {
@@ -160,7 +153,6 @@ public class EffectiveCategoryOfLawClaimValidator implements ClaimValidator {
       List<String> categories =
           httpProviderDetailsProvider
               .getProviderFirmSchedules(officeCode, effectiveDate)
-              .blockOptional()
               .map(this::extractCategoriesFromSchedules)
               .orElse(Collections.emptyList());
       return new ProviderSchedulesResult(categories, false);
@@ -197,8 +189,7 @@ public class EffectiveCategoryOfLawClaimValidator implements ClaimValidator {
    */
   private FeeDetailsResult fetchFeeDetailsSafely(String feeCode, ClaimValidationContext context) {
     try {
-      Optional<FeeDetailsResponseV2> opt =
-          httpFeeSchemeProvider.getFeeDetails(feeCode).blockOptional();
+      Optional<FeeDetailsResponseV2> opt = httpFeeSchemeProvider.getFeeDetails(feeCode);
       return new FeeDetailsResult(opt, false);
     } catch (Exception ex) {
       if (ex instanceof WebClientResponseException wcre) {

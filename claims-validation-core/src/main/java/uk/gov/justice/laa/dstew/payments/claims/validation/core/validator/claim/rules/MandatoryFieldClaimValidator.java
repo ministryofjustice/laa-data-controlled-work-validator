@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.config.ExclusionsRegistry;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.config.MandatoryFieldsRegistry;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
@@ -22,18 +21,8 @@ import uk.gov.justice.laa.dstew.payments.claimsdata.model.AreaOfLaw;
  * Checks if all mandatory fields for a given area of law are populated in the provided Claim
  * object. If a mandatory field is missing or invalid, an error is added to the validation issues.
  */
-@Component
 @Slf4j
 public class MandatoryFieldClaimValidator implements ClaimValidator {
-
-  private final MandatoryFieldsRegistry mandatoryFieldsRegistry;
-  private final ExclusionsRegistry exclusionsRegistry;
-
-  public MandatoryFieldClaimValidator(
-      MandatoryFieldsRegistry mandatoryFieldsRegistry, ExclusionsRegistry exclusionsRegistry) {
-    this.exclusionsRegistry = exclusionsRegistry;
-    this.mandatoryFieldsRegistry = mandatoryFieldsRegistry;
-  }
 
   @Override
   public void validate(Claim claim, ClaimValidationContext context) {
@@ -46,7 +35,7 @@ public class MandatoryFieldClaimValidator implements ClaimValidator {
     String feeCalculationType = context.getFeeCalculationType();
 
     Map<AreaOfLaw, List<String>> mandatoryFieldsByAreaOfLaw =
-        mandatoryFieldsRegistry.getMandatoryFieldsByAreaOfLaw();
+        MandatoryFieldsRegistry.MANDATORY_FIELDS_BY_AREA_OF_LAW;
     List<String> mandatoryFields = mandatoryFieldsByAreaOfLaw.get(areaOfLaw);
     if (Objects.isNull(mandatoryFields)) {
       return;
@@ -54,7 +43,7 @@ public class MandatoryFieldClaimValidator implements ClaimValidator {
     boolean isDisbursementLegalHelpClaim =
         FeeCalculationType.DISB_ONLY.getValue().equals(feeCalculationType)
             && AreaOfLaw.LEGAL_HELP.equals(areaOfLaw);
-    List<String> disbursementExclusions = exclusionsRegistry.getDisbursementOnlyExclusions();
+    List<String> disbursementExclusions = ExclusionsRegistry.DISBURSEMENT_ONLY_EXCLUSIONS;
 
     for (String fieldName : mandatoryFields) {
       if (isDisbursementLegalHelpClaim && disbursementExclusions.contains(fieldName)) {

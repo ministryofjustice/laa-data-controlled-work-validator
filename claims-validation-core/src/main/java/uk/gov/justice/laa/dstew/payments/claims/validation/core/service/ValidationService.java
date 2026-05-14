@@ -5,7 +5,6 @@ import java.util.Collections;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationResult;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidation;
@@ -52,7 +51,6 @@ import uk.gov.justice.laa.dstew.payments.claimsdata.model.SubmissionResponse;
  * ValidationResult result = validationService.validateSubmission(submission, "pre-process");
  * }</pre>
  */
-@Service
 @RequiredArgsConstructor
 @Slf4j
 public class ValidationService {

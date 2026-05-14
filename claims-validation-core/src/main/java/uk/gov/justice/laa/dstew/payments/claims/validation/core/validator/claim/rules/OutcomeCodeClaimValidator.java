@@ -1,7 +1,6 @@
 package uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.rules;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidationContext;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidationError;
@@ -11,7 +10,6 @@ import uk.gov.justice.laa.dstew.payments.claimsdata.model.AreaOfLaw;
  * Validator for outcome code. Validates that the outcome code is valid for the area of law using
  * regex patterns.
  */
-@Component
 @Slf4j
 public class OutcomeCodeClaimValidator implements ClaimValidator {
 

@@ -1,7 +1,6 @@
 package uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.submission.rules;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.submission.SubmissionValidationContext;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.submission.SubmissionValidationError;
 import uk.gov.justice.laa.dstew.payments.claimsdata.model.SubmissionResponse;
@@ -18,7 +17,6 @@ import uk.gov.justice.laa.dstew.payments.claimsdata.model.SubmissionResponse;
  *
  * @author Jamie Briggs
  */
-@Component
 @Slf4j
 public class NilSubmissionValidator implements SubmissionValidator {
 
