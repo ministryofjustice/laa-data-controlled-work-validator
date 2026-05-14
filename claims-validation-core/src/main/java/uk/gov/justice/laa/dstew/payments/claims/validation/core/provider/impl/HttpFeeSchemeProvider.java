@@ -3,16 +3,17 @@ package uk.gov.justice.laa.dstew.payments.claims.validation.core.provider.impl;
 import io.github.resilience4j.retry.RetryRegistry;
 import java.time.Duration;
 import java.util.Objects;
+import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import reactor.core.publisher.Mono;
-import reactor.core.scheduler.Schedulers;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.client.FeeSchemeClient;
 import uk.gov.justice.laa.fee.scheme.model.FeeDetailsResponseV2;
 
 /**
  * Caching provider for Fee Scheme API. Uses the same positive/negative cache + in-flight dedupe
- * pattern established in {@code HttpProviderDetailsProvider} but specialised for fee details.
+ * pattern as {@link HttpProviderDetailsProvider}
+ * via {@link AbstractHttpCachingProvider#fetchDeduped}.
  */
 @Slf4j
 public class HttpFeeSchemeProvider extends AbstractHttpCachingProvider<FeeDetailsResponseV2> {
@@ -29,46 +30,38 @@ public class HttpFeeSchemeProvider extends AbstractHttpCachingProvider<FeeDetail
   }
 
   /**
-   * Returns a cached FeeDetailsResponseV2 for the given fee code, or fetches and caches it.
+   * Returns the fee details for the given fee code, or empty if not found.
+   * Uses positive/negative caching and in-flight deduplication internally.
    *
-   * <p>Not-found responses are cached as negative entries for a short TTL.
+   * <p>Returns an empty {@link Optional} when the fee code is not found (404).
+   * Throws on technical API failure.
    */
-  public Mono<FeeDetailsResponseV2> getFeeDetails(final String feeCode) {
+  public Optional<FeeDetailsResponseV2> getFeeDetails(final String feeCode) {
+    return fetchFeeDetails(feeCode).blockOptional();
+  }
 
-    // negative short-circuit
+  /** Reactive implementation — package-private for testing. */
+  Mono<FeeDetailsResponseV2> fetchFeeDetails(final String feeCode) {
+
     if (getNegativeCached(feeCode).isPresent()) {
       log.debug("Fee negative cache hit for {}", feeCode);
       return Mono.empty();
     }
 
-    // positive cache
     var pos = getPositiveCached(feeCode);
     if (pos.isPresent()) {
       log.debug("Fee positive cache hit for {}", feeCode);
-      // refresh TTL
       positiveCache.put(feeCode, pos.get().refresh(positiveTtl));
       return Mono.just(pos.get().value());
     }
 
-    // fetch and dedupe in-flight
-    return inFlightCalls
-        .computeIfAbsent(
-                feeCode,
-            k ->
-                Mono.fromCallable(() -> feeSchemeClient.getFeeDetails(feeCode))
-                    .subscribeOn(Schedulers.boundedElastic())
-                    .flatMap(resp -> Mono.justOrEmpty(mapResponse(resp)))
-                    .map(body -> {
-                      cachePositive(feeCode, body);
-                      return body;
-                    })
-                    .switchIfEmpty(Mono.defer(() -> {
-                      cacheNegative(feeCode);
-                      return Mono.empty();
-                    }))
-                    .transformDeferred(retryOperator(RETRY_NAME))
-                    .doFinally(sig -> inFlightCalls.remove(feeCode))
-                    .cache());
+    return fetchDedupedWithCaching(feeCode, RETRY_NAME, () ->
+        feeSchemeClient.getFeeDetails(feeCode)
+            .flatMap(resp -> Mono.justOrEmpty(mapResponse(resp)))
+            .map(body -> {
+              cachePositive(feeCode, body);
+              return body;
+            }));
   }
 
   private static FeeDetailsResponseV2 mapResponse(ResponseEntity<FeeDetailsResponseV2> resp) {

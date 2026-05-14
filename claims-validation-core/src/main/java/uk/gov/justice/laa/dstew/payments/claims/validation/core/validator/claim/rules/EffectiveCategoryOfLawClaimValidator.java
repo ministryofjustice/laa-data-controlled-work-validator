@@ -22,11 +22,6 @@ import uk.gov.justice.laadata.providers.model.ProviderFirmOfficeContractAndSched
 
 /**
  * Validates that a claim's effective category of law is valid.
- *
- * <p>NOTE: This validator performs a blocking call to external provider APIs via
- * {@code HttpProviderDetailsProvider} and {@code HttpFeeSchemeProvider}. Callers must ensure that
- * {@link #validate(Claim, ClaimValidationContext)} is invoked from a worker thread (not a
- * Netty/Reactor event-loop) because it uses {@code blockOptional()} on reactive providers.
  */
 @RequiredArgsConstructor
 @Slf4j
@@ -158,7 +153,6 @@ public class EffectiveCategoryOfLawClaimValidator implements ClaimValidator {
       List<String> categories =
           httpProviderDetailsProvider
               .getProviderFirmSchedules(officeCode, effectiveDate)
-              .blockOptional()
               .map(this::extractCategoriesFromSchedules)
               .orElse(Collections.emptyList());
       return new ProviderSchedulesResult(categories, false);
@@ -195,8 +189,7 @@ public class EffectiveCategoryOfLawClaimValidator implements ClaimValidator {
    */
   private FeeDetailsResult fetchFeeDetailsSafely(String feeCode, ClaimValidationContext context) {
     try {
-      Optional<FeeDetailsResponseV2> opt =
-          httpFeeSchemeProvider.getFeeDetails(feeCode).blockOptional();
+      Optional<FeeDetailsResponseV2> opt = httpFeeSchemeProvider.getFeeDetails(feeCode);
       return new FeeDetailsResult(opt, false);
     } catch (Exception ex) {
       if (ex instanceof WebClientResponseException wcre) {
