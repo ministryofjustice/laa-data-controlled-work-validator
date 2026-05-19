@@ -12,6 +12,72 @@ import org.junit.jupiter.params.provider.CsvSource;
 class StringCaseUtilTest {
 
   @Nested
+  @DisplayName("toSnakeCase variations")
+  class ToSnakeCase {
+
+    @Test
+    @DisplayName("returns empty when input is null")
+    void returnsEmptyForNull() {
+      assertThat(StringCaseUtil.toSnakeCase(null)).isEmpty();
+    }
+
+    @Test
+    @DisplayName("returns empty when input is empty")
+    void returnsEmptyForEmpty() {
+      assertThat(StringCaseUtil.toSnakeCase("")).isEmpty();
+    }
+
+    @ParameterizedTest
+    @DisplayName("converts camelCase to snake_case")
+    @CsvSource(value = {
+      "benTest|ben_test",
+      "caseStartDate|case_start_date",
+      "clientDateOfBirth|client_date_of_birth",
+      "isVatApplicable|is_vat_applicable",
+      "uniqueFileNumber|unique_file_number"
+    }, delimiter = '|')
+    void convertsCamelCase(String input, String expected) {
+      assertThat(StringCaseUtil.toSnakeCase(input)).isEqualTo(expected);
+    }
+
+    @ParameterizedTest
+    @DisplayName("converts space-separated words (mixed case) to snake_case")
+    @CsvSource(value = {
+      "Ben Test|ben_test",
+      "Ben test|ben_test",
+      "BEN TEST|ben_test",
+      "case start date|case_start_date",
+      "  leading  spaces  |leading_spaces"
+    }, delimiter = '|')
+    void convertsSpaceSeparated(String input, String expected) {
+      assertThat(StringCaseUtil.toSnakeCase(input)).isEqualTo(expected);
+    }
+
+    @ParameterizedTest
+    @DisplayName("handles already snake_case and mixed separators")
+    @CsvSource(value = {
+      "already_snake_case|already_snake_case",
+      "mixed_Case_Input|mixed_case_input",
+      "extra___underscores|extra_underscores"
+    }, delimiter = '|')
+    void handlesMixedSeparators(String input, String expected) {
+      assertThat(StringCaseUtil.toSnakeCase(input)).isEqualTo(expected);
+    }
+
+    @Test
+    @DisplayName("strips leading and trailing underscores")
+    void stripsLeadingTrailingUnderscores() {
+      assertThat(StringCaseUtil.toSnakeCase("_leadingTrailing_")).isEqualTo("leading_trailing");
+    }
+
+    @Test
+    @DisplayName("single word returns lowercase")
+    void singleWord() {
+      assertThat(StringCaseUtil.toSnakeCase("Status")).isEqualTo("status");
+    }
+  }
+
+  @Nested
   @DisplayName("toTitleCase variations")
   class ToTitleCase {
 

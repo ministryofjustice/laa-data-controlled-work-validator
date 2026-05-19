@@ -461,7 +461,7 @@
         }
       ]
     },
-    "client2_forename": {
+    "client_2_forename": {
       "type": "string",
       "pattern": "^[\\p{L}\\p{N}\\p{Zs}\\-''&]{1,30}$",
       "validationErrorMessages": [
@@ -471,7 +471,7 @@
         }
       ]
     },
-    "client2_surname": {
+    "client_2_surname": {
       "type": "string",
       "pattern": "^[\\p{L}\\p{N}\\p{Zs}\\-''&]{1,30}$",
       "validationErrorMessages": [
@@ -481,7 +481,7 @@
         }
       ]
     },
-    "client2_date_of_birth": {
+    "client_2_date_of_birth": {
       "type": "string",
       "pattern": "^([0-9]{4})-(0?[1-9]|1[0-2])-(0?[1-9]|[12][0-9]|3[01])$",
       "validationErrorMessages": [
@@ -491,7 +491,7 @@
         }
       ]
     },
-    "client2_ucn": {
+    "client_2_ucn": {
       "type": "string",
       "pattern": "^(0[1-9]|[12][0-9]|3[01])(0[1-9]|1[0-2])([0-9]{4})/[\\p{L}0-9 \\-''&]/[\\p{L}0-9 \\-''&]{1,4}$",
       "maxLength": 15,
@@ -502,7 +502,7 @@
         }
       ]
     },
-    "client2_postcode": {
+    "client_2_postcode": {
       "type": "string",
       "pattern": "^NFA|[A-Z]{1,2}[0-9][0-9A-Z]?\\s?[0-9][A-Z]{2}$",
       "validationErrorMessages": [
@@ -512,7 +512,7 @@
         }
       ]
     },
-    "client2_gender_code": {
+    "client_2_gender_code": {
       "type": "string",
       "pattern": "^([MmFfUu])$",
       "validationErrorMessages": [
@@ -522,7 +522,7 @@
         }
       ]
     },
-    "client2_ethnicity_code": {
+    "client_2_ethnicity_code": {
       "type": "string",
       "pattern": "^(0[0-9]|1[0-6]|99)$",
       "minLength": 2,
@@ -534,7 +534,7 @@
         }
       ]
     },
-    "client2_disability_code": {
+    "client_2_disability_code": {
       "type": "string",
       "pattern": "^(NCD|MOB|DEA|HEA|VIS|BLI|MHC|LDD|COG|ILL|OTH|UKN|PHY|SEN)$",
       "minLength": 3,
@@ -546,7 +546,7 @@
         }
       ]
     },
-    "client2_is_legally_aided": {
+    "client_2_is_legally_aided": {
       "type": "boolean",
       "validationErrorMessages": [
         {
@@ -649,7 +649,7 @@
         }
       ]
     },
-    "is_client2_postal_application_accepted": {
+    "is_client_2_postal_application_accepted": {
       "type": "boolean",
       "validationErrorMessages": [
         {

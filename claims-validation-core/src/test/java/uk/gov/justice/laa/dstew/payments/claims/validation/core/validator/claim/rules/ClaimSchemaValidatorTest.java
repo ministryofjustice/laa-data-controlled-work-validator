@@ -226,7 +226,7 @@ class ClaimSchemaValidatorTest {
       // Each should have proper technical message
       for (ValidationIssue error : errors) {
         assertThat(error.getCode()).isEqualTo("SCHEMA_VALIDATION_ERROR");
-        assertThat(error.getTechnicalMessage()).startsWith("Required field '");
+        assertThat(error.getTechnicalMessage()).startsWith("$: required property '");
       }
     }
   }

@@ -23,14 +23,14 @@ class StageReachedClaimValidationTest {
           "{index} => claimId={0}, stageReachedCode={1}, areaOfLaw={2}, expectError={3}, expectedCode={4}, expectedMessage={5}, expectedTechnical={6}")
   @CsvSource({
     // LEGAL_HELP
-    "1, AABB, LEGAL_HELP, true, INVALID_STAGE_REACHED_LEGAL_HELP, Stage Reached Code must be exactly 2 alphanumeric characters for Legal Help claims, stage_reached_code (LEGAL_HELP): does not match the regex pattern ^[a-zA-Z0-9]{2}$ (provided value: AABB)",
+    "1, AABB, LEGAL_HELP, true, INVALID_STAGE_REACHED_LEGAL_HELP, Stage Reached Code must be exactly 2 alphanumeric characters for Legal Help claims, stage_reached_code (LEGAL HELP): does not match the regex pattern ^[a-zA-Z0-9]{2}$ (provided value: AABB)",
     "2, AZ, LEGAL_HELP, false, , , ",
     "3, C9, LEGAL_HELP, false, , , ",
-    "4, A!, LEGAL_HELP, true, INVALID_STAGE_REACHED_LEGAL_HELP, Stage Reached Code must be exactly 2 alphanumeric characters for Legal Help claims, stage_reached_code (LEGAL_HELP): does not match the regex pattern ^[a-zA-Z0-9]{2}$ (provided value: A!)",
+    "4, A!, LEGAL_HELP, true, INVALID_STAGE_REACHED_LEGAL_HELP, Stage Reached Code must be exactly 2 alphanumeric characters for Legal Help claims, stage_reached_code (LEGAL HELP): does not match the regex pattern ^[a-zA-Z0-9]{2}$ (provided value: A!)",
     // CRIME_LOWER
-    "5, A1, CRIME_LOWER, true, INVALID_STAGE_REACHED_CRIME_LOWER, Stage Reached Code must be one of the allowed values for Crime Lower claims, stage_reached_code (CRIME_LOWER): does not match the regex pattern ^(INV[A-M]|PRI[A-E]|PRO[C-FH-LP-TUVW]|APP[ABC]|AS(MS|PL|AS)|YOU[EFKLXY]|VOID)$ (provided value: A1)",
-    "6, A-CD, CRIME_LOWER, true, INVALID_STAGE_REACHED_CRIME_LOWER, Stage Reached Code must be one of the allowed values for Crime Lower claims, stage_reached_code (CRIME_LOWER): does not match the regex pattern ^(INV[A-M]|PRI[A-E]|PRO[C-FH-LP-TUVW]|APP[ABC]|AS(MS|PL|AS)|YOU[EFKLXY]|VOID)$ (provided value: A-CD)",
-    "7, ABCD, CRIME_LOWER, true, INVALID_STAGE_REACHED_CRIME_LOWER, Stage Reached Code must be one of the allowed values for Crime Lower claims, stage_reached_code (CRIME_LOWER): does not match the regex pattern ^(INV[A-M]|PRI[A-E]|PRO[C-FH-LP-TUVW]|APP[ABC]|AS(MS|PL|AS)|YOU[EFKLXY]|VOID)$ (provided value: ABCD)"
+    "5, A1, CRIME_LOWER, true, INVALID_STAGE_REACHED_CRIME_LOWER, Stage Reached Code must be one of the allowed values for Crime Lower claims, stage_reached_code (CRIME LOWER): does not match the regex pattern ^(INV[A-M]|PRI[A-E]|PRO[C-FH-LP-TUVW]|APP[ABC]|AS(MS|PL|AS)|YOU[EFKLXY]|VOID)$ (provided value: A1)",
+    "6, A-CD, CRIME_LOWER, true, INVALID_STAGE_REACHED_CRIME_LOWER, Stage Reached Code must be one of the allowed values for Crime Lower claims, stage_reached_code (CRIME LOWER): does not match the regex pattern ^(INV[A-M]|PRI[A-E]|PRO[C-FH-LP-TUVW]|APP[ABC]|AS(MS|PL|AS)|YOU[EFKLXY]|VOID)$ (provided value: A-CD)",
+    "7, ABCD, CRIME_LOWER, true, INVALID_STAGE_REACHED_CRIME_LOWER, Stage Reached Code must be one of the allowed values for Crime Lower claims, stage_reached_code (CRIME LOWER): does not match the regex pattern ^(INV[A-M]|PRI[A-E]|PRO[C-FH-LP-TUVW]|APP[ABC]|AS(MS|PL|AS)|YOU[EFKLXY]|VOID)$ (provided value: ABCD)"
   })
   void checkStageReachedCode(
       int claimIdBit, String stageReachedCode, AreaOfLaw areaOfLaw, boolean expectError,

@@ -34,13 +34,7 @@ public final class DuplicateClaimLegalHelpValidationServiceStrategy extends Dupl
       return issues;
     }
 
-    DuplicateCheckResult result =
-        getDuplicateClaimsInPreviousSubmission(
-            officeCode,
-            currentClaim.getFeeCode(),
-            currentClaim.getUniqueFileNumber(),
-            currentClaim.getUniqueClientNumber(),
-            currentClaim.getSubmissionId());
+    DuplicateCheckResult result = getDuplicateClaimsInPreviousSubmission(currentClaim);
 
     if (result.hasError()) {
       issues.add(result.error());

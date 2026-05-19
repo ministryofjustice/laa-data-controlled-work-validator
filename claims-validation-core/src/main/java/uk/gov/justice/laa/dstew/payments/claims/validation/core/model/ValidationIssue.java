@@ -2,8 +2,6 @@ package uk.gov.justice.laa.dstew.payments.claims.validation.core.model;
 
 import java.io.Serial;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -45,7 +43,7 @@ public class ValidationIssue implements Serializable {
    * Path to the field causing the issue (if applicable).
    */
   @Builder.Default
-  private List<ValidationIssuePathInner> path = new ArrayList<>();
+  private String path = null;
 
   /**
    * Severity of the validation issue.
@@ -57,17 +55,4 @@ public class ValidationIssue implements Serializable {
    */
   private String technicalMessage;
 
-  /**
-   * Adds a path item to the list of field paths causing the issue.
-   *
-   * @param pathItem the path item to add
-   * @return this ValidationIssue instance
-   */
-  public ValidationIssue addPathItem(ValidationIssuePathInner pathItem) {
-    if (this.path == null) {
-      this.path = new ArrayList<>();
-    }
-    this.path.add(pathItem);
-    return this;
-  }
 }

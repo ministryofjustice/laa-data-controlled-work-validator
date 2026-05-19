@@ -66,7 +66,7 @@ public class ClientDateOfBirthClaimValidator implements ClaimValidator {
 
   @Override
   public String getValidatorCode() {
-    return "CCLAIM_LIENT_DATE_OF_BIRTH";
+    return "CLAIM_CLIENT_DATE_OF_BIRTH";
   }
 
   @Override

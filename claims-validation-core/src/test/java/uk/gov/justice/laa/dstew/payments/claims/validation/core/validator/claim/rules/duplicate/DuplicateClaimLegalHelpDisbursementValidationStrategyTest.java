@@ -78,7 +78,7 @@ class DuplicateClaimLegalHelpDisbursementValidationStrategyTest
     void shouldHaveNoErrorsWhenCurrentClaimNotDisbursement() {
       var claimTobeProcessed =
           createClaim(
-              "claimId1", "submissionId1", FEE_CODE, UFN, UCN,
+              "claimId1", OFFICE_CODE, "submissionId1", FEE_CODE, UFN, UCN,
               ClaimStatus.READY_TO_PROCESS, "MAY-2025", null);
 
       List<ValidationIssue> strategyIssues =
@@ -97,7 +97,7 @@ class DuplicateClaimLegalHelpDisbursementValidationStrategyTest
     void shouldHaveNoErrorsWhenNoOtherClaimsAndNoCurrentSubmissionClaims() {
       var claimTobeProcessed =
           createClaim(
-              "claimId1", "submissionId1", FEE_CODE, UFN, UCN,
+              "claimId1", OFFICE_CODE, "submissionId1", FEE_CODE, UFN, UCN,
               ClaimStatus.READY_TO_PROCESS, "MAY-2025", null);
 
       when(dataClaimsRestClient.getClaims(
@@ -120,11 +120,11 @@ class DuplicateClaimLegalHelpDisbursementValidationStrategyTest
     void shouldHaveNoErrorsWhenNoOtherClaimsAndExactClaimsOnCurrentSubmission() {
       var claimTobeProcessed =
           createClaim(
-              "claimId1", "submissionId1", FEE_CODE, UFN, UCN,
+              "claimId1", OFFICE_CODE, "submissionId1", FEE_CODE, UFN, UCN,
               ClaimStatus.READY_TO_PROCESS, "MAY-2025", null);
       var previousClaim =
           createClaim(
-              "claimId1", "submissionId2", FEE_CODE, UFN, UCN,
+              "claimId1", OFFICE_CODE, "submissionId2", FEE_CODE, UFN, UCN,
               ClaimStatus.READY_TO_PROCESS, "MAY-2025", null);
 
       when(dataClaimsRestClient.getClaims(
@@ -146,7 +146,7 @@ class DuplicateClaimLegalHelpDisbursementValidationStrategyTest
     void shouldHaveNoErrorsWhenDuplicateClaimButOlderThanThreeMonths() {
       var claimTobeProcessed =
           createClaim(
-              "claimId1", "submissionId1", FEE_CODE, UFN, UCN,
+              "claimId1", OFFICE_CODE, "submissionId1", FEE_CODE, UFN, UCN,
               ClaimStatus.READY_TO_PROCESS, "MAY-2025", null, "2025-04-15");
       var duplicateClaimOnPreviousSubmission =
           createClaimResponse(
@@ -173,7 +173,7 @@ class DuplicateClaimLegalHelpDisbursementValidationStrategyTest
     void shouldHaveNoErrorsWhenDuplicateClaimButOneYearOlder() {
       var claimTobeProcessed =
           createClaim(
-              "claimId1", "submissionId1", FEE_CODE, UFN, UCN,
+              "claimId1", OFFICE_CODE, "submissionId1", FEE_CODE, UFN, UCN,
               ClaimStatus.READY_TO_PROCESS, "MAY-2025", null, "2025-04-15");
       var duplicateClaimOnPreviousSubmission =
           createClaimResponse(
@@ -205,7 +205,7 @@ class DuplicateClaimLegalHelpDisbursementValidationStrategyTest
     void shouldHaveErrorsWhenDuplicateClaimWithinThreeMonths() {
       var claimTobeProcessed =
           createClaim(
-              "claimId1", "submissionId1", FEE_CODE, UFN, UCN,
+              "claimId1",  OFFICE_CODE,"submissionId1", FEE_CODE, UFN, UCN,
               ClaimStatus.READY_TO_PROCESS, "MAY-2025", null, "2025-04-15");
       var duplicateClaimOnPreviousSubmission =
           createClaimResponse(
@@ -240,7 +240,7 @@ class DuplicateClaimLegalHelpDisbursementValidationStrategyTest
     void shouldRejectIdenticalClaimInSamePeriod() {
       var incoming =
           createClaim(
-              "claimId1", "submissionId1", FEE_CODE, UFN, UCN,
+              "claimId1", OFFICE_CODE, "submissionId1", FEE_CODE, UFN, UCN,
               ClaimStatus.READY_TO_PROCESS, "MAY-2025", null, "2025-04-15");
       var matched =
           createClaimResponse(
@@ -266,7 +266,7 @@ class DuplicateClaimLegalHelpDisbursementValidationStrategyTest
     void shouldRejectIdenticalClaimInPrecedingPeriod() {
       var incoming =
           createClaim(
-              "claimId1", "submissionId1", FEE_CODE, UFN, UCN,
+              "claimId1",  OFFICE_CODE,"submissionId1", FEE_CODE, UFN, UCN,
               ClaimStatus.READY_TO_PROCESS, "JUN-2025", null, "2025-05-20");
       var matched =
           createClaimResponse(
@@ -292,7 +292,7 @@ class DuplicateClaimLegalHelpDisbursementValidationStrategyTest
     void shouldRejectWhenConcludedDatesAreOneWeekApart() {
       var incoming =
           createClaim(
-              "claimId1", "submissionId1", FEE_CODE, UFN, UCN,
+              "claimId1", OFFICE_CODE, "submissionId1", FEE_CODE, UFN, UCN,
               ClaimStatus.READY_TO_PROCESS, "MAY-2025", null, "2025-04-25");
       var matched =
           createClaimResponse(
@@ -336,7 +336,7 @@ class DuplicateClaimLegalHelpDisbursementValidationStrategyTest
     void shouldAcceptWhenMatchedConcludedDateIs10DaysBeforeCutoff() {
       var incoming =
           createClaim(
-              "incomingClaimId", "submissionId1", FEE_CODE, UFN, UCN,
+              "incomingClaimId", OFFICE_CODE, "submissionId1", FEE_CODE, UFN, UCN,
               ClaimStatus.READY_TO_PROCESS, INCOMING_SUBMISSION_PERIOD, null,
               INCOMING_CONCLUDED_DATE);
       stubMatchedClaim("2025-11-10");
@@ -354,7 +354,7 @@ class DuplicateClaimLegalHelpDisbursementValidationStrategyTest
     void shouldAcceptWhenMatchedConcludedDateIsExactlyOnCutoff() {
       var incoming =
           createClaim(
-              "incomingClaimId", "submissionId1", FEE_CODE, UFN, UCN,
+              "incomingClaimId", OFFICE_CODE, "submissionId1", FEE_CODE, UFN, UCN,
               ClaimStatus.READY_TO_PROCESS, INCOMING_SUBMISSION_PERIOD, null,
               INCOMING_CONCLUDED_DATE);
       stubMatchedClaim("2025-11-20");
@@ -371,7 +371,7 @@ class DuplicateClaimLegalHelpDisbursementValidationStrategyTest
     void shouldRejectWhenMatchedConcludedDateIsOneDayAfterCutoff() {
       var incoming =
           createClaim(
-              "incomingClaimId", "submissionId1", FEE_CODE, UFN, UCN,
+              "incomingClaimId", OFFICE_CODE, "submissionId1", FEE_CODE, UFN, UCN,
               ClaimStatus.READY_TO_PROCESS, INCOMING_SUBMISSION_PERIOD, null,
               INCOMING_CONCLUDED_DATE);
       stubMatchedClaim("2025-11-21");
@@ -409,7 +409,7 @@ class DuplicateClaimLegalHelpDisbursementValidationStrategyTest
     void shouldAcceptWhenIncomingConcludedDateIs5DaysBeforeCutoff() {
       var incoming =
           createClaim(
-              "incomingClaimId", "submissionId1", FEE_CODE, UFN, UCN,
+              "incomingClaimId", OFFICE_CODE, "submissionId1", FEE_CODE, UFN, UCN,
               ClaimStatus.READY_TO_PROCESS, INCOMING_SUBMISSION_PERIOD, null, "2025-08-15");
       stubMatchedClaim();
 
@@ -426,7 +426,7 @@ class DuplicateClaimLegalHelpDisbursementValidationStrategyTest
     void shouldAcceptWhenIncomingConcludedDateIsExactlyOnCutoff() {
       var incoming =
           createClaim(
-              "incomingClaimId", "submissionId1", FEE_CODE, UFN, UCN,
+              "incomingClaimId", OFFICE_CODE, "submissionId1", FEE_CODE, UFN, UCN,
               ClaimStatus.READY_TO_PROCESS, INCOMING_SUBMISSION_PERIOD, null, "2025-08-20");
       stubMatchedClaim();
 
@@ -442,7 +442,7 @@ class DuplicateClaimLegalHelpDisbursementValidationStrategyTest
     void shouldRejectWhenIncomingConcludedDateIsOneDayAfterCutoff() {
       var incoming =
           createClaim(
-              "incomingClaimId", "submissionId1", FEE_CODE, UFN, UCN,
+              "incomingClaimId", OFFICE_CODE, "submissionId1", FEE_CODE, UFN, UCN,
               ClaimStatus.READY_TO_PROCESS, INCOMING_SUBMISSION_PERIOD, null, "2025-08-21");
       stubMatchedClaim();
 
@@ -466,7 +466,7 @@ class DuplicateClaimLegalHelpDisbursementValidationStrategyTest
     void shouldAcceptWhenConcludedDatesAre7MonthsApart() {
       var incoming =
           createClaim(
-              "incomingClaimId", "submissionId1", FEE_CODE, UFN, UCN,
+              "incomingClaimId", OFFICE_CODE, "submissionId1", FEE_CODE, UFN, UCN,
               ClaimStatus.READY_TO_PROCESS, "MAY-2025", null, "2025-05-31");
       var matched =
           createClaimResponse(
@@ -578,9 +578,9 @@ class DuplicateClaimLegalHelpDisbursementValidationStrategyTest
     void returnsFalse(
         String incomingPeriod, String incomingDate,
         String anchorPeriod, String anchorDate, String description) {
-      var incoming = createClaim("c1", "s1", FEE_CODE, UFN, UCN,
+      var incoming = createClaim("c1", OFFICE_CODE, "s1", FEE_CODE, UFN, UCN,
           ClaimStatus.READY_TO_PROCESS, incomingPeriod, null, incomingDate);
-      var anchor = createClaim("c2", "s2", FEE_CODE, UFN, UCN,
+      var anchor = createClaim("c2", OFFICE_CODE, "s2", FEE_CODE, UFN, UCN,
           ClaimStatus.READY_TO_PROCESS, anchorPeriod, null, anchorDate);
       assertThat(duplicateClaimValidationService.isDuplicateClaim(incoming, anchor)).isFalse();
     }
@@ -612,9 +612,9 @@ class DuplicateClaimLegalHelpDisbursementValidationStrategyTest
         String incomingPeriod, String incomingDate,
         String anchorPeriod, String anchorDate,
         boolean expected, String description) {
-      var incoming = createClaim("c1", "s1", FEE_CODE, UFN, UCN,
+      var incoming = createClaim("c1", OFFICE_CODE, "s1", FEE_CODE, UFN, UCN,
           ClaimStatus.READY_TO_PROCESS, incomingPeriod, null, incomingDate);
-      var anchor = createClaim("c2", "s2", FEE_CODE, UFN, UCN,
+      var anchor = createClaim("c2", OFFICE_CODE, "s2", FEE_CODE, UFN, UCN,
           ClaimStatus.READY_TO_PROCESS, anchorPeriod, null, anchorDate);
       assertThat(duplicateClaimValidationService.isDuplicateClaim(incoming, anchor))
           .isEqualTo(expected);
@@ -637,7 +637,7 @@ class DuplicateClaimLegalHelpDisbursementValidationStrategyTest
     @Test
     @DisplayName("Returns the single candidate when only one exists")
     void returnsSingleCandidate() {
-      var claim = createClaim("c1", "s1", FEE_CODE, UFN, UCN,
+      var claim = createClaim("c1", OFFICE_CODE,"s1", FEE_CODE, UFN, UCN,
           ClaimStatus.READY_TO_PROCESS, "MAY-2025", null, "2025-04-15");
       assertThat(
               duplicateClaimValidationService.selectComparativeClaim(
@@ -648,9 +648,9 @@ class DuplicateClaimLegalHelpDisbursementValidationStrategyTest
     @Test
     @DisplayName("Returns the candidate whose concluded date is closest to the incoming date")
     void returnsClosestCandidateByDistance() {
-      var close = createClaim("c1", "s1", FEE_CODE, UFN, UCN,
+      var close = createClaim("c1", OFFICE_CODE, "s1", FEE_CODE, UFN, UCN,
           ClaimStatus.READY_TO_PROCESS, "MAY-2025", null, "2025-04-10");
-      var far = createClaim("c2", "s2", FEE_CODE, UFN, UCN,
+      var far = createClaim("c2", OFFICE_CODE, "s2", FEE_CODE, UFN, UCN,
           ClaimStatus.READY_TO_PROCESS, "MAR-2025", null, "2025-01-20");
       assertThat(
               duplicateClaimValidationService.selectComparativeClaim(
@@ -661,9 +661,9 @@ class DuplicateClaimLegalHelpDisbursementValidationStrategyTest
     @Test
     @DisplayName("Selects the candidate from the later submission period on a distance tie")
     void prefersLaterSubmissionPeriodOnTie() {
-      var earlierPeriod = createClaim("c1", "s1", FEE_CODE, UFN, UCN,
+      var earlierPeriod = createClaim("c1", OFFICE_CODE, "s1", FEE_CODE, UFN, UCN,
           ClaimStatus.READY_TO_PROCESS, "MAR-2025", null, "2025-04-10");
-      var laterPeriod = createClaim("c2", "s2", FEE_CODE, UFN, UCN,
+      var laterPeriod = createClaim("c2", OFFICE_CODE, "s2", FEE_CODE, UFN, UCN,
           ClaimStatus.READY_TO_PROCESS, "APR-2025", null, "2025-04-20");
       assertThat(
               duplicateClaimValidationService.selectComparativeClaim(
@@ -674,9 +674,9 @@ class DuplicateClaimLegalHelpDisbursementValidationStrategyTest
     @Test
     @DisplayName("Sorts candidates with null concluded date last")
     void sortsNullConcludedDateLast() {
-      var withDate = createClaim("c1", "s1", FEE_CODE, UFN, UCN,
+      var withDate = createClaim("c1",  OFFICE_CODE,"s1", FEE_CODE, UFN, UCN,
           ClaimStatus.READY_TO_PROCESS, "MAY-2025", null, "2025-04-10");
-      var withoutDate = createClaim("c2", "s2", FEE_CODE, UFN, UCN,
+      var withoutDate = createClaim("c2", OFFICE_CODE, "s2", FEE_CODE, UFN, UCN,
           ClaimStatus.READY_TO_PROCESS, "MAY-2025", null, null);
       assertThat(
               duplicateClaimValidationService.selectComparativeClaim(
@@ -687,9 +687,9 @@ class DuplicateClaimLegalHelpDisbursementValidationStrategyTest
     @Test
     @DisplayName("Sorts candidates with null submission period last in tie-break")
     void sortsNullSubmissionPeriodLastInTieBreak() {
-      var nullPeriod = createClaim("c1", "s1", FEE_CODE, UFN, UCN,
+      var nullPeriod = createClaim("c1", OFFICE_CODE, "s1", FEE_CODE, UFN, UCN,
           ClaimStatus.READY_TO_PROCESS, null, null, "2025-04-10");
-      var withPeriod = createClaim("c2", "s2", FEE_CODE, UFN, UCN,
+      var withPeriod = createClaim("c2", OFFICE_CODE, "s2", FEE_CODE, UFN, UCN,
           ClaimStatus.READY_TO_PROCESS, "APR-2025", null, "2025-04-20");
       assertThat(
               duplicateClaimValidationService.selectComparativeClaim(
@@ -705,7 +705,7 @@ class DuplicateClaimLegalHelpDisbursementValidationStrategyTest
     @Test
     @DisplayName("Returns empty list when no previous claims exist")
     void returnsEmptyWhenNoPreviousClaimsExist() {
-      var incoming = createClaim("c1", "s1", FEE_CODE, UFN, UCN,
+      var incoming = createClaim("c1", OFFICE_CODE, "s1", FEE_CODE, UFN, UCN,
           ClaimStatus.READY_TO_PROCESS, "MAY-2025", null, "2025-04-15");
 
       when(dataClaimsRestClient.getClaims(
@@ -721,7 +721,7 @@ class DuplicateClaimLegalHelpDisbursementValidationStrategyTest
     @Test
     @DisplayName("Includes candidates with a valid concluded date")
     void includesCandidatesWithValidConcludedDate() {
-      var incoming = createClaim("c1", "s1", FEE_CODE, UFN, UCN,
+      var incoming = createClaim("c1", OFFICE_CODE, "s1", FEE_CODE, UFN, UCN,
           ClaimStatus.READY_TO_PROCESS, "MAY-2025", null, "2025-04-15");
       var matched = createClaimResponse("c2", "s2", FEE_CODE, UFN, UCN,
           ClaimStatus.READY_TO_PROCESS, "APR-2025", null, "2025-04-10");
@@ -733,7 +733,7 @@ class DuplicateClaimLegalHelpDisbursementValidationStrategyTest
       assertThat(
               duplicateClaimValidationService.findEligibleDuplicateClaims(
                   incoming, List.of(incoming), OFFICE_CODE))
-          .containsExactly(createClaim("c2", "s2", FEE_CODE, UFN, UCN,
+          .containsExactly(createClaim("c2", OFFICE_CODE, "s2", FEE_CODE, UFN, UCN,
               ClaimStatus.READY_TO_PROCESS, "APR-2025", null, "2025-04-10"));
     }
 
@@ -750,7 +750,7 @@ class DuplicateClaimLegalHelpDisbursementValidationStrategyTest
     @DisplayName("Excludes candidates whose concluded date cannot be parsed")
     @SuppressWarnings("unused")
     void excludesCandidatesWithInvalidConcludedDate(String concludedDate, String description) {
-      var incoming = createClaim("c1", "s1", FEE_CODE, UFN, UCN,
+      var incoming = createClaim("c1", OFFICE_CODE, "s1", FEE_CODE, UFN, UCN,
           ClaimStatus.READY_TO_PROCESS, "MAY-2025", null, "2025-04-15");
       var ineligible = createClaimResponse("c2", "s2", FEE_CODE, UFN, UCN,
           ClaimStatus.READY_TO_PROCESS, "APR-2025", null, concludedDate);
@@ -768,7 +768,7 @@ class DuplicateClaimLegalHelpDisbursementValidationStrategyTest
     @Test
     @DisplayName("Includes only candidates with a valid concluded date when list is mixed")
     void includesOnlyValidCandidatesFromMixedList() {
-      var incoming = createClaim("c1", "s1", FEE_CODE, UFN, UCN,
+      var incoming = createClaim("c1", OFFICE_CODE, "s1", FEE_CODE, UFN, UCN,
           ClaimStatus.READY_TO_PROCESS, "MAY-2025", null, "2025-04-15");
       var valid = createClaimResponse("c2", "s2", FEE_CODE, UFN, UCN,
           ClaimStatus.READY_TO_PROCESS, "APR-2025", null, "2025-04-10");
@@ -784,7 +784,7 @@ class DuplicateClaimLegalHelpDisbursementValidationStrategyTest
       assertThat(
               duplicateClaimValidationService.findEligibleDuplicateClaims(
                   incoming, List.of(incoming), OFFICE_CODE))
-          .containsExactly(createClaim("c2", "s2", FEE_CODE, UFN, UCN,
+          .containsExactly(createClaim("c2", OFFICE_CODE, "s2", FEE_CODE, UFN, UCN,
               ClaimStatus.READY_TO_PROCESS, "APR-2025", null, "2025-04-10"));
     }
   }
@@ -796,7 +796,7 @@ class DuplicateClaimLegalHelpDisbursementValidationStrategyTest
     @Test
     @DisplayName("Skips all processing when feeType is not a disbursement claim")
     void skipsWhenNotDisbursementClaim() {
-      var incoming = createClaim("c1", "s1", FEE_CODE, UFN, UCN,
+      var incoming = createClaim("c1", OFFICE_CODE, "s1", FEE_CODE, UFN, UCN,
           ClaimStatus.READY_TO_PROCESS, "MAY-2025", null, "2025-04-15");
 
       List<ValidationIssue> strategyIssues =
@@ -809,7 +809,7 @@ class DuplicateClaimLegalHelpDisbursementValidationStrategyTest
     @Test
     @DisplayName("Skips Rule B when no eligible candidates exist (all have null concluded dates)")
     void skipsRuleBWhenAllCandidatesHaveNullConcludedDate() {
-      var incoming = createClaim("c1", "s1", FEE_CODE, UFN, UCN,
+      var incoming = createClaim("c1", OFFICE_CODE, "s1", FEE_CODE, UFN, UCN,
           ClaimStatus.READY_TO_PROCESS, "MAY-2025", null, "2025-04-15");
       var noDate = createClaimResponse("c2", "s2", FEE_CODE, UFN, UCN,
           ClaimStatus.READY_TO_PROCESS, "APR-2025", null, null);
@@ -836,7 +836,7 @@ class DuplicateClaimLegalHelpDisbursementValidationStrategyTest
     @DisplayName("Skips Rule B when incoming claim has a null or unparseable concluded date")
     @SuppressWarnings("unused")
     void skipsRuleBWhenIncomingConcludedDateInvalid(String concludedDate, String description) {
-      var incoming = createClaim("c1", "s1", FEE_CODE, UFN, UCN,
+      var incoming = createClaim("c1", OFFICE_CODE, "s1", FEE_CODE, UFN, UCN,
           ClaimStatus.READY_TO_PROCESS, "MAY-2025", null, concludedDate);
       var matched = createClaimResponse("c2", "s2", FEE_CODE, UFN, UCN,
           ClaimStatus.READY_TO_PROCESS, "APR-2025", null, "2025-04-20");
@@ -855,7 +855,7 @@ class DuplicateClaimLegalHelpDisbursementValidationStrategyTest
     @Test
     @DisplayName("Raises duplicate error when Rule B boundary is exceeded")
     void raisesDuplicateErrorWhenRuleBBoundaryExceeded() {
-      var incoming = createClaim("c1", "s1", FEE_CODE, UFN, UCN,
+      var incoming = createClaim("c1", OFFICE_CODE, "s1", FEE_CODE, UFN, UCN,
           ClaimStatus.READY_TO_PROCESS, "MAY-2025", null, "2025-03-21");
       var matched = createClaimResponse("c2", "s2", FEE_CODE, UFN, UCN,
           ClaimStatus.READY_TO_PROCESS, "APR-2025", null, "2025-04-20");
@@ -876,7 +876,7 @@ class DuplicateClaimLegalHelpDisbursementValidationStrategyTest
     @Test
     @DisplayName("Does not raise error when Rule B boundary is not exceeded")
     void doesNotRaiseErrorWhenRuleBBoundaryNotExceeded() {
-      var incoming = createClaim("c1", "s1", FEE_CODE, UFN, UCN,
+      var incoming = createClaim("c1", OFFICE_CODE, "s1", FEE_CODE, UFN, UCN,
           ClaimStatus.READY_TO_PROCESS, "MAY-2025", null, "2025-03-20");
       var matched = createClaimResponse("c2", "s2", FEE_CODE, UFN, UCN,
           ClaimStatus.READY_TO_PROCESS, "APR-2025", null, "2025-04-20");

@@ -1,33 +1,54 @@
 package uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
+import org.junit.jupiter.params.provider.ValueSource;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationIssue;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationSeverity;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.provider.impl.HttpFeeSchemeProvider;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.rules.ClaimValidator;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.rules.MandatoryFieldClaimValidator;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.rules.UniqueFileNumberClaimValidator;
 import uk.gov.justice.laa.dstew.payments.claimsdata.model.AreaOfLaw;
+import uk.gov.justice.laa.fee.scheme.model.FeeDetailsResponseV2;
 
 /**
  * Tests for {@link ClaimValidation} and the individual {@link ClaimValidator} implementations it
  * orchestrates.
- *
- * <p>Pipeline-level behaviour — scope filtering, priority ordering, issue deduplication, null
- * claim handling, and validation context construction — is covered by
- * {@link ClaimValidationPipeline}. Individual validator behaviour is covered by
- * {@link MandatoryFieldValidation} and {@link UniqueFileNumberValidation}.
  */
 @DisplayName("ClaimValidation")
 class ClaimValidationTest {
+
+  /** Provider mock shared across test groups that need it. */
+  private HttpFeeSchemeProvider feeSchemeProvider;
+
+  @BeforeEach
+  void setUpProvider() {
+    feeSchemeProvider = mock(HttpFeeSchemeProvider.class);
+    // Default: returns empty so tests that don't care about fee type don't throw
+    when(feeSchemeProvider.getFeeDetails(anyString())).thenReturn(Optional.empty());
+  }
+
+  // Helper: build a ClaimValidation with the shared mock provider
+  private ClaimValidation pipeline(ClaimValidator... validators) {
+    return new ClaimValidation(List.of(validators), feeSchemeProvider);
+  }
 
   // ─────────────────────────────────────────────────────────────────────────
   // Pipeline tests
@@ -38,52 +59,15 @@ class ClaimValidationTest {
   class ClaimValidationPipeline {
 
     @Test
-    @DisplayName("Runs validators in priority order and deduplicates identical context.getIssues()")
-    void runValidatorsInPriorityOrderAndDeduplicateIssues() {
+    @DisplayName("Runs validators in priority order")
+    void runValidatorsInPriorityOrder() {
       List<String> callOrder = new ArrayList<>();
 
-      ValidationIssue sharedIssue = ValidationIssue.builder()
-          .code("DUPLICATE_CODE")
-          .message("duplicate")
-          .severity(ValidationSeverity.WARNING)
-          .technicalMessage(null)
-          .build();
+      ClaimValidator lowPriority = stub("LOW", 20, true, (c, ctx) -> callOrder.add("low"));
+      ClaimValidator highPriority = stub("HIGH", 10, true, (c, ctx) -> callOrder.add("high"));
 
-      ClaimValidator lowPriority = new ClaimValidator() {
-        @Override
-        public void validate(Claim claim, ClaimValidationContext context) {
-          callOrder.add("low");
-        }
-
-        @Override
-        public int priority() { return 20; }
-
-        @Override
-        public boolean appliesTo(String scope) { return true; }
-
-        @Override
-        public String getValidatorCode() { return "LOW"; }
-      };
-
-      ClaimValidator highPriority = new ClaimValidator() {
-        @Override
-        public void validate(Claim claim, ClaimValidationContext context) {
-          callOrder.add("high");
-          context.addValidationIssue(sharedIssue);
-        }
-
-        @Override
-        public int priority() { return 10; }
-
-        @Override
-        public boolean appliesTo(String scope) { return true; }
-
-        @Override
-        public String getValidatorCode() { return "HIGH"; }
-      };
-
-      ClaimValidation pipeline = new ClaimValidation(List.of(lowPriority, highPriority));
-      pipeline.validateClaim(Claim.builder().build(), "fee", List.of());
+      pipeline(lowPriority, highPriority)
+          .validateClaim(Claim.builder().build(), "fee", List.of());
 
       assertThat(callOrder).containsExactly("high", "low");
     }
@@ -93,160 +77,169 @@ class ClaimValidationTest {
     void excludesValidatorsNotApplicableToScope() {
       List<String> called = new ArrayList<>();
 
-      ClaimValidator excluded = new ClaimValidator() {
-        @Override
-        public void validate(Claim claim, ClaimValidationContext context) {
-          called.add("excluded");
-        }
+      ClaimValidator excluded = stub("EXCLUDED", 0, false, (c, ctx) -> called.add("excluded"));
 
-        @Override
-        public int priority() {
-          return 0;
-        }
-
-        @Override
-        public boolean appliesTo(String scope) { return false; }
-
-        @Override
-        public String getValidatorCode() { return "EXCLUDED"; }
-      };
-
-      ClaimValidation pipeline = new ClaimValidation(List.of(excluded));
-      pipeline.validateClaim(Claim.builder().build(), "fee", List.of());
+      pipeline(excluded).validateClaim(Claim.builder().build(), "fee", List.of());
 
       assertThat(called).isEmpty();
     }
 
     @Test
-    @DisplayName("Deduplicates identical context.getIssues() across validators, preserving insertion order")
-    void deduplicatesIdenticalIssuesPreservingOrder() {
-      ValidationIssue sharedIssue = ValidationIssue.builder()
-          .code("DUPLICATE_CODE").message("duplicate").severity(ValidationSeverity.WARNING)
-          .technicalMessage(null).build();
-
-      ClaimValidator v1 = new ClaimValidator() {
-        @Override
-        public void validate(Claim c, ClaimValidationContext ctx) {
-          ctx.addValidationIssue(sharedIssue);
-        }
-
-        @Override
-        public int priority() {
-          return 0;
-        }
-
-        @Override
-        public boolean appliesTo(String scope) {
-          return true;
-        }
-
-        @Override public String getValidatorCode() { return "V1"; }
-      };
-      ClaimValidator v2 = new ClaimValidator() {
-        @Override
-        public void validate(Claim c, ClaimValidationContext ctx) {
-          ctx.addValidationIssue(sharedIssue);
-        }
-
-        @Override
-        public int priority() {
-          return 0;
-        }
-
-        @Override
-        public boolean appliesTo(String scope) {
-          return false;
-        }
-
-        @Override public String getValidatorCode() { return "V2"; }
-      };
-
-      ClaimValidation pipeline = new ClaimValidation(List.of(v1, v2));
-      var result = pipeline.validateClaim(Claim.builder().build(), "fee", List.of());
-
-      assertThat(result.getIssues()).hasSize(1);
-      assertThat(result.getIsValid()).isTrue(); // WARNING only → still valid
-    }
-
-    @Test
-    @DisplayName("Deduplicates identical issues added by multiple validators and preserves order")
+    @DisplayName("Deduplicates identical issues across validators, preserving insertion order")
     void deduplicatesAcrossValidatorsAndPreservesOrder() {
-      ValidationIssue issueA = ValidationIssue.builder().code("A").message("a").severity(ValidationSeverity.WARNING).build();
-      ValidationIssue issueB = ValidationIssue.builder().code("B").message("b").severity(ValidationSeverity.WARNING).build();
+      ValidationIssue issueA = issue("A", ValidationSeverity.WARNING);
+      ValidationIssue issueB = issue("B", ValidationSeverity.WARNING);
 
-      ClaimValidator v1 = new ClaimValidator() {
-        @Override public void validate(Claim c, ClaimValidationContext ctx) { ctx.addValidationIssue(issueA); }
-        @Override public int priority() { return 0; }
-        @Override public boolean appliesTo(String scope) { return true; }
-        @Override public String getValidatorCode() { return "V1"; }
-      };
+      ClaimValidator v1 = stub("V1", 0, true, (c, ctx) -> ctx.addValidationIssue(issueA));
+      ClaimValidator v2 = stub("V2", 10, true, (c, ctx) -> ctx.addValidationIssue(issueB));
+      // v3 adds issueA again — should be deduplicated
+      ClaimValidator v3 = stub("V3", 20, true, (c, ctx) ->
+          ctx.addValidationIssue(issue("A", ValidationSeverity.WARNING)));
 
-      ClaimValidator v2 = new ClaimValidator() {
-        @Override public void validate(Claim c, ClaimValidationContext ctx) { ctx.addValidationIssue(issueB); }
-        @Override public int priority() { return 10; }
-        @Override public boolean appliesTo(String scope) { return true; }
-        @Override public String getValidatorCode() { return "V2"; }
-      };
+      var result = pipeline(v1, v2, v3)
+          .validateClaim(Claim.builder().build(), "fee", List.of());
 
-      ClaimValidator v3 = new ClaimValidator() {
-        @Override public void validate(Claim c, ClaimValidationContext ctx) { ctx.addValidationIssue(ValidationIssue.builder().code("A").message("a").severity(ValidationSeverity.WARNING).build()); }
-        @Override public int priority() { return 20; }
-        @Override public boolean appliesTo(String scope) { return true; }
-        @Override public String getValidatorCode() { return "V3"; }
-      };
-
-      ClaimValidation pipeline = new ClaimValidation(List.of(v1, v2, v3));
-      var result = pipeline.validateClaim(Claim.builder().build(), "fee", List.of());
-
-      // Expect deduplication: only A and B should be present, in insertion order (A then B)
       assertThat(result.getIssues()).hasSize(2);
-      assertThat(result.getIssues()).extracting(ValidationIssue::getCode).containsExactly("A", "B");
+      assertThat(result.getIssues()).extracting(ValidationIssue::getCode)
+          .containsExactly("A", "B");
     }
 
     @Test
     @DisplayName("Returns MISSING_CLAIM error result when claim is null")
     void returnsMissingClaimErrorWhenClaimIsNull() {
-      ClaimValidation pipeline = new ClaimValidation(List.of());
-
-      var result = pipeline.validateClaim(null, "fee", List.of());
+      var result = pipeline().validateClaim(null, "fee", List.of());
 
       assertThat(result.getIsValid()).isFalse();
       assertThat(result.getIssues()).hasSize(1);
       assertThat(result.getIssues().getFirst().getCode()).isEqualTo("MISSING_CLAIM");
     }
-  }
 
     @Test
-    @DisplayName("ValidationResult.isValid reflects absence of ERROR issues")
-    void isValid_reflects_absenceOfErrorIssues() {
-      ClaimValidator warnValidator = new ClaimValidator() {
-        @Override public void validate(Claim c, ClaimValidationContext ctx) {
-          ctx.addValidationIssue(ValidationIssue.builder().code("W").message("w").severity(ValidationSeverity.WARNING).build());
-        }
-        @Override public int priority() { return 0; }
-        @Override public boolean appliesTo(String scope) { return true; }
-        @Override public String getValidatorCode() { return "WARN"; }
-      };
+    @DisplayName("Returns valid result when no validators produce ERROR issues")
+    void returnsValidWhenNoErrors() {
+      ClaimValidator warnOnly = stub("WARN", 0, true, (c, ctx) ->
+          ctx.addValidationIssue(issue("W", ValidationSeverity.WARNING)));
 
-      ClaimValidator errorValidator = new ClaimValidator() {
-        @Override public void validate(Claim c, ClaimValidationContext ctx) {
-          ctx.addValidationIssue(ValidationIssue.builder().code("E").message("e").severity(ValidationSeverity.ERROR).build());
-        }
-        @Override public int priority() { return 0; }
-        @Override public boolean appliesTo(String scope) { return true; }
-        @Override public String getValidatorCode() { return "ERROR"; }
-      };
+      var result = pipeline(warnOnly).validateClaim(Claim.builder().build(), "fee", List.of());
 
-      // warning only -> valid
-      ClaimValidation pipelineWarn = new ClaimValidation(List.of(warnValidator));
-      var resultWarn = pipelineWarn.validateClaim(Claim.builder().build(), "fee", List.of());
-      assertThat(resultWarn.getIsValid()).isTrue();
-
-      // error present -> invalid
-      ClaimValidation pipelineError = new ClaimValidation(List.of(errorValidator));
-      var resultError = pipelineError.validateClaim(Claim.builder().build(), "fee", List.of());
-      assertThat(resultError.getIsValid()).isFalse();
+      assertThat(result.getIsValid()).isTrue();
+      assertThat(result.getIssues()).hasSize(1);
     }
+
+    @Test
+    @DisplayName("Returns invalid result when any validator produces an ERROR issue")
+    void returnsInvalidWhenErrorPresent() {
+      ClaimValidator errorValidator = stub("ERR", 0, true, (c, ctx) ->
+          ctx.addValidationIssue(issue("E", ValidationSeverity.ERROR)));
+
+      var result = pipeline(errorValidator).validateClaim(Claim.builder().build(), "fee", List.of());
+
+      assertThat(result.getIsValid()).isFalse();
+    }
+
+    @Test
+    @DisplayName("Returns valid result with empty issues when no validators are registered")
+    void returnsValidWithNoIssuesWhenNoValidators() {
+      var result = pipeline().validateClaim(Claim.builder().build(), "fee", List.of());
+
+      assertThat(result.getIsValid()).isTrue();
+      assertThat(result.getIssues()).isEmpty();
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // fetchFeeCalculationType
+  // ─────────────────────────────────────────────────────────────────────────
+
+  @Nested
+  @DisplayName("fetchFeeCalculationType — fee type resolution in context")
+  class FetchFeeCalculationType {
+
+    @ParameterizedTest(name = "feeCode={0}")
+    @NullAndEmptySource
+    @ValueSource(strings = {"   "})
+    @DisplayName("Sets feeCalculationType to null when feeCode is null, empty, or blank")
+    void setsNullFeeTypeForBlankFeeCode(String feeCode) {
+      AtomicReference<ClaimValidationContext> captured = new AtomicReference<>();
+      ClaimValidator captor = stub("CAP", 0, true, (c, ctx) -> captured.set(ctx));
+
+      pipeline(captor).validateClaim(
+          Claim.builder().feeCode(feeCode).build(), "fee", List.of());
+
+      assertThat(captured.get().getFeeCalculationType()).isNull();
+      verify(feeSchemeProvider, never()).getFeeDetails(anyString());
+    }
+
+    @Test
+    @DisplayName("Sets feeCalculationType to null when provider returns empty Optional")
+    void setsNullFeeTypeWhenProviderReturnsEmpty() {
+      when(feeSchemeProvider.getFeeDetails("UNKNOWN")).thenReturn(Optional.empty());
+
+      AtomicReference<ClaimValidationContext> captured = new AtomicReference<>();
+      ClaimValidator captor = stub("CAP", 0, true, (c, ctx) -> captured.set(ctx));
+
+      pipeline(captor).validateClaim(
+          Claim.builder().feeCode("UNKNOWN").build(), "fee", List.of());
+
+      assertThat(captured.get().getFeeCalculationType()).isNull();
+    }
+
+    @Test
+    @DisplayName("Sets feeCalculationType to null when provider returns response with null feeType")
+    void setsNullFeeTypeWhenFeeTypeIsNull() {
+      FeeDetailsResponseV2 response = mock(FeeDetailsResponseV2.class);
+      when(response.getFeeType()).thenReturn(null);
+      when(feeSchemeProvider.getFeeDetails("FEE01")).thenReturn(Optional.of(response));
+
+      AtomicReference<ClaimValidationContext> captured = new AtomicReference<>();
+      ClaimValidator captor = stub("CAP", 0, true, (c, ctx) -> captured.set(ctx));
+
+      pipeline(captor).validateClaim(
+          Claim.builder().feeCode("FEE01").build(), "fee", List.of());
+
+      assertThat(captured.get().getFeeCalculationType()).isNull();
+    }
+
+    @Test
+    @DisplayName("Sets feeCalculationType to null when provider returns response with blank feeType")
+    void setsNullFeeTypeWhenFeeTypeIsBlank() {
+      FeeDetailsResponseV2 response = mock(FeeDetailsResponseV2.class);
+      when(response.getFeeType()).thenReturn("   ");
+      when(feeSchemeProvider.getFeeDetails("FEE01")).thenReturn(Optional.of(response));
+
+      AtomicReference<ClaimValidationContext> captured = new AtomicReference<>();
+      ClaimValidator captor = stub("CAP", 0, true, (c, ctx) -> captured.set(ctx));
+
+      pipeline(captor).validateClaim(
+          Claim.builder().feeCode("FEE01").build(), "fee", List.of());
+
+      assertThat(captured.get().getFeeCalculationType()).isNull();
+    }
+
+    @Test
+    @DisplayName("Sets feeCalculationType from provider when feeType is present and non-blank")
+    void setsFeeTypeFromProviderWhenPresent() {
+      FeeDetailsResponseV2 response = mock(FeeDetailsResponseV2.class);
+      when(response.getFeeType()).thenReturn("FIXED");
+      when(feeSchemeProvider.getFeeDetails("FEE01")).thenReturn(Optional.of(response));
+
+      AtomicReference<ClaimValidationContext> captured = new AtomicReference<>();
+      ClaimValidator captor = stub("CAP", 0, true, (c, ctx) -> captured.set(ctx));
+
+      pipeline(captor).validateClaim(
+          Claim.builder().feeCode("FEE01").build(), "fee", List.of());
+
+      assertThat(captured.get().getFeeCalculationType()).isEqualTo("FIXED");
+    }
+
+    @Test
+    @DisplayName("Does not call provider when claim has null feeCode")
+    void doesNotCallProviderWhenFeeCodeNull() {
+      pipeline().validateClaim(Claim.builder().feeCode(null).build(), "fee", List.of());
+
+      verify(feeSchemeProvider, never()).getFeeDetails(anyString());
+    }
+  }
 
   // ─────────────────────────────────────────────────────────────────────────
   // Validation context construction
@@ -260,31 +253,11 @@ class ClaimValidationTest {
     @DisplayName("Passes related claims to validators via the context")
     void passesRelatedClaimsToValidators() {
       AtomicReference<ClaimValidationContext> captured = new AtomicReference<>();
-
-      ClaimValidator capturingValidator = new ClaimValidator() {
-        @Override
-        public void validate(Claim claim, ClaimValidationContext context) {
-          captured.set(context);
-        }
-
-        @Override
-        public int priority() {
-          return 0;
-        }
-
-        @Override
-        public boolean appliesTo(String scope) {
-          return true;
-        }
-
-        @Override public String getValidatorCode() { return "CAPTURE"; }
-      };
+      ClaimValidator captor = stub("CAP", 0, true, (c, ctx) -> captured.set(ctx));
 
       List<Claim> related = List.of(Claim.builder().uniqueFileNumber("010101/001").build());
-      new ClaimValidation(List.of(capturingValidator))
-          .validateClaim(Claim.builder().build(), "fee", related);
+      pipeline(captor).validateClaim(Claim.builder().build(), "fee", related);
 
-      assertThat(captured.get()).isNotNull();
       assertThat(captured.get().getRelatedClaims()).isEqualTo(related);
     }
 
@@ -292,31 +265,22 @@ class ClaimValidationTest {
     @DisplayName("Converts null relatedClaims to an empty list in the context")
     void convertsNullRelatedClaimsToEmptyList() {
       AtomicReference<ClaimValidationContext> captured = new AtomicReference<>();
+      ClaimValidator captor = stub("CAP", 0, true, (c, ctx) -> captured.set(ctx));
 
-      ClaimValidator capturingValidator = new ClaimValidator() {
-        @Override
-        public void validate(Claim claim, ClaimValidationContext context) {
-          captured.set(context);
-        }
+      pipeline(captor).validateClaim(Claim.builder().build(), "fee", null);
 
-        @Override
-        public int priority() {
-          return 0;
-        }
-
-        @Override
-        public boolean appliesTo(String scope) {
-          return true;
-        }
-
-        @Override public String getValidatorCode() { return "CAPTURE"; }
-      };
-
-      new ClaimValidation(List.of(capturingValidator))
-          .validateClaim(Claim.builder().build(), "fee", null);
-
-      assertThat(captured.get()).isNotNull();
       assertThat(captured.get().getRelatedClaims()).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Passes scope to the context")
+    void passesScopeToContext() {
+      AtomicReference<ClaimValidationContext> captured = new AtomicReference<>();
+      ClaimValidator captor = stub("CAP", 0, true, (c, ctx) -> captured.set(ctx));
+
+      pipeline(captor).validateClaim(Claim.builder().build(), "disbursement", List.of());
+
+      assertThat(captured.get().getScope()).isEqualTo("disbursement");
     }
   }
 
@@ -375,13 +339,27 @@ class ClaimValidationTest {
     }
 
     @Test
+    @DisplayName("Path on missing-field issue is snake_case")
+    void missingFieldIssuePathIsSnakeCase() {
+      Claim claim = Claim.builder().areaOfLaw(AreaOfLaw.CRIME_LOWER).build();
+      ClaimValidationContext context = ClaimValidationContext.builder().scope("fee").build();
+
+      validator.validate(claim, context);
+
+      assertThat(context.getIssues())
+          .allSatisfy(issue -> assertThat(issue.getPath())
+              .doesNotContainPattern("[A-Z]") // no uppercase chars → snake_case
+              .doesNotContain(" "));
+    }
+
+    @Test
     @DisplayName("Has validator code CLAIM_MANDATORY_FIELD")
     void hasCorrectValidatorCode() {
       assertThat(validator.getValidatorCode()).isEqualTo("CLAIM_MANDATORY_FIELD");
     }
 
     @Test
-    @DisplayName("priority and appliesTo for MandatoryFieldClaimValidator")
+    @DisplayName("Priority is 10 and appliesTo any scope")
     void mandatoryFieldValidatorMetadata() {
       assertThat(validator.priority()).isEqualTo(10);
       assertThat(validator.appliesTo("any")).isTrue();
@@ -418,7 +396,8 @@ class ClaimValidationTest {
       validator.validate(claim, context);
 
       assertThat(context.getIssues()).hasSize(1);
-      assertThat(context.getIssues().getFirst().getCode()).isEqualTo("INVALID_DATE_IN_UNIQUE_FILE_NUMBER");
+      assertThat(context.getIssues().getFirst().getCode())
+          .isEqualTo("INVALID_DATE_IN_UNIQUE_FILE_NUMBER");
     }
 
     @Test
@@ -430,7 +409,8 @@ class ClaimValidationTest {
       validator.validate(claim, context);
 
       assertThat(context.getIssues()).hasSize(1);
-      assertThat(context.getIssues().getFirst().getCode()).isEqualTo("INVALID_DATE_IN_UNIQUE_FILE_NUMBER");
+      assertThat(context.getIssues().getFirst().getCode())
+          .isEqualTo("INVALID_DATE_IN_UNIQUE_FILE_NUMBER");
     }
 
     @Test
@@ -448,5 +428,27 @@ class ClaimValidationTest {
     void hasCorrectValidatorCode() {
       assertThat(validator.getValidatorCode()).isEqualTo("CLAIM_UNIQUE_FILE_NUMBER");
     }
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Helpers
+  // ─────────────────────────────────────────────────────────────────────────
+
+  @FunctionalInterface
+  interface ValidatorAction {
+    void run(Claim claim, ClaimValidationContext context);
+  }
+
+  private static ClaimValidator stub(String code, int priority, boolean applies, ValidatorAction action) {
+    return new ClaimValidator() {
+      @Override public void validate(Claim claim, ClaimValidationContext context) { action.run(claim, context); }
+      @Override public int priority() { return priority; }
+      @Override public boolean appliesTo(String scope) { return applies; }
+      @Override public String getValidatorCode() { return code; }
+    };
+  }
+
+  private static ValidationIssue issue(String code, ValidationSeverity severity) {
+    return ValidationIssue.builder().code(code).message(code).severity(severity).build();
   }
 }

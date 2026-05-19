@@ -38,7 +38,7 @@ public class StageReachedClaimValidator implements ClaimValidator {
         case AreaOfLaw.LEGAL_HELP -> {
           technicalMessage =
               String.format(
-                  "stage_reached_code (LEGAL_HELP): "
+                  "stage_reached_code (LEGAL HELP): "
                       + "does not match the regex pattern %s (provided value: %s)",
                   LEGAL_HELP_PATTERN.pattern(), stageReached);
           context.addValidationIssue(
@@ -48,7 +48,7 @@ public class StageReachedClaimValidator implements ClaimValidator {
         case AreaOfLaw.CRIME_LOWER -> {
           technicalMessage =
               String.format(
-                  "stage_reached_code (CRIME_LOWER): "
+                  "stage_reached_code (CRIME LOWER): "
                       + "does not match the regex pattern %s (provided value: %s)",
                   CRIME_LOWER_PATTERN.pattern(), stageReached);
           context.addValidationIssue(

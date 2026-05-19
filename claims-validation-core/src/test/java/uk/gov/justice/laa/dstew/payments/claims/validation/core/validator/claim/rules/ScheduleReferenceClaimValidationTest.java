@@ -21,13 +21,13 @@ class ScheduleReferenceClaimValidationTest {
       name =
           "{index} => claimId={0}, matterType={1}, areaOfLaw={2}, caseReferenceNumber={3}, scheduleReference={4}, regex={5}, expectError={6}")
   @CsvSource({
-    "1, ab12:bc24, LEGAL_HELP, 123, SCH123, '^[a-zA-Z0-9/.\\-]{1,20}$', false",
-    "2, ab12:bc24, LEGAL_HELP, 123, ABCDEFGHIJKLMNOPQRST123, '^[a-zA-Z0-9/.\\-]{1,20}$', true",
-    "3, ab12:bc24, LEGAL_HELP, 123, SCH/ABC-12.34, '^[a-zA-Z0-9/.\\-]{1,20}$', false",
-    "4, ab12:bc24, LEGAL_HELP, 123, Schedule Ref, '^[a-zA-Z0-9/.\\-]{1,20}$', true",
-    "5, ab12:bc24, LEGAL_HELP, 123, Schedule:Ref, '^[a-zA-Z0-9/.\\-]{1,20}$', true",
-    "6, ab12:bc24, CRIME_LOWER,,, '^[a-zA-Z0-9/.\\-]{1,20}$', false",
-    "7, ab12:bc24, CRIME_LOWER,, ABCD, '^[a-zA-Z0-9/.\\-]{1,20}$', false",
+    "1, ab12:bc24, LEGAL HELP, 123, SCH123, '^[a-zA-Z0-9/.\\-]{1,20}$', false",
+    "2, ab12:bc24, LEGAL HELP, 123, ABCDEFGHIJKLMNOPQRST123, '^[a-zA-Z0-9/.\\-]{1,20}$', true",
+    "3, ab12:bc24, LEGAL HELP, 123, SCH/ABC-12.34, '^[a-zA-Z0-9/.\\-]{1,20}$', false",
+    "4, ab12:bc24, LEGAL HELP, 123, Schedule Ref, '^[a-zA-Z0-9/.\\-]{1,20}$', true",
+    "5, ab12:bc24, LEGAL HELP, 123, Schedule:Ref, '^[a-zA-Z0-9/.\\-]{1,20}$', true",
+    "6, ab12:bc24, CRIME LOWER,,, '^[a-zA-Z0-9/.\\-]{1,20}$', false",
+    "7, ab12:bc24, CRIME LOWER,, ABCD, '^[a-zA-Z0-9/.\\-]{1,20}$', false",
     "8, ABCD:EFGH, MEDIATION, 123, ABCDEFGHIJKLMNOPQRST, '^[a-zA-Z0-9/.\\-]{1,20}$', false",
     "9, ABCD:EFGH, MEDIATION, 123, ABCD, '^[a-zA-Z0-9/.\\-]{1,20}$', false"
   })

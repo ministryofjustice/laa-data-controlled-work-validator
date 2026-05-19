@@ -39,7 +39,7 @@ class DuplicatePreviousClaimLegalHelpValidationServiceStrategyTest
     void whenDuplicateDisbursementClaim() {
       var claimTobeProcessed =
           createClaim(
-              "claimId1",
+              "claimId1","2Q286D",
               "submissionId1",
               "DISB01",
               "070722/001",
@@ -48,7 +48,7 @@ class DuplicatePreviousClaimLegalHelpValidationServiceStrategyTest
 
       var otherClaim =
           createClaim(
-              "claimId2",
+              "claimId2","2Q286D",
               "submissionId1",
               "DISB01",
               "070722/001",
@@ -82,7 +82,7 @@ class DuplicatePreviousClaimLegalHelpValidationServiceStrategyTest
     void whenExistingClaim() {
       var claimTobeProcessed =
           createClaim(
-              "claimId1",
+              "claimId1","2Q286D",
               "submissionId1",
               "CIV123",
               "070722/001",
@@ -91,7 +91,7 @@ class DuplicatePreviousClaimLegalHelpValidationServiceStrategyTest
 
       var otherClaim =
           createClaim(
-              "claimId2",
+              "claimId2","2Q286D",
               "submissionId1",
               "CIV123",
               "070722/001",
@@ -100,7 +100,7 @@ class DuplicatePreviousClaimLegalHelpValidationServiceStrategyTest
 
       var otherClaim1 =
           createClaim(
-              "claimId3", "submissionId1", "CIV123", "070722/001", "CLI001", ClaimStatus.VALID);
+              "claimId3","2Q286D", "submissionId1", "CIV123", "070722/001", "CLI001", ClaimStatus.VALID);
       var submissionClaims = List.of(claimTobeProcessed, otherClaim, otherClaim1);
 
       List<ValidationIssue> strategyIssues = duplicateClaimLegalHelpValidation.validateDuplicateClaims(
