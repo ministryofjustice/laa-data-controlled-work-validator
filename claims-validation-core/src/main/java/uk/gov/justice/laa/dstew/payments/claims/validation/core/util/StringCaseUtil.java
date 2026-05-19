@@ -15,6 +15,29 @@ public final class StringCaseUtil {
   private static final Set<String> ALWAYS_UPPERCASE = Set.of("NIL");
 
   /**
+   * Converts a string to snake_case.
+   *
+   * <p>Handles camelCase (e.g. {@code benTest → ben_test}), space-separated words (e.g.
+   * {@code "Ben Test" → "ben_test"} or {@code "Ben test" → "ben_test"}), and combinations thereof.
+   * Multiple spaces, underscores, and mixed separators are all normalised.
+   *
+   * @param input the input string
+   * @return the converted snake_case string, or empty string if input is null/blank
+   */
+  public static String toSnakeCase(String input) {
+    if (input == null || input.isEmpty()) {
+      return "";
+    }
+    // Insert underscore between a lowercase letter/digit and an uppercase letter (camelCase split)
+    String withSeparators = input.replaceAll("([a-z0-9])([A-Z])", "$1_$2");
+    // Replace spaces and existing underscores with a single underscore, then lowercase
+    String snake = withSeparators.replaceAll("[\\s_]+", "_").toLowerCase(Locale.ENGLISH);
+    // Strip any leading/trailing underscores
+    snake = snake.replaceAll("^_+|_+$", "");
+    return snake;
+  }
+
+  /**
    * Converts a string to Title Case.
    *
    * @param input the input string

@@ -1,6 +1,5 @@
 package uk.gov.justice.laa.dstew.payments.claims.validation.core.error;
 
-import java.util.List;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationIssue;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationSeverity;
 
@@ -26,6 +25,11 @@ public interface ValidationError {
   ValidationSeverity getSeverity();
 
   /**
+   * field name associated with this validation error enum value.
+   */
+  String getField();
+
+  /**
    * Convert this error to a {@link ValidationIssue} using optional format params.
    */
   default ValidationIssue toValidationIssue(Object... params) {
@@ -34,6 +38,7 @@ public interface ValidationError {
     return ValidationIssue.builder()
         .code(code)
         .message(message)
+        .path(getField())
         .severity(getSeverity())
         .technicalMessage(getTechnicalMessage())
         .build();
@@ -49,27 +54,9 @@ public interface ValidationError {
     return ValidationIssue.builder()
         .code(code)
         .message(message)
+        .path(getField())
         .severity(getSeverity())
         .technicalMessage(technicalMsg)
-        .build();
-  }
-
-  /**
-   * Convert this error to a {@link ValidationIssue} and optionally associate a path.
-   *
-   * <p>Path conversion is intentionally left minimal for now; callers may pass a path but
-   * it will not be translated to {@code ValidationIssuePathInner} items until a converter
-   * is implemented.
-   */
-  default ValidationIssue toValidationIssueWithPath(List<Object> path, Object... params) {
-    // TODO: implement conversion of 'path' elements to ValidationIssuePathInner if needed
-    String code = ((Enum<?>) this).name();
-    String message = String.format(getDisplayMessage(), params);
-    return ValidationIssue.builder()
-        .code(code)
-        .message(message)
-        .severity(getSeverity())
-        .technicalMessage(getTechnicalMessage())
         .build();
   }
 }

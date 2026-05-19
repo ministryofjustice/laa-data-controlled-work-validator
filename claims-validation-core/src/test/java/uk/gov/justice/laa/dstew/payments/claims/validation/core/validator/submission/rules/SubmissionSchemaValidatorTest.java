@@ -209,7 +209,7 @@ class SubmissionSchemaValidatorTest {
 
       // Every error carries the shared schema error code
       assertThat(errs).allMatch(i -> "SCHEMA_VALIDATION_ERROR".equals(i.getCode()))
-              .allMatch(i -> i.getTechnicalMessage().startsWith("Required field '"));
+              .allMatch(i -> i.getTechnicalMessage().startsWith("$: required property '"));
     }
   }
 

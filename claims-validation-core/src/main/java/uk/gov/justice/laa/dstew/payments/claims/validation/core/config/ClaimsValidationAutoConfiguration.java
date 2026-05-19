@@ -340,8 +340,10 @@ public class ClaimsValidationAutoConfiguration {
    */
   @Bean("coreClaimValidation")
   @ConditionalOnMissingBean(ClaimValidation.class)
-  public ClaimValidation coreClaimValidation(List<ClaimValidator> claimValidators) {
-    return new ClaimValidation(claimValidators);
+  public ClaimValidation coreClaimValidation(
+      List<ClaimValidator> claimValidators,
+      HttpFeeSchemeProvider httpFeeSchemeProvider) {
+    return new ClaimValidation(claimValidators, httpFeeSchemeProvider);
   }
 
   /**

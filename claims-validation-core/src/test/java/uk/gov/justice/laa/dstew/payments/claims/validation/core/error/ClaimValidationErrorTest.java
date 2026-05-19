@@ -3,7 +3,6 @@ package uk.gov.justice.laa.dstew.payments.claims.validation.core.error;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import java.util.List;
 import org.junit.jupiter.api.Test;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationIssue;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationSeverity;
@@ -37,24 +36,6 @@ class ClaimValidationErrorTest {
   }
 
   @Test
-  void toValidationIssueWithPath_returnsIssueWithEmptyPath_whenPathHandlingNotImplemented() {
-    // The current implementation does not convert/attach the provided path; it should leave
-    // the ValidationIssue.path as the default empty list.
-    List<Object> dummyPath = List.of("$.someField", 0, "nested");
-
-    ValidationIssue issue = ClaimValidationError.MISSING_MANDATORY_FIELD
-        .toValidationIssueWithPath(dummyPath, "someField", "CRIME_LOWER");
-
-    assertThat(issue).isNotNull();
-    assertThat(issue.getCode()).isEqualTo("MISSING_MANDATORY_FIELD");
-    assertThat(issue.getMessage()).isEqualTo("someField is required for CRIME_LOWER claims");
-    assertThat(issue.getSeverity()).isEqualTo(ValidationSeverity.ERROR);
-    // Implementation currently doesn't map the provided path into ValidationIssue.path
-    assertThat(issue.getPath()).isNotNull();
-    assertThat(issue.getPath()).isEmpty();
-  }
-
-  @Test
   void toValidationIssue_withNullVarargs_throwsMissingFormatArgumentException() {
     // Passing null as the varargs array currently results in the format treating the
     // single format specifier as a null argument (no exception). Ensure we get a
@@ -84,17 +65,5 @@ class ClaimValidationErrorTest {
     assertThat(issue).isNotNull();
     assertThat(issue.getCode()).isEqualTo("INVALID_JSON_SCHEMA");
     assertThat(issue.getTechnicalMessage()).isNull();
-  }
-
-  @Test
-  void toValidationIssueWithPath_nullPath_leavesEmptyPath() {
-    // If the path argument is null, current implementation ignores it and leaves the
-    // ValidationIssue.path as the default empty list.
-    ValidationIssue issue = ClaimValidationError.MISSING_MANDATORY_FIELD
-        .toValidationIssueWithPath(null, "someField", "CRIME_LOWER");
-
-    assertThat(issue).isNotNull();
-    assertThat(issue.getPath()).isNotNull();
-    assertThat(issue.getPath()).isEmpty();
   }
 }

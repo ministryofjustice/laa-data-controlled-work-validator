@@ -52,13 +52,40 @@ public abstract class AbstractValidationContext {
    * validation pass) and avoids the overhead of calling
    * {@link #addValidationIssue(ValidationIssue)} in a loop.
    *
+   * <p>Deduplication: Issues are deduplicated by their {@code field} value. Only the first issue
+   * with a given non-null field is retained (checking both already-accumulated and
+   * incoming issues). Issues with null field values are always added (no deduplication).
+   *
    * @param validationIssues the issues to record; must not be {@code null}, may be empty
    */
   public void addValidationIssues(final List<ValidationIssue> validationIssues) {
     if (validationIssues == null || validationIssues.isEmpty()) {
       return;
     }
-    this.issuesSet.addAll(validationIssues);
+
+    // Collect all fields already in issuesSet (non-null only)
+    Set<String> existingFields = new LinkedHashSet<>();
+    for (ValidationIssue existing : issuesSet) {
+      String field = existing.getPath();
+      if (field != null) {
+        existingFields.add(field);
+      }
+    }
+
+    // Add incoming issues, skipping duplicates by field
+    for (ValidationIssue issue : validationIssues) {
+      String field = issue.getPath();
+
+      // If field is null, always add (no deduplication)
+      if (field == null) {
+        this.issuesSet.add(issue);
+      } else if (!existingFields.contains(field)) {
+        // Field is non-null and not yet in the set — add it and track it
+        existingFields.add(field);
+        this.issuesSet.add(issue);
+      }
+      // Otherwise, skip this issue (duplicate field already in set)
+    }
   }
 
   /**

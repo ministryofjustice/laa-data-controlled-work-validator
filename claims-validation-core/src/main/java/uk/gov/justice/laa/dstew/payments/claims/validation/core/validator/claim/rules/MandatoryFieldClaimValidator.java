@@ -12,6 +12,7 @@ import uk.gov.justice.laa.dstew.payments.claims.validation.core.config.Exclusion
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.config.MandatoryFieldsRegistry;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.FeeCalculationType;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationIssue;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.util.StringCaseUtil;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidationContext;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidationError;
@@ -63,10 +64,12 @@ public class MandatoryFieldClaimValidator implements ClaimValidator {
         Object value = getter.invoke(claim);
 
         if (value == null || (value instanceof String s && s.trim().isEmpty())) {
-          context.addValidationIssue(
-              ClaimValidationError.MISSING_MANDATORY_FIELD.toValidationIssue(
-                  StringCaseUtil.toTitleCase(fieldName),
-                  StringCaseUtil.toTitleCase(areaOfLaw.name())));
+          ValidationIssue issue = ClaimValidationError.MISSING_MANDATORY_FIELD.toValidationIssue(
+              StringCaseUtil.toTitleCase(fieldName),
+              StringCaseUtil.toTitleCase(areaOfLaw.name()));
+          issue.setTechnicalMessage(issue.getMessage());
+          issue.setPath(StringCaseUtil.toSnakeCase(fieldName));
+          context.addValidationIssue(issue);
         }
 
       } catch (IntrospectionException | IllegalAccessException | InvocationTargetException e) {

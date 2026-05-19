@@ -327,24 +327,29 @@ public final class DateUtils {
 
           if (date.isAfter(now())) {
             ClaimValidationError error = getDateError(fieldName);
-            issues.add(
-                error.toValidationIssueWithTechnicalMessage(
+            ValidationIssue issue =  error.toValidationIssueWithTechnicalMessage(
                     String.format("%s cannot be a future date", fieldName),
-                    String.format("%s cannot be a future date", fieldName)));
+                    String.format("%s cannot be a future date", fieldName));
+            issue.setPath(StringCaseUtil.toSnakeCase(fieldName));
+            issues.add(issue);
           } else if (date.isBefore(earliestDateAllowed)) {
             ClaimValidationError error = getDateError(fieldName);
             String msg =
                 String.format(
                     "%s cannot be before %s",
                     fieldName, earliestDateAllowed.format(DATE_FORMATTER_FOR_DISPLAY_MESSAGE));
-            issues.add(error.toValidationIssueWithTechnicalMessage(msg, msg));
+            ValidationIssue issue = error.toValidationIssueWithTechnicalMessage(msg, msg);
+            issue.setPath(StringCaseUtil.toSnakeCase(fieldName));
+            issues.add(issue);
           } else if (date.isAfter(twentiethOfNextMonth)) {
             ClaimValidationError error = getDateError(fieldName);
             String msg =
                 String.format(
                     "%s cannot be later than the 20th of the month following the submission period",
                     fieldName);
-            issues.add(error.toValidationIssueWithTechnicalMessage(msg, msg));
+            ValidationIssue issue = error.toValidationIssueWithTechnicalMessage(msg, msg);
+            issue.setPath(StringCaseUtil.toSnakeCase(fieldName));
+            issues.add(issue);
           }
         } catch (DateTimeParseException e) {
           issues.add(
@@ -374,7 +379,10 @@ public final class DateUtils {
 
     LocalDate date = parseDate(dateValueToCheck);
     if (date == null) {
-      return List.of(ClaimValidationError.INVALID_DATE_FORMAT.toValidationIssue(fieldName));
+      ValidationIssue issue = ClaimValidationError.INVALID_DATE_FORMAT
+              .toValidationIssue(fieldName);
+      issue.setPath(StringCaseUtil.toSnakeCase(fieldName));
+      return List.of(issue);
     }
 
     if (!isDateWithinRange(date, earliestDateAllowed, latestDateAllowed)) {
@@ -398,7 +406,10 @@ public final class DateUtils {
    * @return a {@link ValidationIssue} for the error
    */
   private static ValidationIssue createDateIssue(String fieldName, String message) {
-    return getDateError(fieldName).toValidationIssue(message);
+    ValidationIssue issue = getDateError(fieldName).toValidationIssue(message);
+    issue.setTechnicalMessage(issue.getMessage());
+    issue.setPath(StringCaseUtil.toSnakeCase(fieldName));
+    return issue;
   }
 
   /**

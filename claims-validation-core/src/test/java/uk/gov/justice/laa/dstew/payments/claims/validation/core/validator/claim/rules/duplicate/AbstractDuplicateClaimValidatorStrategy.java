@@ -9,17 +9,19 @@ public abstract class AbstractDuplicateClaimValidatorStrategy {
 
   protected Claim createClaim(
       String id,
+      String officeCode,
       String submissionId,
       String feeCode,
       String uniqueFileNumber,
       String uniqueClientNumber,
       ClaimStatus status) {
     return createClaim(
-        id, submissionId, feeCode, uniqueFileNumber, uniqueClientNumber, status, null, null);
+        id, officeCode, submissionId, feeCode, uniqueFileNumber, uniqueClientNumber, status, null, null);
   }
 
   protected Claim createClaim(
       String id,
+      String officeCode,
       String submissionId,
       String feeCode,
       String uniqueFileNumber,
@@ -29,6 +31,7 @@ public abstract class AbstractDuplicateClaimValidatorStrategy {
       String uniqueCaseId) {
     return createClaim(
         id,
+        officeCode,
         submissionId,
         feeCode,
         uniqueFileNumber,
@@ -41,6 +44,7 @@ public abstract class AbstractDuplicateClaimValidatorStrategy {
 
   protected Claim createClaim(
       String id,
+      String officeCode,
       String submissionId,
       String feeCode,
       String uniqueFileNumber,
@@ -51,6 +55,7 @@ public abstract class AbstractDuplicateClaimValidatorStrategy {
       String caseConcludedDate) {
     return Claim.builder()
         .id(id != null ? UUID.nameUUIDFromBytes(id.getBytes()) : null)
+        .officeAccountNumber(officeCode)
         .submissionId(submissionId != null ? UUID.nameUUIDFromBytes(submissionId.getBytes()) : null)
         .feeCode(feeCode)
         .uniqueFileNumber(uniqueFileNumber)

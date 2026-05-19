@@ -59,7 +59,7 @@ class DuplicateClaimLegalHelpValidationServiceStrategyTest
     void whenNoExistingClaim() {
       var claimTobeProcessed =
           createClaim(
-              "claimId1",
+              "claimId1","2Q286D",
               "submissionId1",
               "CIV123",
               "070722/001",
@@ -68,7 +68,7 @@ class DuplicateClaimLegalHelpValidationServiceStrategyTest
 
       var otherClaim =
           createClaim(
-              "claimId2",
+              "claimId2","2Q286D",
               "submissionId1",
               "CIV123",
               "070722/002",
@@ -123,7 +123,7 @@ class DuplicateClaimLegalHelpValidationServiceStrategyTest
     void whenCurrentClaimIsDisbursement() {
       var claimTobeProcessed =
           createClaim(
-              "claimId1",
+              "claimId1","2Q286D",
               "submissionId1",
               "DISB01",
               "070722/001",
@@ -132,7 +132,7 @@ class DuplicateClaimLegalHelpValidationServiceStrategyTest
 
       var otherClaim =
           createClaim(
-              "claimId2",
+              "claimId2","2Q286D",
               "submissionId1",
               "CIV123",
               "070722/002",
@@ -158,6 +158,7 @@ class DuplicateClaimLegalHelpValidationServiceStrategyTest
       var claimTobeProcessed =
           createClaim(
               "claimId1",
+              "2Q286D",
               "submissionId1",
               "CIV123",
               "070722/001",
@@ -167,6 +168,7 @@ class DuplicateClaimLegalHelpValidationServiceStrategyTest
       var otherClaim =
           createClaim(
               "claimId2",
+              "2Q286D",
               "submissionId1",
               "CIV123",
               "070722/001",
@@ -192,14 +194,23 @@ class DuplicateClaimLegalHelpValidationServiceStrategyTest
       var claimTobeProcessed =
           createClaim(
               "claimId1",
+              "2Q286D",
               "submissionId1",
               "CIV123",
               "070722/001",
               "CLI001",
               ClaimStatus.READY_TO_PROCESS);
+
       var otherClaim =
           createClaim(
-              "claimId2", "submissionId1", "CIV456", "070722/001", "CLI001", ClaimStatus.VALID);
+              "claimId2",
+              "2Q286D",
+              "submissionId1",
+              "CIV456",
+              "070722/001",
+              "CLI001",
+              ClaimStatus.VALID);
+
       var submissionClaims = List.of(claimTobeProcessed, otherClaim);
 
       when(mockDataClaimsRestClient.getClaims(
@@ -217,15 +228,22 @@ class DuplicateClaimLegalHelpValidationServiceStrategyTest
     void whenDifferentFeeCodeOfficeUcn() {
       var claimTobeProcessed =
           createClaim(
-              "claimId1",
+              "claimId1","2Q286D",
               "submissionId1",
               "CIV123",
               "070722/001",
               "CLI001",
               ClaimStatus.READY_TO_PROCESS);
+
       var otherClaim =
           createClaim(
-              "claimId2", "submissionId1", "CIV456", "070722/001", "CLI002", ClaimStatus.VALID);
+              "claimId2","2Q286D",
+              "submissionId1",
+              "CIV456",
+              "070722/001",
+              "CLI002",
+              ClaimStatus.VALID);
+
       var submissionClaims = List.of(claimTobeProcessed, otherClaim);
 
       when(mockDataClaimsRestClient.getClaims(
@@ -249,7 +267,7 @@ class DuplicateClaimLegalHelpValidationServiceStrategyTest
     void whenExistingClaimInPreviousSubmission() {
       var claimTobeProcessed =
           createClaim(
-              "claimId1",
+              "claimId1","2Q286D",
               "submissionId1",
               "CIV123",
               "070722/001",
@@ -258,7 +276,7 @@ class DuplicateClaimLegalHelpValidationServiceStrategyTest
 
       var otherClaim =
           createClaim(
-              "claimId2",
+              "claimId2","2Q286D",
               "submissionId1",
               "CIV123",
               "070722/002",
@@ -267,7 +285,7 @@ class DuplicateClaimLegalHelpValidationServiceStrategyTest
 
       var otherClaim1 =
           createClaim(
-              "claimId3",
+              "claimId3","2Q286D",
               "submissionId1",
               "CIV123",
               "070722/003",
@@ -309,7 +327,7 @@ class DuplicateClaimLegalHelpValidationServiceStrategyTest
     void whenExistingClaimsInPreviousSubmissions() {
       var claim1 =
           createClaim(
-              "claimId1",
+              "claimId1","2Q286D",
               "submissionId1",
               "CIV123",
               "070722/001",
@@ -318,7 +336,7 @@ class DuplicateClaimLegalHelpValidationServiceStrategyTest
 
       var claim2 =
           createClaim(
-              "claimId2",
+              "claimId2","2Q286D",
               "submissionId1",
               "CIV123",
               "070722/002",
@@ -327,7 +345,7 @@ class DuplicateClaimLegalHelpValidationServiceStrategyTest
 
       var claim3 =
           createClaim(
-              "claimId3",
+              "claimId3","2Q286D",
               "submissionId1",
               "CIV123",
               "070722/003",
@@ -379,7 +397,7 @@ class DuplicateClaimLegalHelpValidationServiceStrategyTest
     void whenExistingClaimInPreviousAndCurrentSubmission() {
       var claimTobeProcessed =
           createClaim(
-              "claimId1",
+              "claimId1","2Q286D",
               "submissionIdCurrent",
               "CIV123",
               "070722/001",
@@ -388,7 +406,7 @@ class DuplicateClaimLegalHelpValidationServiceStrategyTest
 
       var otherClaim =
           createClaim(
-              "claimId2",
+              "claimId2","2Q286D",
               "submissionIdCurrent",
               "CIV123",
               "070722/001",

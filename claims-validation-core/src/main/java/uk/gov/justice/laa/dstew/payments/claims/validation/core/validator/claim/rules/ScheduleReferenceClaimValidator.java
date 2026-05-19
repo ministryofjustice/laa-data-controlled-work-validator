@@ -29,7 +29,7 @@ public class ScheduleReferenceClaimValidator implements ClaimValidator {
               + "contain only letters, numbers, forward slashes, periods, and hyphens";
       String technicalMessage =
           String.format(
-              "schedule_reference (LEGAL_HELP): does not "
+              "schedule_reference (LEGAL HELP): does not "
                   + "match the regex pattern %s (provided value: %s)",
               SCHEDULE_REF_REGEX, scheduleReference);
       context.addValidationIssue(

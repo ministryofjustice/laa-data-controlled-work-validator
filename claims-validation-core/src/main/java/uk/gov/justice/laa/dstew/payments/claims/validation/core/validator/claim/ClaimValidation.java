@@ -2,13 +2,16 @@ package uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationIssue;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationResult;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationSeverity;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.provider.impl.HttpFeeSchemeProvider;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.rules.ClaimValidator;
+import uk.gov.justice.laa.fee.scheme.model.FeeDetailsResponseV2;
 
 /**
  * Orchestrates the execution of a collection of {@link ClaimValidator}s against a single
@@ -37,6 +40,7 @@ public class ClaimValidation {
    * preserving insertion order.
    */
   private final List<ClaimValidator> validators;
+  private final HttpFeeSchemeProvider httpFeeSchemeProvider;
 
   /**
    * Validate the supplied {@link Claim} using the configured set of {@link ClaimValidator}s.
@@ -72,7 +76,7 @@ public class ClaimValidation {
     }
 
     // Build validation context
-    ClaimValidationContext context = buildValidationContext(scope, relatedClaims);
+    ClaimValidationContext context = buildValidationContext(claim, scope, relatedClaims);
 
     // Run all validators in priority order, using the context as the canonical store for
     // validation issues. We capture the context size before/after each validator so we can
@@ -115,10 +119,56 @@ public class ClaimValidation {
    * @param relatedClaims optional related claims
    * @return the validation context
    */
-  private ClaimValidationContext buildValidationContext(String scope, List<Claim> relatedClaims) {
+  private ClaimValidationContext buildValidationContext(
+          Claim claim, String scope, List<Claim> relatedClaims) {
     List<Claim> related = relatedClaims != null ? relatedClaims : List.of();
 
-    return ClaimValidationContext.builder().scope(scope).relatedClaims(related).build();
+    return ClaimValidationContext.builder()
+            .scope(scope)
+            .feeCalculationType(fetchFeeCalculationType(claim.getFeeCode()))
+            .relatedClaims(related)
+            .build();
+  }
+
+  /**
+   * Fetches the fee calculation type for the given fee code by delegating to the fee scheme
+   * provider.
+   *
+   * <p>Defensive behaviour:
+   * <ul>
+   *   <li>A {@code null} or blank {@code feeCode} is treated as unresolvable; {@code null} is
+   *       returned immediately with a warning.</li>
+   *   <li>If the provider returns an empty {@link Optional} (e.g. fee code not found / 404),
+   *       {@code null} is returned and a warning is logged. The caller is responsible for
+   *       deciding how to handle an unknown fee type.</li>
+   *   <li>If the provider returns a response whose {@code feeType} is {@code null} or blank,
+   *       {@code null} is returned and a warning is logged so the gap is visible in logs.</li>
+   * </ul>
+   *
+   * @param feeCode the fee code to resolve; may be {@code null}
+   * @return the fee calculation type string, or {@code null} if it cannot be determined
+   */
+  private String fetchFeeCalculationType(String feeCode) {
+    if (feeCode == null || feeCode.isBlank()) {
+      log.warn("Cannot fetch fee calculation type: feeCode is null or blank");
+      return null;
+    }
+
+    Optional<FeeDetailsResponseV2> opt = httpFeeSchemeProvider.getFeeDetails(feeCode);
+
+    if (opt.isEmpty()) {
+      log.warn("Unable to retrieve fee details for fee code: {} — fee type will be null", feeCode);
+      return null;
+    }
+
+    String feeType = opt.get().getFeeType();
+
+    if (feeType == null || feeType.isBlank()) {
+      log.warn("Fee details returned for fee code: {} but feeType is null or blank", feeCode);
+      return null;
+    }
+    log.info("Resolved fee calculation type '{}' for fee code '{}'", feeType, feeCode);
+    return feeType;
   }
 
   /**
