@@ -1,9 +1,13 @@
 package uk.gov.justice.laa.dstew.payments.claims.validation.core.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.BeforeEach;
@@ -14,6 +18,7 @@ import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationIssue;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationResult;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationSeverity;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.provider.impl.HttpFeeSchemeProvider;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidation;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidationContext;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.rules.ClaimValidator;
@@ -37,9 +42,13 @@ class ValidationServiceTest {
 
   private Claim testClaim;
   private SubmissionResponse testSubmission;
+  private HttpFeeSchemeProvider feeSchemeProvider;
 
   @BeforeEach
   void setUp() {
+    feeSchemeProvider = mock(HttpFeeSchemeProvider.class);
+    when(feeSchemeProvider.getFeeDetails(anyString())).thenReturn(Optional.empty());
+
     testClaim = new Claim();
     testClaim.setAreaOfLaw(AreaOfLaw.LEGAL_HELP);
     testClaim.setOfficeAccountNumber("1A234B");
@@ -49,13 +58,19 @@ class ValidationServiceTest {
   }
 
   /** Creates a service with the given claim pipeline and an empty submission pipeline. */
-  private static ValidationService withClaims(ClaimValidation claims) {
+  private ValidationService withClaims(ClaimValidation claims) {
     return new ValidationService(claims, new SubmissionValidation(Collections.emptyList()));
   }
 
   /** Creates a service with the given submission pipeline and an empty claim pipeline. */
-  private static ValidationService withSubmissions(SubmissionValidation submissions) {
-    return new ValidationService(new ClaimValidation(Collections.emptyList()), submissions);
+  private ValidationService withSubmissions(SubmissionValidation submissions) {
+    return new ValidationService(
+        new ClaimValidation(Collections.emptyList(), feeSchemeProvider), submissions);
+  }
+
+  /** Builds a ClaimValidation with the given validators using the shared mock provider. */
+  private ClaimValidation claimValidation(List<ClaimValidator> validators) {
+    return new ClaimValidation(validators, feeSchemeProvider);
   }
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -69,7 +84,7 @@ class ValidationServiceTest {
     @Test
     @DisplayName("Returns valid result when no validators raise errors")
     void returnsValidResultForValidClaim() {
-      ValidationResult result = withClaims(new ClaimValidation(Collections.emptyList()))
+      ValidationResult result = withClaims(claimValidation(Collections.emptyList()))
           .validateClaim(testClaim);
 
       assertThat(result.getIsValid()).isTrue();
@@ -79,7 +94,7 @@ class ValidationServiceTest {
     @Test
     @DisplayName("Returns MISSING_CLAIM error when claim is null")
     void returnsMissingClaimWhenClaimIsNull() {
-      ValidationResult result = withClaims(new ClaimValidation(Collections.emptyList()))
+      ValidationResult result = withClaims(claimValidation(Collections.emptyList()))
           .validateClaim(null);
 
       assertThat(result.getIsValid()).isFalse();
@@ -110,7 +125,7 @@ class ValidationServiceTest {
         @Override public String getValidatorCode() { return "CAPTOR"; }
       };
 
-      withClaims(new ClaimValidation(List.of(captor))).validateClaim(testClaim);
+      withClaims(claimValidation(List.of(captor))).validateClaim(testClaim);
 
       assertThat(capturedScope.get()).isNull();
     }
@@ -147,7 +162,7 @@ class ValidationServiceTest {
         @Override public String getValidatorCode() { return "CAPTOR"; }
       };
 
-      withClaims(new ClaimValidation(List.of(captor))).validateClaim(testClaim, "submission");
+      withClaims(claimValidation(List.of(captor))).validateClaim(testClaim, "submission");
 
       assertThat(capturedScope.get()).isEqualTo("submission");
     }
@@ -175,7 +190,7 @@ class ValidationServiceTest {
         @Override public String getValidatorCode() { return "CAPTOR"; }
       };
 
-      withClaims(new ClaimValidation(List.of(captor))).validateClaim(testClaim, "fee");
+      withClaims(claimValidation(List.of(captor))).validateClaim(testClaim, "fee");
 
       assertThat(capturedRelated.get()).isEmpty();
     }
@@ -183,7 +198,7 @@ class ValidationServiceTest {
     @Test
     @DisplayName("Returns MISSING_CLAIM error when claim is null")
     void returnsMissingClaimWhenClaimIsNull() {
-      ValidationResult result = withClaims(new ClaimValidation(Collections.emptyList()))
+      ValidationResult result = withClaims(claimValidation(Collections.emptyList()))
           .validateClaim(null, "fee");
 
       assertThat(result.getIsValid()).isFalse();
@@ -202,7 +217,7 @@ class ValidationServiceTest {
     @Test
     @DisplayName("Returns valid result when no validators raise errors")
     void returnsValidResultWhenNoIssues() {
-      assertThat(withClaims(new ClaimValidation(Collections.emptyList()))
+      assertThat(withClaims(claimValidation(Collections.emptyList()))
           .validateClaim(testClaim, "fee", List.of()).getIsValid()).isTrue();
     }
 
@@ -228,7 +243,7 @@ class ValidationServiceTest {
         @Override public String getValidatorCode() { return "ERROR_VALIDATOR"; }
       };
 
-      ValidationResult result = withClaims(new ClaimValidation(List.of(errorValidator)))
+      ValidationResult result = withClaims(claimValidation(List.of(errorValidator)))
           .validateClaim(testClaim, "fee", List.of());
 
       assertThat(result.getIsValid()).isFalse();
@@ -257,7 +272,7 @@ class ValidationServiceTest {
         @Override public String getValidatorCode() { return "WARN_VALIDATOR"; }
       };
 
-      ValidationResult result = withClaims(new ClaimValidation(List.of(warningValidator)))
+      ValidationResult result = withClaims(claimValidation(List.of(warningValidator)))
           .validateClaim(testClaim, null, List.of());
 
       assertThat(result.getIsValid()).isTrue();
@@ -267,7 +282,7 @@ class ValidationServiceTest {
     @Test
     @DisplayName("Returns MISSING_CLAIM error when claim is null")
     void returnsMissingClaimWhenClaimIsNull() {
-      ValidationResult result = withClaims(new ClaimValidation(Collections.emptyList()))
+      ValidationResult result = withClaims(claimValidation(Collections.emptyList()))
           .validateClaim(null, "fee", List.of());
 
       assertThat(result.getIsValid()).isFalse();

@@ -24,6 +24,8 @@ import uk.gov.justice.laa.dstew.payments.claimsdata.model.FeeCalculationType;
 @ExtendWith(MockitoExtension.class)
 class DuplicateClaimCrimeLowerValidationServiceStrategyTest extends AbstractDuplicateClaimValidatorStrategy {
 
+  private static final String OFFICE_CODE = "officeCode";
+  
   @Mock ClaimsDataProvider dataClaimsRestClient;
 
   @InjectMocks DuplicateClaimCrimeLowerValidationServiceStrategy duplicateClaimValidationService;
@@ -36,10 +38,10 @@ class DuplicateClaimCrimeLowerValidationServiceStrategyTest extends AbstractDupl
     @DisplayName("Crime Lower claims - successful validation does not update context")
     void crimeLowerClaimSuccessfulValidation() {
       // Given
-      Claim claim1 = createClaim("claimId1", null, "feeCode1", "ufn1", null,
+      Claim claim1 = createClaim("claimId1", OFFICE_CODE, null, "feeCode1", "ufn1", null,
           ClaimStatus.READY_TO_PROCESS);
 
-      Claim claim2 = createClaim("claimId2", null, "feeCode2", "ufn2", null,
+      Claim claim2 = createClaim("claimId2", OFFICE_CODE, null, "feeCode2", "ufn2", null,
           ClaimStatus.READY_TO_PROCESS);
 
       List<Claim> submissionClaims = List.of(claim1, claim2);
@@ -50,7 +52,7 @@ class DuplicateClaimCrimeLowerValidationServiceStrategyTest extends AbstractDupl
 
       // When
       List<ValidationIssue> validationIssues = duplicateClaimValidationService.validateDuplicateClaims(
-          claim1, submissionClaims, "officeCode", FeeCalculationType.FIXED.toString());
+          claim1, submissionClaims, OFFICE_CODE, FeeCalculationType.FIXED.toString());
 
       // Then
       assertThat(validationIssues).isEmpty();
@@ -61,9 +63,9 @@ class DuplicateClaimCrimeLowerValidationServiceStrategyTest extends AbstractDupl
         "Crime Lower claims - different fee code but the same unique file number passes validation")
     void crimeLowerClaimDifferentFeeCodeButSameUfnPassesValidation() {
       // Given
-      Claim claim1 = createClaim("claimId1", null, "feeCode1", "ufn", null,
+      Claim claim1 = createClaim("claimId1", OFFICE_CODE, null, "feeCode1", "ufn", null,
           ClaimStatus.READY_TO_PROCESS);
-      Claim claim2 = createClaim("claimId2", null, "feeCode2", "ufn", null,
+      Claim claim2 = createClaim("claimId2", OFFICE_CODE, null, "feeCode2", "ufn", null,
           ClaimStatus.READY_TO_PROCESS);
 
       List<Claim> submissionClaims = List.of(claim1, claim2);
@@ -76,7 +78,7 @@ class DuplicateClaimCrimeLowerValidationServiceStrategyTest extends AbstractDupl
 
       // When
       List<ValidationIssue> validationIssues = duplicateClaimValidationService.validateDuplicateClaims(
-          claim1, submissionClaims, "officeCode", FeeCalculationType.FIXED.toString());
+          claim1, submissionClaims, OFFICE_CODE, FeeCalculationType.FIXED.toString());
 
       // Then
       assertThat(validationIssues).isEmpty();
@@ -87,9 +89,9 @@ class DuplicateClaimCrimeLowerValidationServiceStrategyTest extends AbstractDupl
         "Crime Lower claims - different unique file number but the same fee code passes validation")
     void crimeLowerClaimDifferentUfnButSameFeeCodePassesValidation() {
       // Given
-      Claim claim1 = createClaim("claimId1", null, "feeCode", "ufn1", null,
+      Claim claim1 = createClaim("claimId1", OFFICE_CODE, null, "feeCode", "ufn1", null,
           ClaimStatus.READY_TO_PROCESS);
-      Claim claim2 = createClaim("claimId2", null, "feeCode", "ufn2", null,
+      Claim claim2 = createClaim("claimId2", OFFICE_CODE, null, "feeCode", "ufn2", null,
           ClaimStatus.READY_TO_PROCESS);
 
       List<Claim> submissionClaims = List.of(claim1, claim2);
@@ -100,7 +102,7 @@ class DuplicateClaimCrimeLowerValidationServiceStrategyTest extends AbstractDupl
 
       // When
       List<ValidationIssue> validationIssues = duplicateClaimValidationService.validateDuplicateClaims(
-          claim1, submissionClaims, "officeCode", FeeCalculationType.FIXED.toString());
+          claim1, submissionClaims, OFFICE_CODE, FeeCalculationType.FIXED.toString());
 
       // Then
       assertThat(validationIssues).isEmpty();
@@ -113,10 +115,10 @@ class DuplicateClaimCrimeLowerValidationServiceStrategyTest extends AbstractDupl
             + "context")
     void crimeLowerClaimDuplicateInSubmissionResultsInClaimErrorAddedToContext() {
       // Given
-      Claim claim1 = createClaim("claimId1", null, "feeCode", "ufn", null,
+      Claim claim1 = createClaim("claimId1", OFFICE_CODE, null, "feeCode", "ufn", null,
           ClaimStatus.READY_TO_PROCESS);
 
-      Claim claim2 = createClaim("claimId2", null, "feeCode", "ufn", null,
+      Claim claim2 = createClaim("claimId2", OFFICE_CODE, null, "feeCode", "ufn", null,
           ClaimStatus.READY_TO_PROCESS);
 
       List<Claim> submissionClaims = List.of(claim1, claim2);
@@ -130,7 +132,7 @@ class DuplicateClaimCrimeLowerValidationServiceStrategyTest extends AbstractDupl
 
       // When
       List<ValidationIssue> validationIssues = duplicateClaimValidationService.validateDuplicateClaims(
-          claim1, submissionClaims, "officeCode", FeeCalculationType.FIXED.toString());
+          claim1, submissionClaims, OFFICE_CODE, FeeCalculationType.FIXED.toString());
 
       // Then
       assertThat(validationIssues).isNotEmpty();
@@ -145,10 +147,10 @@ class DuplicateClaimCrimeLowerValidationServiceStrategyTest extends AbstractDupl
     @DisplayName("Crime Lower claims - duplicate validation ignores invalid claims")
     void crimeLowerClaimDuplicateValidationIgnoresInvalidClaims() {
       // Given
-      Claim claim1 = createClaim("claimId1", "submissionId", "feeCode", "ufn",
+      Claim claim1 = createClaim("claimId1", OFFICE_CODE, "submissionId", "feeCode", "ufn",
           null, ClaimStatus.READY_TO_PROCESS);
 
-      Claim claim2 = createClaim("claimId2", "submissionId", "feeCode", "ufn",
+      Claim claim2 = createClaim("claimId2", OFFICE_CODE, "submissionId", "feeCode", "ufn",
           null, ClaimStatus.INVALID);
 
       List<Claim> submissionClaims = List.of(claim1, claim2);
@@ -167,7 +169,7 @@ class DuplicateClaimCrimeLowerValidationServiceStrategyTest extends AbstractDupl
 
       // When
       List<ValidationIssue> validationIssues = duplicateClaimValidationService.validateDuplicateClaims(
-          claim1, submissionClaims, "officeCode", FeeCalculationType.FIXED.toString());
+          claim1, submissionClaims, OFFICE_CODE, FeeCalculationType.FIXED.toString());
 
       // Then
       assertThat(validationIssues).isEmpty();
@@ -180,7 +182,7 @@ class DuplicateClaimCrimeLowerValidationServiceStrategyTest extends AbstractDupl
             + "validation context")
     void crimeLowerClaimDuplicateInAnotherSubmissionResultsInClaimErrorAddedToContext() {
       // Given
-      Claim claim1 = createClaim("claimId1", "submissionId", "feeCode", "ufn",
+      Claim claim1 = createClaim("claimId1", OFFICE_CODE, "submissionId", "feeCode", "ufn",
           null, ClaimStatus.READY_TO_PROCESS);
 
       ClaimResponse otherClaim = createClaimResponse("claimId2", "submissionId2", "feeCode",
@@ -197,7 +199,7 @@ class DuplicateClaimCrimeLowerValidationServiceStrategyTest extends AbstractDupl
 
       // When
       List<ValidationIssue> validationIssues = duplicateClaimValidationService.validateDuplicateClaims(
-          claim1, submissionClaims, "officeCode", FeeCalculationType.FIXED.toString());
+          claim1, submissionClaims, OFFICE_CODE, FeeCalculationType.FIXED.toString());
 
       // Then
       assertThat(validationIssues).isNotEmpty();
@@ -212,9 +214,9 @@ class DuplicateClaimCrimeLowerValidationServiceStrategyTest extends AbstractDupl
     @DisplayName("Crime Lower claims - does not reprocess submission claims")
     void crimeLowerClaimDuplicateDoesNotReprocessSubmissionClaims() {
       // Given
-      Claim claim1 = createClaim("claimId1", "submissionId", "feeCode", "ufn",
+      Claim claim1 = createClaim("claimId1", OFFICE_CODE, "submissionId", "feeCode", "ufn",
           null, ClaimStatus.READY_TO_PROCESS);
-      Claim claim2 = createClaim("claimId2", "submissionId", "feeCode", "ufn",
+      Claim claim2 = createClaim("claimId2", OFFICE_CODE, "submissionId", "feeCode", "ufn",
           null, ClaimStatus.READY_TO_PROCESS);
       ClaimResponse otherClaim = createClaimResponse("claimId2", "submissionId", "feeCode", "ufn",
           null, ClaimStatus.READY_TO_PROCESS);
@@ -230,7 +232,7 @@ class DuplicateClaimCrimeLowerValidationServiceStrategyTest extends AbstractDupl
 
       // When
       List<ValidationIssue> validationIssues = duplicateClaimValidationService.validateDuplicateClaims(
-          claim1, submissionClaims, "officeCode", FeeCalculationType.FIXED.toString());
+          claim1, submissionClaims, OFFICE_CODE, FeeCalculationType.FIXED.toString());
 
       // Then
       assertThat(validationIssues).isNotEmpty();
@@ -249,17 +251,17 @@ class DuplicateClaimCrimeLowerValidationServiceStrategyTest extends AbstractDupl
       @DisplayName("Crime lower claims - Fee Code PROD success validation")
       void crimeLowerClaimDuplicateWithProdFeeCodeSuccess() {
         // Given
-        Claim claim1 = createClaim("claimId1", null, "PROD", null, null,
+        Claim claim1 = createClaim("claimId1", OFFICE_CODE, null, "PROD", null, null,
             ClaimStatus.READY_TO_PROCESS, null, null, "caseConcludedDate1");
 
-        Claim claim2 = createClaim("claimId2", null, "PROD", null, null,
+        Claim claim2 = createClaim("claimId2", OFFICE_CODE, null, "PROD", null, null,
             ClaimStatus.READY_TO_PROCESS, null, null, "caseConcludedDate2");
 
         List<Claim> submissionClaims = List.of(claim1, claim2);
 
         // When
         List<ValidationIssue> validationIssues = duplicateClaimValidationService.validateDuplicateClaims(
-            claim1, submissionClaims, "officeCode", FeeCalculationType.FIXED.toString());
+            claim1, submissionClaims, OFFICE_CODE, FeeCalculationType.FIXED.toString());
 
         // Then
         assertThat(validationIssues).isEmpty();
@@ -272,9 +274,9 @@ class DuplicateClaimCrimeLowerValidationServiceStrategyTest extends AbstractDupl
           "Crime lower claims - Fee Code PROD passes validation, duplicate in same submission")
       void crimeLowerClaimDuplicateWithProdFeeCodeDuplicateInSameSubmission() {
         // Given
-        Claim claim1 = createClaim("claimId1", null, "PROD", null, null,
+        Claim claim1 = createClaim("claimId1", OFFICE_CODE, null, "PROD", null, null,
             ClaimStatus.READY_TO_PROCESS, null, null, "caseConcludedDate1");
-        Claim claim2 = createClaim("claimId2", null, "PROD", null, null,
+        Claim claim2 = createClaim("claimId2", OFFICE_CODE, null, "PROD", null, null,
             ClaimStatus.READY_TO_PROCESS, null, null, "caseConcludedDate1");
 
         List<Claim> submissionClaims = List.of(claim1, claim2);
@@ -283,7 +285,7 @@ class DuplicateClaimCrimeLowerValidationServiceStrategyTest extends AbstractDupl
 
         // When
         List<ValidationIssue> validationIssues = duplicateClaimValidationService.validateDuplicateClaims(
-            claim1, submissionClaims, "officeCode", FeeCalculationType.FIXED.toString());
+            claim1, submissionClaims, OFFICE_CODE, FeeCalculationType.FIXED.toString());
 
         // Then
         assertThat(validationIssues).isEmpty();
@@ -296,7 +298,7 @@ class DuplicateClaimCrimeLowerValidationServiceStrategyTest extends AbstractDupl
           "Crime lower claims - Fee Code PROD passes validation, duplicate in another submission")
       void crimeLowerClaimDuplicateWithProdFeeCodeDuplicateInAnotherSubmission() {
         // Given
-        Claim claim1 = createClaim("claimId1", "submissionId", "PROD", null,
+        Claim claim1 = createClaim("claimId1", OFFICE_CODE, "submissionId", "PROD", null,
             null, ClaimStatus.READY_TO_PROCESS, null, null, "caseConcludedDate1");
 
         ClaimResponse otherClaim = createClaimResponse("claimId2", "submissionId2", "PROD",
@@ -309,7 +311,7 @@ class DuplicateClaimCrimeLowerValidationServiceStrategyTest extends AbstractDupl
 
         // When
         List<ValidationIssue> validationIssues = duplicateClaimValidationService.validateDuplicateClaims(
-            claim1, submissionClaims, "officeCode", FeeCalculationType.FIXED.toString());
+            claim1, submissionClaims, OFFICE_CODE, FeeCalculationType.FIXED.toString());
 
         // Then
         // PROD fee code should skip duplicate checks, so no validation issues are expected

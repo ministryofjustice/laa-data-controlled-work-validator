@@ -156,15 +156,10 @@ public class DuplicateClaimLegalHelpDisbursementValidationStrategy extends Dupli
    */
   protected List<Claim> findEligibleDuplicateClaims(
           Claim incomingClaim, List<Claim> submissionClaims, String officeCode) {
-    var previous = getDuplicateClaimsInPreviousSubmission(
-        officeCode,
-        incomingClaim.getFeeCode(),
-        incomingClaim.getUniqueFileNumber(),
-        incomingClaim.getUniqueClientNumber(),
-        null);
+    var previous = getDuplicateClaimsInPreviousSubmission(incomingClaim);
 
     List<Claim> duplicates = (previous == null || previous.duplicates() == null)
-        ? java.util.List.of()
+        ? List.of()
         : previous.duplicates();
 
     return duplicates.stream().filter(c -> parseConcludedDate(c) != null).toList();

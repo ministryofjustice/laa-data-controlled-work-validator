@@ -249,9 +249,13 @@ public abstract class AbstractSchemaValidator<T> {
     for (ValidationMessage vm : requiredFieldErrors) {
       String fieldName = extractRequiredFieldName(vm);
       String display = String.format("%s is required", toTitleCase(fieldName));
-      String technical = String.format("Required field '%s' is missing", fieldName);
-      issues.add(SchemaValidationError.SCHEMA_VALIDATION_ERROR
-          .toValidationIssueWithTechnicalMessage(technical, display));
+      String technical = String.format(
+              "$: required property '%s' not found (provided value: %s)",
+              fieldName, getTextValue(subjectJson, fieldName));
+      ValidationIssue issue = SchemaValidationError.SCHEMA_VALIDATION_ERROR
+              .toValidationIssueWithTechnicalMessage(technical, display);
+      issue.setPath(fieldName);
+      issues.add(issue);
     }
 
     if (!validationErrors.isEmpty()) {
@@ -263,8 +267,10 @@ public abstract class AbstractSchemaValidator<T> {
         String fieldName = extractFieldName(vm);
         String technical = fieldToTechnical.get(fieldName);
         String display = buildDisplayMessage(fieldName, discriminator);
-        issues.add(SchemaValidationError.SCHEMA_VALIDATION_ERROR
-            .toValidationIssueWithTechnicalMessage(technical, display));
+        ValidationIssue issue = SchemaValidationError.SCHEMA_VALIDATION_ERROR
+                .toValidationIssueWithTechnicalMessage(technical, display);
+        issue.setPath(fieldName);
+        issues.add(issue);
       }
     }
 
@@ -298,6 +304,7 @@ public abstract class AbstractSchemaValidator<T> {
     String display = String.format(
         "Schema configuration warning: %d field(s) not defined in schema: %s",
         unknownFields.size(), String.join(", ", unknownFields));
+
     String technical =
         "These fields exist on the domain object but are not defined in the JSON schema. "
             + "Update " + getSchemaPath() + " to add validation rules for these fields.";

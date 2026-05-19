@@ -24,7 +24,8 @@ public enum SchemaValidationError implements ValidationError {
   SCHEMA_VALIDATION_ERROR(
       "%s",
       "%s",
-      ValidationSeverity.ERROR
+      ValidationSeverity.ERROR,
+      null
   ),
 
   /**
@@ -34,10 +35,12 @@ public enum SchemaValidationError implements ValidationError {
   SCHEMA_CONFIG_WARNING(
       "Schema configuration warning: field(s) not defined in schema",
       "Update the schema file to add validation rules for these fields",
-      ValidationSeverity.WARNING
+      ValidationSeverity.WARNING,
+      null
   );
 
   private final String displayMessage;
   private final String technicalMessage;
   private final ValidationSeverity severity;
+  private final String field;
 }

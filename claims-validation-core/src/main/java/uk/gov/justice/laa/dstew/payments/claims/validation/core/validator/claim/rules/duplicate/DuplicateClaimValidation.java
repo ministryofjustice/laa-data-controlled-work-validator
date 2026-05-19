@@ -2,7 +2,6 @@ package uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim
 
 import java.util.Collections;
 import java.util.List;
-import java.util.UUID;
 import java.util.function.Predicate;
 import lombok.extern.slf4j.Slf4j;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
@@ -101,29 +100,23 @@ public abstract class DuplicateClaimValidation {
    * code, and unique file number. Ignore claims within this submission as they are verified
    * separately.
    *
-   * @param officeCode the unique identifier for the office
-   * @param feeCode the fee code
-   * @param uniqueFileNumber the unique file number for the claim
-   * @param uniqueClientNumber the unique client number for the claim
-   * @param submissionId the submission id to exclude
+   * @param currentClaim the claim being validated for duplicates.
+   *                     Must contain office code, fee code, unique file number,
+   *                     and unique client number.
    * @return a DuplicateCheckResult containing either duplicates or an error
    */
   protected DuplicateCheckResult getDuplicateClaimsInPreviousSubmission(
-      String officeCode,
-      String feeCode,
-      String uniqueFileNumber,
-      String uniqueClientNumber,
-      UUID submissionId) {
+      Claim currentClaim) {
 
     try {
       ClaimResultSet resultSet =
           claimsDataProvider.getClaims(
-              officeCode,
+              currentClaim.getOfficeAccountNumber(),
               null, // submissionId - not filtering by submission
               SUBMISSION_STATUSES_FOR_DUPLICATE_CHECK,
-              feeCode,
-              uniqueFileNumber,
-              uniqueClientNumber,
+              currentClaim.getFeeCode(),
+              currentClaim.getUniqueFileNumber(),
+              currentClaim.getUniqueClientNumber(),
               null,
               CLAIM_STATUSES_FOR_DUPLICATE_CHECK,
               null, // page
@@ -135,7 +128,8 @@ public abstract class DuplicateClaimValidation {
       }
 
       // Get the submission ID of the current submission to filter out
-      String currentSubmissionId = submissionId == null ? null : submissionId.toString();
+      String currentSubmissionId = currentClaim.getSubmissionId() == null
+              ? null : currentClaim.getSubmissionId().toString();
 
       List<Claim> duplicates =
           resultSet.getContent().stream()
@@ -151,13 +145,18 @@ public abstract class DuplicateClaimValidation {
               // .filter(claim -> !submissionClaims.contains(claim))
               .toList();
 
+      duplicates.forEach(claim -> {
+        claim.setAreaOfLaw(currentClaim.getAreaOfLaw());
+        claim.setOfficeAccountNumber(currentClaim.getOfficeAccountNumber());
+      });
+
       log.info(
           "Checked for duplicate claims in previous submissions for officeCode={}, "
               + "feeCode={}, uniqueFileNumber={}, uniqueClientNumber={}, Found {} duplicates.",
-          officeCode,
-          feeCode,
-          uniqueFileNumber,
-          uniqueClientNumber,
+          currentClaim.getOfficeAccountNumber(),
+          currentClaim.getFeeCode(),
+          currentClaim.getUniqueFileNumber(),
+          currentClaim.getUniqueClientNumber(),
           duplicates.size());
 
       return new DuplicateCheckResult(duplicates, null);
