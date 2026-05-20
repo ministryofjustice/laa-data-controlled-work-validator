@@ -102,7 +102,7 @@ class DisbursementClaimStartDateValidatorTest {
     assertThat(validator.priority()).isEqualTo(10);
     assertThat(validator.appliesTo("disbursement")).isTrue();
     assertThat(validator.appliesTo("all")).isTrue();
-    assertThat(validator.appliesTo("fee")).isFalse();
+    assertThat(validator.appliesTo("fee")).isTrue();
     assertThat(validator.getValidatorCode()).isEqualTo("CLAIM_DISBURSEMENT_START_DATE");
   }
 }

@@ -29,7 +29,8 @@ public class ClaimValidationContext extends AbstractValidationContext {
   private final String feeType;
 
   /** The fee calculation type (e.g., "HOURLY", "FIXED", "DISB_ONLY"). */
-  private final String feeCalculationType;
+  @Setter
+  private String feeCalculationType;
 
   @Setter
   private String authorisedCategoryOfLawCode;

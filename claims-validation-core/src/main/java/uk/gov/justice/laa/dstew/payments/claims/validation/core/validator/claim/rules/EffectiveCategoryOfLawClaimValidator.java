@@ -290,7 +290,7 @@ public class EffectiveCategoryOfLawClaimValidator implements ClaimValidator {
    */
   @Override
   public boolean appliesTo(String scope) {
-    return scope == null || "fee".equalsIgnoreCase(scope) || "all".equalsIgnoreCase(scope);
+    return true;
   }
 
   /**

@@ -110,6 +110,12 @@ public enum ClaimValidationError implements ValidationError {
       ValidationSeverity.ERROR,
       null
   ),
+  MISSING_FEE_CODE(
+      "Fee code is required for non-disbursement claims",
+      null,
+      ValidationSeverity.ERROR,
+      "fee_code"
+  ),
 
   // Category of law / fee code errors
   INVALID_CATEGORY_OF_LAW_AND_FEE_CODE(
@@ -158,7 +164,7 @@ public enum ClaimValidationError implements ValidationError {
   ),
 
   // Duplicate claim errors
-  INVALID_CLAIM_HAS_DUPLICATE_IN_EXISTING_SUBMISSION(
+  INVALID_CLAIM_HAS_DUPLICATE_IN_SAME_SUBMISSION(
       "A duplicate claim was found within the same submission",
       null,
       ValidationSeverity.ERROR,
@@ -197,7 +203,7 @@ public enum ClaimValidationError implements ValidationError {
               + "at least %d calendar months after the Case Start Date %s",
       null,
       ValidationSeverity.ERROR,
-      "case_start_date"
+      null //"case_start_date"
   ),
 
   // Matter type errors

@@ -8,6 +8,7 @@ import java.time.YearMonth;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.StringUtils;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationIssue;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.util.DateUtils;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidationContext;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidationError;
@@ -26,8 +27,7 @@ public final class DisbursementClaimStartDateValidator implements ClaimValidator
   @Override
   public void validate(Claim claim, ClaimValidationContext context) {
 
-    String feeType = context.getFeeCalculationType();
-    if (!isDisbursementClaim(feeType)) {
+    if (!isDisbursementClaim(context.getFeeCalculationType())) {
       log.debug("Claim {} is not a disbursement claim", claim.getId());
       return;
     }
@@ -51,10 +51,11 @@ public final class DisbursementClaimStartDateValidator implements ClaimValidator
             DateUtils.MAXIMUM_MONTHS_DIFFERENCE,
             caseStartDate.format(DateUtils.DATE_FORMATTER_FOR_DISPLAY_MESSAGE));
 
-        context.addValidationIssue(
-            ClaimValidationError.DISBURSEMENT_TOO_EARLY.toValidationIssue(
+        ValidationIssue issue = ClaimValidationError.DISBURSEMENT_TOO_EARLY.toValidationIssue(
                 DateUtils.MAXIMUM_MONTHS_DIFFERENCE,
-                caseStartDate.format(DateUtils.DATE_FORMATTER_FOR_DISPLAY_MESSAGE)));
+                caseStartDate.format(DateUtils.DATE_FORMATTER_FOR_DISPLAY_MESSAGE));
+        issue.setTechnicalMessage(issue.getMessage());
+        context.addValidationIssue(issue);
       }
     }
   }
@@ -66,8 +67,7 @@ public final class DisbursementClaimStartDateValidator implements ClaimValidator
 
   @Override
   public boolean appliesTo(String scope) {
-    // Only run for disbursement scope
-    return "disbursement".equalsIgnoreCase(scope) || "all".equalsIgnoreCase(scope);
+    return true;
   }
 
   @Override

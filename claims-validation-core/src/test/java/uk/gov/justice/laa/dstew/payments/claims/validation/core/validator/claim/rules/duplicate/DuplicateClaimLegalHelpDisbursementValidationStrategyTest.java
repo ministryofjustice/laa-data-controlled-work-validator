@@ -714,7 +714,7 @@ class DuplicateClaimLegalHelpDisbursementValidationStrategyTest
 
       assertThat(
               duplicateClaimValidationService.findEligibleDuplicateClaims(
-                  incoming, List.of(incoming), OFFICE_CODE))
+                  incoming, List.of(incoming)))
           .isEmpty();
     }
 
@@ -732,7 +732,7 @@ class DuplicateClaimLegalHelpDisbursementValidationStrategyTest
 
       assertThat(
               duplicateClaimValidationService.findEligibleDuplicateClaims(
-                  incoming, List.of(incoming), OFFICE_CODE))
+                  incoming, List.of(incoming)))
           .containsExactly(createClaim("c2", OFFICE_CODE, "s2", FEE_CODE, UFN, UCN,
               ClaimStatus.READY_TO_PROCESS, "APR-2025", null, "2025-04-10"));
     }
@@ -761,7 +761,7 @@ class DuplicateClaimLegalHelpDisbursementValidationStrategyTest
 
       assertThat(
               duplicateClaimValidationService.findEligibleDuplicateClaims(
-                  incoming, List.of(incoming), OFFICE_CODE))
+                  incoming, List.of(incoming)))
           .isEmpty();
     }
 
@@ -783,7 +783,7 @@ class DuplicateClaimLegalHelpDisbursementValidationStrategyTest
 
       assertThat(
               duplicateClaimValidationService.findEligibleDuplicateClaims(
-                  incoming, List.of(incoming), OFFICE_CODE))
+                  incoming, List.of(incoming)))
           .containsExactly(createClaim("c2", OFFICE_CODE, "s2", FEE_CODE, UFN, UCN,
               ClaimStatus.READY_TO_PROCESS, "APR-2025", null, "2025-04-10"));
     }

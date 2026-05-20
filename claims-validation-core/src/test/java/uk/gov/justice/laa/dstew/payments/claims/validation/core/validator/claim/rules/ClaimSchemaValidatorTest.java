@@ -19,6 +19,8 @@ import uk.gov.justice.laa.dstew.payments.claimsdata.model.ClaimStatus;
 @DisplayName("ClaimSchemaValidator")
 class ClaimSchemaValidatorTest {
 
+  private static final String CLIENT_2_DOB_CUSTOM_MESSAGE =
+      "Client 2 Date of Birth must be a valid date in the format DD/MM/YYYY";
   private static final String UFN_CUSTOM_MESSAGE =
       "Unique File Number (UFN) must be in the format DDMMYY/NNN with a date in the past";
   private static final String FEE_CODE_CUSTOM_MESSAGE =
@@ -150,6 +152,25 @@ class ClaimSchemaValidatorTest {
 
       assertThat(errors).hasSize(1);
       assertThat(errors.getFirst().getMessage()).isEqualTo(PROCUREMENT_AREA_CUSTOM_MESSAGE);
+    }
+
+    @Test
+    @DisplayName("returns custom message for invalid client_2_date_of_birth format")
+    void validate_returnsCustomMessage_whenClient2DateOfBirthInvalidFormat() {
+      Claim claim = createClaimWithRequiredFields();
+      claim.setClient2DateOfBirth("not-a-date");
+
+      validator.validate(claim, context);
+
+      List<ValidationIssue> errors =
+          context.getIssues().stream().filter(i -> i.getSeverity() == ValidationSeverity.ERROR).toList();
+
+      assertThat(errors).hasSize(1);
+      assertThat(errors.getFirst().getMessage()).isEqualTo(CLIENT_2_DOB_CUSTOM_MESSAGE);
+      assertThat(errors.getFirst().getCode()).isEqualTo("SCHEMA_VALIDATION_ERROR");
+      assertThat(errors.getFirst().getTechnicalMessage())
+          .contains("client_2_date_of_birth")
+          .contains("not-a-date");
     }
 
     @Test
