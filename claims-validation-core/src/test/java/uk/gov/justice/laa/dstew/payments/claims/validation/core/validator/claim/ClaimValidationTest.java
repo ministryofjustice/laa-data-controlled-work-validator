@@ -42,7 +42,8 @@ class ClaimValidationTest {
   void setUpProvider() {
     feeSchemeProvider = mock(HttpFeeSchemeProvider.class);
     // Default: returns empty so tests that don't care about fee type don't throw
-    when(feeSchemeProvider.getFeeDetails(anyString())).thenReturn(Optional.empty());
+    when(feeSchemeProvider.getFeeDetails(anyString()))
+            .thenReturn(Optional.of(FeeDetailsResponseV2.builder().feeType("TEST_FEE_TYPE").build()));
   }
 
   // Helper: build a ClaimValidation with the shared mock provider
@@ -97,7 +98,7 @@ class ClaimValidationTest {
           ctx.addValidationIssue(issue("A", ValidationSeverity.WARNING)));
 
       var result = pipeline(v1, v2, v3)
-          .validateClaim(Claim.builder().build(), "fee", List.of());
+          .validateClaim(Claim.builder().feeCode("FEE_CODE").build(), "fee", List.of());
 
       assertThat(result.getIssues()).hasSize(2);
       assertThat(result.getIssues()).extracting(ValidationIssue::getCode)
@@ -120,7 +121,7 @@ class ClaimValidationTest {
       ClaimValidator warnOnly = stub("WARN", 0, true, (c, ctx) ->
           ctx.addValidationIssue(issue("W", ValidationSeverity.WARNING)));
 
-      var result = pipeline(warnOnly).validateClaim(Claim.builder().build(), "fee", List.of());
+      var result = pipeline(warnOnly).validateClaim(Claim.builder().feeCode("FEE_CODE").build(), null, List.of());
 
       assertThat(result.getIsValid()).isTrue();
       assertThat(result.getIssues()).hasSize(1);
@@ -140,7 +141,7 @@ class ClaimValidationTest {
     @Test
     @DisplayName("Returns valid result with empty issues when no validators are registered")
     void returnsValidWithNoIssuesWhenNoValidators() {
-      var result = pipeline().validateClaim(Claim.builder().build(), "fee", List.of());
+      var result = pipeline().validateClaim(Claim.builder().feeCode("FEE_CODE").build(), "fee", List.of());
 
       assertThat(result.getIsValid()).isTrue();
       assertThat(result.getIssues()).isEmpty();
