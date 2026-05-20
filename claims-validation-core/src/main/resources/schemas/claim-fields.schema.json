@@ -1,65 +1,22 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$schema": "http://json-schema.org/draft/2020-12/schema",
   "title": "ClaimResponse",
   "type": "object",
   "properties": {
-    "area_of_law": {
-      "type": "string",
-      "enum": ["LEGAL HELP", "CRIME LOWER", "MEDIATION"],
-      "validationErrorMessages": [
-        {
-          "key": "ALL",
-          "value": "Area of Law must be one of LEGAL HELP, CRIME LOWER, or MEDIATION"
-        }
-      ]
-    },
-    "office_account_number": {
-      "type": "string",
-      "pattern": "^[0-9A-Za-z]{6}$",
-      "validationErrorMessages": [
-        {
-          "key": "ALL",
-          "value": "Office Account Number must be exactly 6 alphanumeric characters"
-        }
-      ]
-    },
     "id": {
-      "type": "string",
-      "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
-      "validationErrorMessages": [
-        {
-          "key": "ALL",
-          "value": "ID must be a valid UUID"
-        }
-      ]
+      "type": "string"
     },
     "status": {
       "type": "string"
     },
     "submission_id": {
-      "type": "string",
-      "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
-      "validationErrorMessages": [
-        {
-          "key": "ALL",
-          "value": "Submission ID must be a valid UUID"
-        }
-      ]
+      "type": "string"
     },
     "submission_period": {
-      "type": "string",
-      "pattern": "^[A-Z]{3}-[0-9]{4}$",
-      "validationErrorMessages": [
-        {
-          "key": "ALL",
-          "value": "Submission Period must be in the format MMM-YYYY (e.g. JAN-2026)"
-        }
-      ]
+      "type": "string"
     },
     "schedule_reference": {
       "type": "string",
-      "pattern": "^[a-zA-Z0-9/.\\-]{1,20}$",
-      "maxLength": 20,
       "validationErrorMessages": [
         {
           "key": "LEGAL HELP",
@@ -197,7 +154,7 @@
       "validationErrorMessages": [
         {
           "key": "ALL",
-          "value": "Suspects Defendants Count must be between 0 and 99"
+          "value": "Suspects Defendants Count must be less than 100"
         }
       ]
     },
@@ -287,7 +244,7 @@
       "validationErrorMessages": [
         {
           "key": "ALL",
-          "value": "Mediation Sessions Count must be between 1 and 99"
+          "value": "Mediation Sessions Count must be less than 100"
         }
       ]
     },
@@ -298,7 +255,7 @@
       "validationErrorMessages": [
         {
           "key": "ALL",
-          "value": "Mediation Time Minutes must be between 0 and 99999"
+          "value": "Mediation Time Minutes must be 99999 or less"
         }
       ]
     },
@@ -636,7 +593,7 @@
       "validationErrorMessages": [
         {
           "key": "ALL",
-          "value": "Designated Accredited Representative Code must be valid"
+          "value": "Designated Accredited Representative Code must be a number from 1 to 5"
         }
       ]
     },
@@ -726,7 +683,7 @@
       "validationErrorMessages": [
         {
           "key": "ALL",
-          "value": "Advice Time must be in minutes"
+          "value": "Advice Time must be a number"
         }
       ]
     },
@@ -737,7 +694,7 @@
       "validationErrorMessages": [
         {
           "key": "ALL",
-          "value": "Travel Time must be in minutes"
+          "value": "Travel Time must be a number"
         }
       ]
     },
@@ -748,7 +705,7 @@
       "validationErrorMessages": [
         {
           "key": "ALL",
-          "value": "Waiting Time must be in minutes"
+          "value": "Waiting Time must be a number"
         }
       ]
     },
@@ -760,7 +717,7 @@
       "validationErrorMessages": [
         {
           "key": "ALL",
-          "value": "Net Profit Costs Amount must be a valid monetary value"
+          "value": "Net Profit Costs Amount must be a number with no more than 2 decimal places"
         }
       ]
     },
@@ -869,7 +826,7 @@
       "validationErrorMessages": [
         {
           "key": "ALL",
-          "value": "Adjourned Hearing Fee Amount must be between 0 and 9"
+          "value": "Adjourned Hearing Fee Amount must be a number from 0 to 9"
         }
       ]
     },
@@ -929,16 +886,16 @@
       ]
     },
     "is_eligible_client": {
-      "type": "boolean",
+      "type": "boolean"
+    },
+    "court_location_code": {
+      "type": "string",
       "validationErrorMessages": [
         {
           "key": "ALL",
           "value": "Eligible Client must be Y or N"
         }
       ]
-    },
-    "court_location_code": {
-      "type": "string"
     },
     "advice_type_code": {
       "type": "string",
@@ -957,7 +914,7 @@
       "validationErrorMessages": [
         {
           "key": "ALL",
-          "value": "Medical Reports Count must be between 0 and 10"
+          "value": "Medical Reports Count must be 20 or less"
         }
       ]
     },
@@ -1069,7 +1026,9 @@
     },
     "created_by_user_id": {
       "type": "string"
-    }
+    },
+    "has_assessment": {},
+    "version": {}
   },
   "additionalProperties": false,
   "required": [

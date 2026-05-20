@@ -160,7 +160,7 @@ public class EffectiveCategoryOfLawClaimValidator implements ClaimValidator {
       if (ex instanceof WebClientResponseException wcre) {
         log.error(
             "Error calling provider details API for office {}: Status={}, Message={}",
-            officeCode, wcre.getStatusCode(), wcre.getMessage(), wcre);
+            officeCode, wcre.getStatusCode(), wcre.getMessage());
       } else {
         log.error(
             "Unexpected error calling provider details API for office {}: {}",
@@ -195,7 +195,7 @@ public class EffectiveCategoryOfLawClaimValidator implements ClaimValidator {
       if (ex instanceof WebClientResponseException wcre) {
         log.error(
             "Error calling fee scheme API for fee code {}: Status={}, Message={}",
-            feeCode, wcre.getStatusCode(), wcre.getMessage(), wcre);
+            feeCode, wcre.getStatusCode(), wcre.getMessage());
       } else {
         log.error(
             "Unexpected error calling fee scheme API for fee code {}: {}",
