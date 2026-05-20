@@ -10,6 +10,7 @@ import java.net.URI;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
@@ -190,11 +191,7 @@ class EffectiveCategoryOfLawClaimValidationTest {
   @DisplayName("EffectiveCategoryOfLawClaimValidator - priority, appliesTo and validator code")
   void effectiveCategoryOfLawValidatorMetadata() {
     assertThat(validator.priority()).isEqualTo(1000);
-    // appliesTo: null, fee and all should be true; other scopes false
-    assertThat(validator.appliesTo(null)).isTrue();
-    assertThat(validator.appliesTo("fee")).isTrue();
-    assertThat(validator.appliesTo("all")).isTrue();
-    assertThat(validator.appliesTo("disbursement")).isTrue();
+    assertThat(validator.appliesTo(Set.of("CLAIM_CATEGORY_OF_LAW"))).isTrue();
     assertThat(validator.getValidatorCode()).isEqualTo("CLAIM_CATEGORY_OF_LAW");
   }
 

@@ -1,5 +1,7 @@
 package uk.gov.justice.laa.dstew.payments.claims.validation.core.validator;
 
+import java.util.Set;
+
 /**
  * Generic validator interface used by concrete validator types (claim, submission, etc.).
  *
@@ -34,7 +36,9 @@ public interface Validator<T, C> {
    * @param scope the validation scope (for example, "fee" or "disbursement")
    * @return true if this validator should run for the scope
    */
-  boolean appliesTo(String scope);
+  default boolean appliesTo(Set<String> scope) {
+    return scope == null || scope.isEmpty() || scope.contains(getValidatorCode());
+  }
 
   /**
    * A unique code identifying this validator.

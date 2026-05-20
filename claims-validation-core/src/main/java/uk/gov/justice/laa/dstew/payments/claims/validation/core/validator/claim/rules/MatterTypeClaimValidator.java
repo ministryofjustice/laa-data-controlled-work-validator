@@ -74,9 +74,4 @@ public class MatterTypeClaimValidator implements ClaimValidator {
   public String getValidatorCode() {
     return "CLAIM_MATTER_TYPE";
   }
-
-  @Override
-  public boolean appliesTo(String scope) {
-    return true;
-  }
 }

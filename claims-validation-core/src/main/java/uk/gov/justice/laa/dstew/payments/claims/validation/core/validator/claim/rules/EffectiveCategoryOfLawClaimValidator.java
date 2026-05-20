@@ -280,20 +280,6 @@ public class EffectiveCategoryOfLawClaimValidator implements ClaimValidator {
   }
 
   /**
-   * Returns {@code true} when this validator should run for the given validation scope.
-   *
-   * <p>The validator runs when {@code scope} is {@code null} (no scope filter), {@code "fee"}, or
-   * {@code "all"}. It is skipped for any other scope value (e.g. {@code "submission"}).
-   *
-   * @param scope the validation scope, or {@code null} for no restriction
-   * @return {@code true} if this validator applies to the scope
-   */
-  @Override
-  public boolean appliesTo(String scope) {
-    return true;
-  }
-
-  /**
    * Returns the unique code identifying this validator.
    *
    * @return {@code "CLAIM_CATEGORY_OF_LAW"}

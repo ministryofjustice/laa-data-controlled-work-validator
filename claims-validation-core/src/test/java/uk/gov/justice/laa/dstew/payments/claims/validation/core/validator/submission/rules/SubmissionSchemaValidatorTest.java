@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static uk.gov.justice.laa.dstew.payments.claims.validation.core.service.ValidationServiceTestUtils.assertContextClaimError;
 
 import java.util.List;
+import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -51,7 +52,7 @@ class SubmissionSchemaValidatorTest {
   @DisplayName("Validator metadata: priority, appliesTo and code")
   void metadata() {
     assertEquals(1, submissionSchemaValidator.priority());
-    assertTrue(submissionSchemaValidator.appliesTo("ANY_SCOPE"));
+    assertTrue(submissionSchemaValidator.appliesTo(Set.of("SUBMISSION_SCHEMA_VALIDATOR")));
     assertEquals("SUBMISSION_SCHEMA_VALIDATOR", submissionSchemaValidator.getValidatorCode());
   }
 
@@ -77,7 +78,7 @@ class SubmissionSchemaValidatorTest {
             .submissionPeriod("JAN-2025")
             .build();
 
-    SubmissionValidationContext submissionValidationContext = new SubmissionValidationContext();
+    SubmissionValidationContext submissionValidationContext = SubmissionValidationContext.create();
 
     submissionSchemaValidator.validate(submissionResponse, submissionValidationContext);
 
@@ -100,7 +101,7 @@ class SubmissionSchemaValidatorTest {
             .mediationSubmissionReference("mediationSubmissionR")
             .build();
 
-    SubmissionValidationContext submissionValidationContext = new SubmissionValidationContext();
+    SubmissionValidationContext submissionValidationContext = SubmissionValidationContext.create();
 
     submissionSchemaValidator.validate(submissionResponse, submissionValidationContext);
 
@@ -135,7 +136,7 @@ class SubmissionSchemaValidatorTest {
 
   /** Runs the validator and returns the populated context. */
   private SubmissionValidationContext validate(SubmissionResponse submission) {
-    SubmissionValidationContext ctx = new SubmissionValidationContext();
+    SubmissionValidationContext ctx = SubmissionValidationContext.create();
     submissionSchemaValidator.validate(submission, ctx);
     return ctx;
   }

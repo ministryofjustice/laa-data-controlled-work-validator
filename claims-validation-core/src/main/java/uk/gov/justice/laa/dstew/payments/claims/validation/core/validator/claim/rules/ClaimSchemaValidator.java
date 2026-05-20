@@ -74,11 +74,6 @@ public class ClaimSchemaValidator
     return "CLAIM_SCHEMA";
   }
 
-  @Override
-  public boolean appliesTo(String scope) {
-    return true;
-  }
-
   // ─────────────────────────────────────────────────────────────────────────
   // ClaimValidator interface
   // ─────────────────────────────────────────────────────────────────────────

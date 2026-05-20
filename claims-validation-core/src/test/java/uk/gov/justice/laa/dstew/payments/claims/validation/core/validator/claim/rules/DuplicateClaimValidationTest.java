@@ -8,6 +8,7 @@ import static org.mockito.Mockito.when;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -119,6 +120,6 @@ class DuplicateClaimValidationTest {
 
   @Test
   void appliesTo_returnsTrue() {
-    assertThat(validator.appliesTo("any")).isTrue();
+    assertThat(validator.appliesTo(Set.of("CLAIM_DUPLICATE_CLAIM"))).isTrue();
   }
 }

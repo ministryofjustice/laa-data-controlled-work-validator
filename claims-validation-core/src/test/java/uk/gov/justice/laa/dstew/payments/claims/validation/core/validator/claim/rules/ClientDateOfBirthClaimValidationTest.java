@@ -3,6 +3,7 @@ package uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.Set;
 import java.util.function.BiConsumer;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -125,7 +126,7 @@ class ClientDateOfBirthClaimValidationTest {
   @DisplayName("ClientDateOfBirthClaimValidator - priority, appliesTo and validator code")
   void clientDobValidatorMetadata() {
     assertThat(validator.priority()).isEqualTo(100);
-    assertThat(validator.appliesTo("any")).isTrue();
+    assertThat(validator.appliesTo(Set.of("CLAIM_CLIENT_DATE_OF_BIRTH"))).isTrue();
     assertThat(validator.getValidatorCode()).isEqualTo("CLAIM_CLIENT_DATE_OF_BIRTH");
   }
 

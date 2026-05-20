@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -98,7 +99,7 @@ class ClaimSchemaValidatorTest {
     @Test
     @DisplayName("appliesTo returns true for schema validator")
     void appliesTo_returnsTrue() {
-      assertThat(validator.appliesTo("any")).isTrue();
+      assertThat(validator.appliesTo(Set.of("CLAIM_SCHEMA"))).isTrue();
       assertThat(validator.appliesTo(null)).isTrue();
     }
   }

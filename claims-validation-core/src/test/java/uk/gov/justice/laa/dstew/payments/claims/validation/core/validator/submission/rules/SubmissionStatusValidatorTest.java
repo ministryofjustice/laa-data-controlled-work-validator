@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static uk.gov.justice.laa.dstew.payments.claims.validation.core.service.ValidationServiceTestUtils.assertContextClaimError;
 
+import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -34,7 +35,7 @@ class SubmissionStatusValidatorTest {
   @DisplayName("Validator metadata: priority, appliesTo and code")
   void metadata() {
     assertEquals(1, validator.priority());
-    assertTrue(validator.appliesTo("ANY_SCOPE"));
+    assertTrue(validator.appliesTo(Set.of("SUBMISSION_STATUS_VALIDATOR")));
     assertEquals("SUBMISSION_STATUS_VALIDATOR", validator.getValidatorCode());
   }
 
@@ -45,7 +46,7 @@ class SubmissionStatusValidatorTest {
     SubmissionStatus status = SubmissionStatus.VALIDATION_IN_PROGRESS;
     SubmissionResponse submissionResponse =
         SubmissionResponse.builder().submissionId(UUID.randomUUID()).status(status).build();
-    SubmissionValidationContext submissionValidationContext = new SubmissionValidationContext();
+    SubmissionValidationContext submissionValidationContext = SubmissionValidationContext.create();
     // When
     validator.validate(submissionResponse, submissionValidationContext);
     // Then
@@ -62,7 +63,7 @@ class SubmissionStatusValidatorTest {
     UUID submissionId = UUID.randomUUID();
     SubmissionResponse submissionResponse =
         SubmissionResponse.builder().submissionId(submissionId).status(status).build();
-    SubmissionValidationContext submissionValidationContext = new SubmissionValidationContext();
+    SubmissionValidationContext submissionValidationContext = SubmissionValidationContext.create();
     // When
     validator.validate(submissionResponse, submissionValidationContext);
     // Then
@@ -75,7 +76,7 @@ class SubmissionStatusValidatorTest {
     // Given
     SubmissionResponse submissionResponse =
         SubmissionResponse.builder().submissionId(UUID.randomUUID()).status(null).build();
-    SubmissionValidationContext submissionValidationContext = new SubmissionValidationContext();
+    SubmissionValidationContext submissionValidationContext = SubmissionValidationContext.create();
     // When
     validator.validate(submissionResponse, submissionValidationContext);
     // Then
@@ -94,7 +95,7 @@ class SubmissionStatusValidatorTest {
     // Given
     SubmissionResponse submissionResponse =
         SubmissionResponse.builder().submissionId(UUID.randomUUID()).status(status).build();
-    SubmissionValidationContext submissionValidationContext = new SubmissionValidationContext();
+    SubmissionValidationContext submissionValidationContext = SubmissionValidationContext.create();
     // When
     validator.validate(submissionResponse, submissionValidationContext);
     // Then

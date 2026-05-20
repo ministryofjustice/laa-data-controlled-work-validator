@@ -3,6 +3,7 @@ package uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
@@ -66,7 +67,7 @@ public class ClaimValidation {
    * @return a {@link ValidationResult} describing whether the claim is valid and any
    *     {@link ValidationIssue}s discovered
    */
-  public ValidationResult validateClaim(Claim claim, String scope, List<Claim> relatedClaims) {
+  public ValidationResult validateClaim(Claim claim, Set<String> scope, List<Claim> relatedClaims) {
     log.info("Validating claim with scope: {}", scope);
 
     // Handle missing claim - return validation error, not 400
@@ -120,7 +121,7 @@ public class ClaimValidation {
    * @return the validation context
    */
   private ClaimValidationContext buildValidationContext(
-          Claim claim, String scope, List<Claim> relatedClaims) {
+          Claim claim, Set<String> scope, List<Claim> relatedClaims) {
     List<Claim> related = relatedClaims != null ? relatedClaims : List.of();
 
     ClaimValidationContext context = ClaimValidationContext.builder()

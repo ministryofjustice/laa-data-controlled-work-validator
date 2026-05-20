@@ -4,6 +4,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.LocalDate;
+import java.util.Set;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -245,7 +246,7 @@ class CaseDatesClaimValidationTest {
   @DisplayName("CaseDatesClaimValidator - priority, appliesTo and validator code")
   void caseDatesValidatorMetadata() {
     assertThat(validator.priority()).isEqualTo(100);
-    assertThat(validator.appliesTo("any")).isTrue();
+    assertThat(validator.appliesTo(Set.of("CLAIM_CASE_DATES"))).isTrue();
     assertThat(validator.getValidatorCode()).isEqualTo("CLAIM_CASE_DATES");
   }
 }

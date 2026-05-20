@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -100,9 +101,7 @@ class DisbursementClaimStartDateValidatorTest {
   @DisplayName("DisbursementClaimStartDateValidator - priority, appliesTo and validator code")
   void disbursementStartDateValidatorMetadata() {
     assertThat(validator.priority()).isEqualTo(10);
-    assertThat(validator.appliesTo("disbursement")).isTrue();
-    assertThat(validator.appliesTo("all")).isTrue();
-    assertThat(validator.appliesTo("fee")).isTrue();
+    assertThat(validator.appliesTo(Set.of("CLAIM_DISBURSEMENT_START_DATE"))).isTrue();
     assertThat(validator.getValidatorCode()).isEqualTo("CLAIM_DISBURSEMENT_START_DATE");
   }
 }

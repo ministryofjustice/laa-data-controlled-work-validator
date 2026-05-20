@@ -3,6 +3,7 @@ package uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 import java.math.BigDecimal;
+import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -58,9 +59,7 @@ class DisbursementsClaimValidationTest {
   @DisplayName("DisbursementsClaimValidator - priority, appliesTo and validator code")
   void disbursementsValidatorMetadata() {
     assertThat(validator.priority()).isEqualTo(100);
-    assertThat(validator.appliesTo(null)).isTrue();
-    assertThat(validator.appliesTo("disbursement")).isTrue();
-    assertThat(validator.appliesTo("all")).isTrue();
+    assertThat(validator.appliesTo(Set.of("CLAIM_DISBURSEMENTS"))).isTrue();
     assertThat(validator.getValidatorCode()).isEqualTo("CLAIM_DISBURSEMENTS");
   }
 }
