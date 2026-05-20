@@ -217,6 +217,7 @@ public abstract class AbstractSchemaValidator<T> {
     log.debug("Running JSON schema validation [{}]", getValidatorCode());
 
     JsonNode subjectJson = objectMapper.valueToTree(subject);
+
     Set<ValidationMessage> validationMessages = schema.validate(subjectJson);
 
     if (validationMessages.isEmpty()) {

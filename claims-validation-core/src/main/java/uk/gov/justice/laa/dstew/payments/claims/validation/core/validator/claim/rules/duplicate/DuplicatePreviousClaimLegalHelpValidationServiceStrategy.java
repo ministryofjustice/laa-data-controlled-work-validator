@@ -40,7 +40,7 @@ public final class DuplicatePreviousClaimLegalHelpValidationServiceStrategy
     if (!duplicateClaimsInThisSubmission.isEmpty()) {
       logDuplicates(currentClaim, duplicateClaimsInThisSubmission);
       issues.add(
-          ClaimValidationError.INVALID_CLAIM_HAS_DUPLICATE_IN_EXISTING_SUBMISSION
+          ClaimValidationError.INVALID_CLAIM_HAS_DUPLICATE_IN_SAME_SUBMISSION
               .toValidationIssue());
     }
 

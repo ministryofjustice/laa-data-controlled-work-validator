@@ -1,5 +1,6 @@
 package uk.gov.justice.laa.dstew.payments.claims.validation.core.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serial;
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -125,22 +126,31 @@ public class Claim implements Serializable {
 
   private String claExemptionCode;
 
+  @JsonProperty("client_2_forename")
   private String client2Forename;
 
+  @JsonProperty("client_2_surname")
   private String client2Surname;
 
+  @JsonProperty("client_2_date_of_birth")
   private String client2DateOfBirth;
 
+  @JsonProperty("client_2_ucn")
   private String client2Ucn;
 
+  @JsonProperty("client_2_postcode")
   private String client2Postcode;
 
+  @JsonProperty("client_2_gender_code")
   private String client2GenderCode;
 
+  @JsonProperty("client_2_ethnicity_code")
   private String client2EthnicityCode;
 
+  @JsonProperty("client_2_disability_code")
   private String client2DisabilityCode;
 
+  @JsonProperty("client_2_is_legally_aided")
   private Boolean client2IsLegallyAided;
 
   private String stageReachedCode;
@@ -153,6 +163,7 @@ public class Claim implements Serializable {
 
   private Boolean isPostalApplicationAccepted;
 
+  @JsonProperty("is_client_2_postal_application_accepted")
   private Boolean isClient2PostalApplicationAccepted;
 
   private String mentalHealthTribunalReference;

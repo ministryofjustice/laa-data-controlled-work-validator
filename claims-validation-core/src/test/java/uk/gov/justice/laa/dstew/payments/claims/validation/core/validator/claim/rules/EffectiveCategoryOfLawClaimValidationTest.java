@@ -194,7 +194,7 @@ class EffectiveCategoryOfLawClaimValidationTest {
     assertThat(validator.appliesTo(null)).isTrue();
     assertThat(validator.appliesTo("fee")).isTrue();
     assertThat(validator.appliesTo("all")).isTrue();
-    assertThat(validator.appliesTo("disbursement")).isFalse();
+    assertThat(validator.appliesTo("disbursement")).isTrue();
     assertThat(validator.getValidatorCode()).isEqualTo("CLAIM_CATEGORY_OF_LAW");
   }
 
