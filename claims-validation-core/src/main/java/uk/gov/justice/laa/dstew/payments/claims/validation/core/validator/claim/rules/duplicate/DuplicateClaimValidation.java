@@ -53,9 +53,6 @@ public abstract class DuplicateClaimValidation {
    */
   protected List<Claim> filterCurrentClaimWithValidStatus(
       Claim currentClaim, List<Claim> submissionClaims) {
-    // TODO this won't work on amend as the current claim will be in the list of
-    //  submission claims but with an old status - we need to filter
-    //  by claim id not object equality
     return submissionClaims.stream()
         .filter(submissionClaim -> !submissionClaim.equals(currentClaim))
         .filter(
@@ -103,10 +100,14 @@ public abstract class DuplicateClaimValidation {
    * @param currentClaim the claim being validated for duplicates.
    *                     Must contain office code, fee code, unique file number,
    *                     and unique client number.
+   * @param submissionClaims the list of claims in the current submission, to filter out
+   *                         from results
    * @return a DuplicateCheckResult containing either duplicates or an error
    */
   protected DuplicateCheckResult getDuplicateClaimsInPreviousSubmission(
-      Claim currentClaim) {
+      Claim currentClaim,
+      List<Claim> submissionClaims
+  ) {
 
     try {
       ClaimResultSet resultSet =
@@ -140,15 +141,19 @@ public abstract class DuplicateClaimValidation {
                           || !currentSubmissionId.equals(prevClaim.getSubmissionId()))
               // Convert to our Claim model
               .map(ClaimMapper::fromClaimResponse)
-              // Filter out any claims that are in the submission claims list: NOTE this is
-              // redundant we do 1 claim at a time and have already filtered by submission id
-              // .filter(claim -> !submissionClaims.contains(claim))
               .toList();
 
+      // Update and set
       duplicates.forEach(claim -> {
         claim.setAreaOfLaw(currentClaim.getAreaOfLaw());
         claim.setOfficeAccountNumber(currentClaim.getOfficeAccountNumber());
       });
+
+      // Filter out any claims that are in the submission claims list
+      List<Claim> duplicatesNotInCurrentSubmission =
+              duplicates.stream()
+                      .filter(claim -> !submissionClaims.contains(claim))
+              .toList();
 
       log.info(
           "Checked for duplicate claims in previous submissions for officeCode={}, "
@@ -157,9 +162,9 @@ public abstract class DuplicateClaimValidation {
           currentClaim.getFeeCode(),
           currentClaim.getUniqueFileNumber(),
           currentClaim.getUniqueClientNumber(),
-          duplicates.size());
+              duplicatesNotInCurrentSubmission.size());
 
-      return new DuplicateCheckResult(duplicates, null);
+      return new DuplicateCheckResult(duplicatesNotInCurrentSubmission, null);
     } catch (Exception e) {
       log.error(
           "Unable to check for duplicate claims in previous submissions. "

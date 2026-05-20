@@ -123,11 +123,14 @@ public class ClaimValidation {
           Claim claim, String scope, List<Claim> relatedClaims) {
     List<Claim> related = relatedClaims != null ? relatedClaims : List.of();
 
-    return ClaimValidationContext.builder()
+    ClaimValidationContext context = ClaimValidationContext.builder()
             .scope(scope)
-            .feeCalculationType(fetchFeeCalculationType(claim.getFeeCode()))
             .relatedClaims(related)
             .build();
+
+    fetchFeeCalculationType(claim.getFeeCode(), context);
+
+    return context;
   }
 
   /**
@@ -145,30 +148,36 @@ public class ClaimValidation {
    *       {@code null} is returned and a warning is logged so the gap is visible in logs.</li>
    * </ul>
    *
-   * @param feeCode the fee code to resolve; may be {@code null}
-   * @return the fee calculation type string, or {@code null} if it cannot be determined
+   * @param feeCode the fee code to resolve; may be {@code null} or blank
+   * @param context the validation context to update with the resolved fee calculation type
+   *     (if found)
    */
-  private String fetchFeeCalculationType(String feeCode) {
+  private void fetchFeeCalculationType(String feeCode, ClaimValidationContext context) {
     if (feeCode == null || feeCode.isBlank()) {
       log.warn("Cannot fetch fee calculation type: feeCode is null or blank");
-      return null;
+      context.addValidationIssue(ClaimValidationError.MISSING_FEE_CODE.toValidationIssue());
+      return;
     }
 
     Optional<FeeDetailsResponseV2> opt = httpFeeSchemeProvider.getFeeDetails(feeCode);
 
     if (opt.isEmpty()) {
       log.warn("Unable to retrieve fee details for fee code: {} — fee type will be null", feeCode);
-      return null;
+      context.addValidationIssue(
+              ClaimValidationError.TECHNICAL_ERROR_FEE_SCHEME_API.toValidationIssue());
+      return;
     }
 
     String feeType = opt.get().getFeeType();
 
     if (feeType == null || feeType.isBlank()) {
       log.warn("Fee details returned for fee code: {} but feeType is null or blank", feeCode);
-      return null;
+      context.addValidationIssue(
+              ClaimValidationError.TECHNICAL_ERROR_FEE_SCHEME_API.toValidationIssue());
+      return;
     }
-    log.info("Resolved fee calculation type '{}' for fee code '{}'", feeType, feeCode);
-    return feeType;
+    log.debug("Resolved fee calculation type '{}' for fee code '{}'", feeType, feeCode);
+    context.setFeeCalculationType(feeType);
   }
 
   /**

@@ -27,6 +27,7 @@ import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.submis
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.submission.rules.SubmissionValidator;
 import uk.gov.justice.laa.dstew.payments.claimsdata.model.AreaOfLaw;
 import uk.gov.justice.laa.dstew.payments.claimsdata.model.SubmissionResponse;
+import uk.gov.justice.laa.fee.scheme.model.FeeDetailsResponseV2;
 
 /**
  * Tests for {@link ValidationService}.
@@ -47,11 +48,13 @@ class ValidationServiceTest {
   @BeforeEach
   void setUp() {
     feeSchemeProvider = mock(HttpFeeSchemeProvider.class);
-    when(feeSchemeProvider.getFeeDetails(anyString())).thenReturn(Optional.empty());
+    when(feeSchemeProvider.getFeeDetails(anyString()))
+            .thenReturn(Optional.of(FeeDetailsResponseV2.builder().feeType("TEST_FEE_TYPE").build()));
 
     testClaim = new Claim();
     testClaim.setAreaOfLaw(AreaOfLaw.LEGAL_HELP);
     testClaim.setOfficeAccountNumber("1A234B");
+    testClaim.setFeeCode("TEST_FEE");
 
     testSubmission = new SubmissionResponse();
     testSubmission.setSubmissionId(UUID.randomUUID());

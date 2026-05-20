@@ -139,7 +139,7 @@ class DuplicateClaimCrimeLowerValidationServiceStrategyTest extends AbstractDupl
       assertThat(validationIssues)
               .extracting(ValidationIssue::getMessage)
               .containsExactly(
-                      ClaimValidationError.INVALID_CLAIM_HAS_DUPLICATE_IN_EXISTING_SUBMISSION
+                      ClaimValidationError.INVALID_CLAIM_HAS_DUPLICATE_IN_SAME_SUBMISSION
                               .getDisplayMessage());
     }
 
@@ -239,7 +239,7 @@ class DuplicateClaimCrimeLowerValidationServiceStrategyTest extends AbstractDupl
       assertThat(validationIssues)
               .extracting(ValidationIssue::getMessage)
               .containsExactly(
-                      ClaimValidationError.INVALID_CLAIM_HAS_DUPLICATE_IN_EXISTING_SUBMISSION
+                      ClaimValidationError.INVALID_CLAIM_HAS_DUPLICATE_IN_SAME_SUBMISSION
                               .getDisplayMessage());
     }
 

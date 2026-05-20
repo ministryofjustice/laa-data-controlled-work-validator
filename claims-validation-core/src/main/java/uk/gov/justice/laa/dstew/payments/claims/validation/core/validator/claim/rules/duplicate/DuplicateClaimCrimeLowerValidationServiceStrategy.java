@@ -25,29 +25,27 @@ public final class DuplicateClaimCrimeLowerValidationServiceStrategy
 
     log.debug("Validating duplicates for claim {}", claim.getId());
 
-    List<Claim> claimsToCompare = filterCurrentClaimWithValidStatus(claim, submissionClaims);
-
-    String feeCode = claim.getFeeCode();
-
     // Skipping PROD duplicate check - PROD fee code do not have a unique identifier
     // and client details are not mandatory for this fee code
-    if ("PROD".equals(feeCode)) {
+    if ("PROD".equals(claim.getFeeCode())) {
       log.debug("Fee code is PROD, skipping duplicate check for claim {}", claim.getId());
       return issues;
     }
 
-    String uniqueFileNumber = claim.getUniqueFileNumber();
+    List<Claim> claimsToCompare = filterCurrentClaimWithValidStatus(claim, submissionClaims);
 
     // Check for duplicates within current submission
     List<Claim> submissionDuplicateClaims =
         getDuplicateClaimsInCurrentSubmission(
             claimsToCompare,
             claimToCompare ->
-                Objects.equals(feeCode, claimToCompare.getFeeCode())
-                    && Objects.equals(uniqueFileNumber, claimToCompare.getUniqueFileNumber()));
+                Objects.equals(claim.getFeeCode(), claimToCompare.getFeeCode())
+                    && Objects.equals(claim.getUniqueFileNumber(),
+                        claimToCompare.getUniqueFileNumber()));
 
     // Check for duplicates in previous submissions
-    DuplicateCheckResult result = getDuplicateClaimsInPreviousSubmission(claim);
+    DuplicateCheckResult result =
+            getDuplicateClaimsInPreviousSubmission(claim, submissionClaims);
 
     if (result.hasError()) {
       issues.add(result.error());
@@ -58,7 +56,7 @@ public final class DuplicateClaimCrimeLowerValidationServiceStrategy
       log.debug("Duplicate claims found in submission");
       logDuplicates(claim, submissionDuplicateClaims);
       issues.add(
-          ClaimValidationError.INVALID_CLAIM_HAS_DUPLICATE_IN_EXISTING_SUBMISSION
+          ClaimValidationError.INVALID_CLAIM_HAS_DUPLICATE_IN_SAME_SUBMISSION
               .toValidationIssue());
     }
 

@@ -58,8 +58,7 @@ public class DisbursementsClaimValidator implements ClaimValidator {
 
   @Override
   public boolean appliesTo(String scope) {
-    // Only run for disbursement scope or all scopes
-    return scope == null || "disbursement".equalsIgnoreCase(scope) || "all".equalsIgnoreCase(scope);
+    return true;
   }
 
   @Override

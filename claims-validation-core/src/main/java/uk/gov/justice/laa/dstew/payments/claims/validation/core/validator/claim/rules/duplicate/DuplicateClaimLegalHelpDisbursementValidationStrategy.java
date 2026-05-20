@@ -118,7 +118,7 @@ public class DuplicateClaimLegalHelpDisbursementValidationStrategy extends Dupli
     }
 
     List<Claim> candidateDuplicateClaim =
-            findEligibleDuplicateClaims(incomingClaim, submissionClaims, officeCode);
+            findEligibleDuplicateClaims(incomingClaim, submissionClaims);
     if (candidateDuplicateClaim.isEmpty()) {
       return issues;
     }
@@ -151,12 +151,11 @@ public class DuplicateClaimLegalHelpDisbursementValidationStrategy extends Dupli
    *
    * @param incomingClaim the claim currently being validated
    * @param submissionClaims all claims belonging to the current submission
-   * @param officeCode the office code associated with the submission
    * @return a list of eligible candidate claims; empty if none are found
    */
   protected List<Claim> findEligibleDuplicateClaims(
-          Claim incomingClaim, List<Claim> submissionClaims, String officeCode) {
-    var previous = getDuplicateClaimsInPreviousSubmission(incomingClaim);
+          Claim incomingClaim, List<Claim> submissionClaims) {
+    var previous = getDuplicateClaimsInPreviousSubmission(incomingClaim, submissionClaims);
 
     List<Claim> duplicates = (previous == null || previous.duplicates() == null)
         ? List.of()
