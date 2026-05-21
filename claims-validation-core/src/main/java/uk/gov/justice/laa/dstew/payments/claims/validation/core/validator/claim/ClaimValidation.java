@@ -67,13 +67,14 @@ public class ClaimValidation {
    *     {@link ValidationIssue}s discovered
    */
   public ValidationResult validateClaim(Claim claim, String scope, List<Claim> relatedClaims) {
-    log.info("Validating claim with scope: {}", scope);
 
     // Handle missing claim - return validation error, not 400
     if (claim == null) {
-      log.warn("Validation request received with null claim");
+      log.warn("Validation request received with a null claim");
       return buildMissingClaimResult();
     }
+
+    log.info("Validating claim [{}] with scope: {}", claim.getId(), scope);
 
     // Build validation context
     ClaimValidationContext context = buildValidationContext(claim, scope, relatedClaims);
@@ -104,7 +105,8 @@ public class ClaimValidation {
     List<ValidationIssue> finalIssues = context.getIssues();
     boolean isValid = !context.hasErrors();
 
-    log.info("Validation completed. isValid: {}, total issues: {}", isValid, finalIssues.size());
+    log.info("Validation completed. isValid: {}, total issues: {}, total errors: {}",
+            isValid, context.getIssueCount(), context.getErrorCount());
 
     ValidationResult result = new ValidationResult();
     result.setIsValid(isValid);

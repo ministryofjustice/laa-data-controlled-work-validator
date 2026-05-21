@@ -28,11 +28,10 @@ import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Validation
 public abstract class AbstractValidationContext {
 
   /**
-   * Internal set storing unique validation issues in insertion order. Using a set ensures
-   * duplicates are automatically de-duplicated while preserving the order in which issues
-   * were recorded.
+   * Internal list storing all validation issues in insertion order, including duplicates by path.
+   * Deduplication by path is applied lazily at read time in {@link #getIssues()}.
    */
-  private final Set<ValidationIssue> issuesSet = new LinkedHashSet<>();
+  private final List<ValidationIssue> issuesList = new ArrayList<>();
 
   /**
    * Appends a single validation issue to the context.
@@ -46,51 +45,24 @@ public abstract class AbstractValidationContext {
   }
 
   /**
-   * Appends multiple validation issues to the context in one call.
+   * Appends multiple validation issues to the context in one call, preserving insertion order.
    *
-   * <p>Useful when a validator produces several issues at once (e.g. the result of a schema
-   * validation pass) and avoids the overhead of calling
-   * {@link #addValidationIssue(ValidationIssue)} in a loop.
+   * <p>All issues are stored as-is; no deduplication is applied at write time. Deduplication by
+   * {@code path} is applied at read time by {@link #getIssues()}. Use {@link #getAllIssues()} to
+   * retrieve the full unfiltered list.
    *
-   * <p>Deduplication: Issues are deduplicated by their {@code field} value. Only the first issue
-   * with a given non-null field is retained (checking both already-accumulated and
-   * incoming issues). Issues with null field values are always added (no deduplication).
-   *
-   * @param validationIssues the issues to record; must not be {@code null}, may be empty
+   * @param validationIssues the issues to record; {@code null} or empty is silently ignored
    */
   public void addValidationIssues(final List<ValidationIssue> validationIssues) {
     if (validationIssues == null || validationIssues.isEmpty()) {
       return;
     }
-
-    // Collect all fields already in issuesSet (non-null only)
-    Set<String> existingFields = new LinkedHashSet<>();
-    for (ValidationIssue existing : issuesSet) {
-      String field = existing.getPath();
-      if (field != null) {
-        existingFields.add(field);
-      }
-    }
-
-    // Add incoming issues, skipping duplicates by field
-    for (ValidationIssue issue : validationIssues) {
-      String field = issue.getPath();
-
-      // If field is null, always add (no deduplication)
-      if (field == null) {
-        this.issuesSet.add(issue);
-      } else if (!existingFields.contains(field)) {
-        // Field is non-null and not yet in the set — add it and track it
-        existingFields.add(field);
-        this.issuesSet.add(issue);
-      }
-      // Otherwise, skip this issue (duplicate field already in set)
-    }
+    issuesList.addAll(validationIssues);
   }
 
   /**
    * Returns {@code true} if at least one issue with {@link ValidationSeverity#ERROR} severity has
-   * been recorded.
+   * been recorded (across all raw issues, prior to path-based deduplication).
    *
    * <p>Issues with {@link ValidationSeverity#WARNING} or {@link ValidationSeverity#INFO} severity
    * do not cause this method to return {@code true}.
@@ -98,29 +70,104 @@ public abstract class AbstractValidationContext {
    * @return {@code true} if any ERROR-severity issue is present, {@code false} otherwise
    */
   public boolean hasErrors() {
-    return !issuesSet.isEmpty()
-            && issuesSet.stream()
-            .anyMatch(issue -> issue.getSeverity() == ValidationSeverity.ERROR);
+    return issuesList.stream()
+        .anyMatch(issue -> issue.getSeverity() == ValidationSeverity.ERROR);
   }
 
   /**
-   * Returns the accumulated validation issues as a list preserving insertion order. A new list
-   * is returned on each call to avoid leaking the internal mutable set to callers.
+   * Internal helper: iterates {@code source}, applying path-based deduplication optionally
+   * filtered to a single severity. Issues with a {@code null} path are always included.
+   */
+  private List<ValidationIssue> deduplicated(
+      List<ValidationIssue> source, ValidationSeverity severityFilter) {
+    Set<String> seenPaths = new LinkedHashSet<>();
+    List<ValidationIssue> result = new ArrayList<>();
+    for (ValidationIssue issue : source) {
+      if (severityFilter != null && issue.getSeverity() != severityFilter) {
+        continue;
+      }
+      String path = issue.getPath();
+      if (path == null || seenPaths.add(path)) {
+        result.add(issue);
+      }
+    }
+    return result;
+  }
+
+  /**
+   * Returns the deduplicated validation issues in insertion order.
    *
-   * @return ordered list of accumulated validation issues (never null)
+   * <p>Deduplication rule: for issues with a non-null {@code path}, only the first occurrence of
+   * each path value is included. Issues with a {@code null} path are always included.
+   *
+   * <p>A new list is returned on each call (defensive copy).
+   *
+   * @return deduplicated ordered list of validation issues; never {@code null}
    */
   public List<ValidationIssue> getIssues() {
-    return new ArrayList<>(issuesSet);
+    return deduplicated(issuesList, null);
   }
 
   /**
-   * Returns the number of unique validation issues recorded in this context. This is an O(1)
-   * operation backed by the internal set and avoids creating a snapshot when only a count is
-   * required (useful for debug logging).
+   * Returns all accumulated validation issues in insertion order, without any deduplication.
    *
-   * @return the number of unique issues recorded
+   * <p>Useful for diagnostics, admin endpoints, or auditing all issues raised by validators
+   * regardless of path duplication. A new list is returned on each call (defensive copy).
+   *
+   * @return all issues in insertion order; never {@code null}
+   */
+  public List<ValidationIssue> getAllIssues() {
+    return new ArrayList<>(issuesList);
+  }
+
+  /**
+   * Returns the count of deduplicated issues — equivalent to {@code getIssues().size()} but
+   * without allocating the list.
+   *
+   * @return number of deduplicated issues
    */
   public int getIssueCount() {
-    return issuesSet.size();
+    return getIssues().size();
+  }
+
+  /**
+   * Returns deduplicated {@link ValidationSeverity#ERROR}-severity issues in insertion order.
+   *
+   * <p>Applies path-based deduplication independently across errors only: warnings on the same
+   * path do not suppress errors. Issues with a {@code null} path are always included.
+   *
+   * <p>A new list is returned on each call (defensive copy).
+   *
+   * @return deduplicated ordered list of ERROR-severity issues; never {@code null}
+   */
+  public List<ValidationIssue> getErrors() {
+    return deduplicated(issuesList, ValidationSeverity.ERROR);
+  }
+
+  /**
+   * Returns all {@link ValidationSeverity#ERROR}-severity issues in insertion order, without any
+   * path-based deduplication.
+   *
+   * <p>Useful for auditing every error raised by validators regardless of whether multiple
+   * validators flagged the same {@code path}. Warnings and info issues are excluded.
+   *
+   * <p>A new list is returned on each call (defensive copy).
+   *
+   * @return all ERROR-severity issues in insertion order; never {@code null}
+   */
+  public List<ValidationIssue> getAllErrors() {
+    return issuesList.stream()
+        .filter(issue -> issue.getSeverity() == ValidationSeverity.ERROR)
+        .toList();
+  }
+
+  /**
+   * Returns the count of deduplicated ERROR-severity issues — equivalent to
+   * {@code getErrors().size()} but without allocating the list.
+   *
+   * @return number of deduplicated ERROR-severity issues
+   */
+  public int getErrorCount() {
+    return getErrors().size();
   }
 }
