@@ -90,14 +90,15 @@ class ClaimValidationTest {
     @Test
     @DisplayName("Deduplicates identical issues across validators, preserving insertion order")
     void deduplicatesAcrossValidatorsAndPreservesOrder() {
-      ValidationIssue issueA = issue("A", ValidationSeverity.WARNING);
-      ValidationIssue issueB = issue("B", ValidationSeverity.WARNING);
+      ValidationIssue issueA = issue("A", "path", ValidationSeverity.WARNING);
+      ValidationIssue issueB = issue("B", "path_dupe", ValidationSeverity.WARNING);
+      ValidationIssue issueC = issue("A", "path_dupe", ValidationSeverity.WARNING);
+
 
       ClaimValidator v1 = stub("V1", 0,  (c, ctx) -> ctx.addValidationIssue(issueA));
       ClaimValidator v2 = stub("V2", 10,  (c, ctx) -> ctx.addValidationIssue(issueB));
-      // v3 adds issueA again — should be deduplicated
-      ClaimValidator v3 = stub("V3", 20,  (c, ctx) ->
-          ctx.addValidationIssue(issue("A", ValidationSeverity.WARNING)));
+      // v3 adds path_dupe again — should be deduplicated
+      ClaimValidator v3 = stub("V3", 20,  (c, ctx) -> ctx.addValidationIssue(issueC));
 
       var result = pipeline(v1, v2, v3)
           .validateClaim(Claim.builder().feeCode("FEE_CODE").build(), null, List.of());
@@ -121,7 +122,7 @@ class ClaimValidationTest {
     @DisplayName("Returns valid result when no validators produce ERROR issues")
     void returnsValidWhenNoErrors() {
       ClaimValidator warnOnly = stub("WARN", 0,  (c, ctx) ->
-          ctx.addValidationIssue(issue("W", ValidationSeverity.WARNING)));
+          ctx.addValidationIssue(issue("W", "path", ValidationSeverity.WARNING)));
 
       var result = pipeline(warnOnly).validateClaim(Claim.builder().feeCode("FEE_CODE").build(), null, List.of());
 
@@ -133,11 +134,12 @@ class ClaimValidationTest {
     @DisplayName("Returns invalid result when any validator produces an ERROR issue")
     void returnsInvalidWhenErrorPresent() {
       ClaimValidator errorValidator = stub("ERR", 0,  (c, ctx) ->
-          ctx.addValidationIssue(issue("E", ValidationSeverity.ERROR)));
+          ctx.addValidationIssue(issue("E","path", ValidationSeverity.ERROR)));
 
-      var result = pipeline(errorValidator).validateClaim(Claim.builder().build(), Set.of("fee"), List.of());
+      var result = pipeline(errorValidator).validateClaim(Claim.builder().feeCode("FEE_CODE").build(), Set.of("ERR"), List.of());
 
       assertThat(result.getIsValid()).isFalse();
+      assertThat(result.getIssues()).hasSize(1);
     }
 
     @Test
@@ -452,7 +454,7 @@ class ClaimValidationTest {
     };
   }
 
-  private static ValidationIssue issue(String code, ValidationSeverity severity) {
-    return ValidationIssue.builder().code(code).message(code).severity(severity).build();
+  private static ValidationIssue issue(String code,String path, ValidationSeverity severity) {
+    return ValidationIssue.builder().code(code).path(path).message(code + ":" + path).severity(severity).build();
   }
 }

@@ -1,6 +1,5 @@
 package uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.rules;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import lombok.extern.slf4j.Slf4j;
@@ -51,7 +50,6 @@ public class ClaimSchemaValidator
   @Override
   protected void configureObjectMapper(ObjectMapper mapper) {
     mapper.setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
-    mapper.setDefaultPropertyInclusion(JsonInclude.Include.NON_NULL);
   }
 
   /**
