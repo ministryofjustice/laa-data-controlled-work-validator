@@ -279,7 +279,8 @@ class ClaimSchemaValidatorTest {
     void buildAdditionalPropertiesWarning_producesWarningIssue() {
       // Create a claim with required fields set, and set a property not defined in schema
       Claim claim = createClaimWithRequiredFields();
-      claim.setVersion(12345); // 'version' is not defined in the JSON schema and should trigger additionalProperties
+      // 'isamended' is not defined in the JSON schema and should trigger additionalProperties
+      claim.setIsAmended(true);
 
       validator.validate(claim, context);
 

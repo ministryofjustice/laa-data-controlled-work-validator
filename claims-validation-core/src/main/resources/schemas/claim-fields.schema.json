@@ -1,22 +1,65 @@
 {
-  "$schema": "http://json-schema.org/draft/2020-12/schema",
-  "title": "ClaimResponse",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Claim Fields",
   "type": "object",
   "properties": {
+    "area_of_law": {
+      "type": "string",
+      "enum": ["LEGAL HELP", "CRIME LOWER", "MEDIATION"],
+      "validationErrorMessages": [
+        {
+          "key": "ALL",
+          "value": "Area of Law must be one of LEGAL HELP, CRIME LOWER, or MEDIATION"
+        }
+      ]
+    },
+    "office_account_number": {
+      "type": "string",
+      "pattern": "^[0-9A-Za-z]{6}$",
+      "validationErrorMessages": [
+        {
+          "key": "ALL",
+          "value": "Office Account Number must be exactly 6 alphanumeric characters"
+        }
+      ]
+    },
     "id": {
-      "type": "string"
+      "type": "string",
+      "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+      "validationErrorMessages": [
+        {
+          "key": "ALL",
+          "value": "ID must be a valid UUID"
+        }
+      ]
     },
     "status": {
       "type": "string"
     },
     "submission_id": {
-      "type": "string"
+      "type": "string",
+      "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+      "validationErrorMessages": [
+        {
+          "key": "ALL",
+          "value": "Submission ID must be a valid UUID"
+        }
+      ]
     },
     "submission_period": {
-      "type": "string"
+      "type": "string",
+      "pattern": "^[A-Z]{3}-[0-9]{4}$",
+      "validationErrorMessages": [
+        {
+          "key": "ALL",
+          "value": "Submission Period must be in the format MMM-YYYY (e.g. JAN-2026)"
+        }
+      ]
     },
     "schedule_reference": {
       "type": "string",
+      "pattern": "^[a-zA-Z0-9/.\\-]{1,20}$",
+      "maxLength": 20,
       "validationErrorMessages": [
         {
           "key": "LEGAL HELP",
@@ -886,16 +929,16 @@
       ]
     },
     "is_eligible_client": {
-      "type": "boolean"
-    },
-    "court_location_code": {
-      "type": "string",
+      "type": "boolean",
       "validationErrorMessages": [
         {
           "key": "ALL",
           "value": "Eligible Client must be Y or N"
         }
       ]
+    },
+    "court_location_code": {
+      "type": "string"
     },
     "advice_type_code": {
       "type": "string",
