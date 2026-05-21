@@ -64,8 +64,8 @@ class AbstractValidationContextTest {
     context.addValidationIssues(List.of(nullField1, nullField2));
 
     List<ValidationIssue> result = context.getIssues();
-    assertThat(result).hasSize(2);
-    assertThat(result).allMatch(issue -> issue.getPath() == null);
+    assertThat(result).hasSize(2)
+            .allMatch(issue -> issue.getPath() == null);
   }
 
   @Test
@@ -85,7 +85,7 @@ class AbstractValidationContextTest {
         .severity(ValidationSeverity.ERROR)
         .build();
 
-    ValidationIssue withFieldA_dup = ValidationIssue.builder()
+    ValidationIssue withFieldADup = ValidationIssue.builder()
         .code("ERR1_DUP")
         .message("Duplicate error for fieldA")
         .path("fieldA")
@@ -107,10 +107,10 @@ class AbstractValidationContextTest {
         .build();
 
     context.addValidationIssues(
-        List.of(nullField1, withFieldA, withFieldA_dup, nullField2, withFieldB));
+        List.of(nullField1, withFieldA, withFieldADup, nullField2, withFieldB));
 
     List<ValidationIssue> result = context.getIssues();
-    // nullField1, withFieldA, nullField2, withFieldB (not withFieldA_dup)
+    // nullField1, withFieldA, nullField2, withFieldB (not withFieldADup)
     assertThat(result).hasSize(4);
     assertThat(result).extracting(ValidationIssue::getCode).containsExactly("WARN1", "ERR1", "WARN2", "ERR2");
   }
@@ -127,7 +127,7 @@ class AbstractValidationContextTest {
 
     context.addValidationIssue(issue1);
 
-    ValidationIssue issue2_dup = ValidationIssue.builder()
+    ValidationIssue issue2Dup = ValidationIssue.builder()
         .code("ERR2")
         .message("Duplicate fieldX")
         .path("fieldX")
@@ -141,10 +141,10 @@ class AbstractValidationContextTest {
         .severity(ValidationSeverity.ERROR)
         .build();
 
-    context.addValidationIssues(List.of(issue2_dup, issue3));
+    context.addValidationIssues(List.of(issue2Dup, issue3));
 
     List<ValidationIssue> result = context.getIssues();
-    // Only issue1 (fieldX), issue3 (fieldY) — issue2_dup is filtered out
+    // Only issue1 (fieldX), issue3 (fieldY) — issue2Dup is filtered out
     assertThat(result).hasSize(2);
     assertThat(result).extracting(ValidationIssue::getCode).containsExactly("ERR1", "ERR3");
   }

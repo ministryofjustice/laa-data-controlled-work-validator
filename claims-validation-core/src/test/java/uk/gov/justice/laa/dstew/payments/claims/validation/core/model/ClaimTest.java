@@ -22,7 +22,7 @@ class ClaimTest {
         .build();
 
     assertThat(c1).isEqualTo(c2);
-    assertThat(c1.hashCode()).isEqualTo(c2.hashCode());
+    assertThat(c1).hasSameHashCodeAs(c2);
     assertThat(c1.toString()).contains("uniqueFileNumber");
 
     // setters/getters

@@ -109,6 +109,45 @@ class OutcomeCodeClaimValidationTest {
   }
 
   @Test
+  @DisplayName("Should not add error when outcomeCode is null")
+  void shouldNotAddErrorWhenOutcomeCodeIsNull() {
+    Claim claim = Claim.builder()
+        .id(new UUID(1, 1))
+        .outcomeCode(null)
+        .areaOfLaw(AreaOfLaw.LEGAL_HELP)
+        .build();
+    ClaimValidationContext context = ClaimValidationContext.builder().build();
+    validator.validate(claim, context);
+    assertThat(context.getIssues()).isEmpty();
+  }
+
+  @Test
+  @DisplayName("Should not add error when areaOfLaw is null")
+  void shouldNotAddErrorWhenAreaOfLawIsNull() {
+    Claim claim = Claim.builder()
+        .id(new UUID(1, 1))
+        .outcomeCode("IX")
+        .areaOfLaw(null)
+        .build();
+    ClaimValidationContext context = ClaimValidationContext.builder().build();
+    validator.validate(claim, context);
+    assertThat(context.getIssues()).isEmpty();
+  }
+
+  @Test
+  @DisplayName("Should not add error when both outcomeCode and areaOfLaw are null")
+  void shouldNotAddErrorWhenBothNull() {
+    Claim claim = Claim.builder()
+        .id(new UUID(1, 1))
+        .outcomeCode(null)
+        .areaOfLaw(null)
+        .build();
+    ClaimValidationContext context = ClaimValidationContext.builder().build();
+    validator.validate(claim, context);
+    assertThat(context.getIssues()).isEmpty();
+  }
+
+  @Test
   @DisplayName("OutcomeCodeClaimValidator - priority, appliesTo and validator code")
   void outcomeCodeValidatorMetadata() {
     assertThat(validator.priority()).isEqualTo(100);

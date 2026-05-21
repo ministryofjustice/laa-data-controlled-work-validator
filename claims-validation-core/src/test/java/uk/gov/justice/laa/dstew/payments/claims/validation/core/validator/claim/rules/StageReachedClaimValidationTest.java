@@ -106,6 +106,44 @@ class StageReachedClaimValidationTest {
     assertThat(context.getIssues()).hasSize(1);
   }
 
+  @ParameterizedTest(name = "{index} => stageReachedCode={0}, reason={1}")
+  @CsvSource(
+      nullValues = "NULL",
+      value = {
+        "NULL,  stageReachedCode is null",
+        "'   ', stageReachedCode is blank",
+      })
+  @DisplayName("Should skip validation when stageReachedCode is null or blank")
+  void shouldSkipValidationWhenStageReachedCodeIsNullOrBlank(String stageReachedCode, String reason) {
+    Claim claim = Claim.builder()
+        .id(new UUID(1, 1))
+        .stageReachedCode(stageReachedCode)
+        .areaOfLaw(AreaOfLaw.LEGAL_HELP)
+        .build();
+    ClaimValidationContext context = ClaimValidationContext.builder().build();
+    validator.validate(claim, context);
+    assertThat(context.getIssues()).as(reason).isEmpty();
+  }
+
+  @ParameterizedTest(name = "{index} => areaOfLaw={0}, reason={1}")
+  @CsvSource(
+      nullValues = "NULL",
+      value = {
+        "NULL,      areaOfLaw is null — no pattern to validate against",
+        "MEDIATION, MEDIATION has no pattern defined — default null branch",
+      })
+  @DisplayName("Should skip validation when areaOfLaw has no pattern defined")
+  void shouldSkipValidationWhenAreaOfLawHasNoPattern(AreaOfLaw areaOfLaw, String reason) {
+    Claim claim = Claim.builder()
+        .id(new UUID(1, 1))
+        .stageReachedCode("ABCD")
+        .areaOfLaw(areaOfLaw)
+        .build();
+    ClaimValidationContext context = ClaimValidationContext.builder().build();
+    validator.validate(claim, context);
+    assertThat(context.getIssues()).as(reason).isEmpty();
+  }
+
   @Test
   @DisplayName("StageReachedClaimValidator - priority, appliesTo and validator code")
   void stageReachedValidatorMetadata() {

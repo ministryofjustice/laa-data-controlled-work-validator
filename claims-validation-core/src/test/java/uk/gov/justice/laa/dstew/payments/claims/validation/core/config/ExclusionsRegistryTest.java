@@ -1,6 +1,7 @@
 package uk.gov.justice.laa.dstew.payments.claims.validation.core.config;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
@@ -92,7 +93,7 @@ class ExclusionsRegistryTest {
     @DisplayName("List is unmodifiable — add throws UnsupportedOperationException")
     void listIsUnmodifiableAdd() {
       List<String> exclusions = ExclusionsRegistry.DISBURSEMENT_ONLY_EXCLUSIONS;
-      org.junit.jupiter.api.Assertions.assertThrows(
+      assertThrows(
           UnsupportedOperationException.class,
           () -> exclusions.add("newField")
       );
@@ -102,17 +103,10 @@ class ExclusionsRegistryTest {
     @DisplayName("List is unmodifiable — remove throws UnsupportedOperationException")
     void listIsUnmodifiableRemove() {
       List<String> exclusions = ExclusionsRegistry.DISBURSEMENT_ONLY_EXCLUSIONS;
-      org.junit.jupiter.api.Assertions.assertThrows(
+      assertThrows(
           UnsupportedOperationException.class,
           () -> exclusions.remove("adviceTime")
       );
-    }
-
-    @Test
-    @DisplayName("Static constant always returns the same instance")
-    void sameInstanceReturnedOnMultipleCalls() {
-      assertThat(ExclusionsRegistry.DISBURSEMENT_ONLY_EXCLUSIONS)
-          .isSameAs(ExclusionsRegistry.DISBURSEMENT_ONLY_EXCLUSIONS);
     }
   }
 }
