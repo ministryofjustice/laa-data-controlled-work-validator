@@ -50,7 +50,6 @@ public class ClaimSchemaValidator
   @Override
   protected void configureObjectMapper(ObjectMapper mapper) {
     mapper.setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
-    //mapper.setDefaultPropertyInclusion(JsonInclude.Include.NON_NULL);
   }
 
   /**

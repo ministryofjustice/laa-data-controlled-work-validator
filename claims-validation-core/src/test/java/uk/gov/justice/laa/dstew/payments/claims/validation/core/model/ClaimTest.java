@@ -21,8 +21,7 @@ class ClaimTest {
         .uniqueFileNumber("010101/001")
         .build();
 
-    assertThat(c1).isEqualTo(c2);
-    assertThat(c1).hasSameHashCodeAs(c2);
+    assertThat(c1).isEqualTo(c2).hasSameHashCodeAs(c2);
     assertThat(c1.toString()).contains("uniqueFileNumber");
 
     // setters/getters
