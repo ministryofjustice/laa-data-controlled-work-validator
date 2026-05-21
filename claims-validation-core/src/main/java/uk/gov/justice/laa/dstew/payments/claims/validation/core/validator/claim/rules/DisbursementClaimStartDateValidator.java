@@ -66,11 +66,6 @@ public final class DisbursementClaimStartDateValidator implements ClaimValidator
   }
 
   @Override
-  public boolean appliesTo(String scope) {
-    return true;
-  }
-
-  @Override
   public String getValidatorCode() {
     return "CLAIM_DISBURSEMENT_START_DATE";
   }

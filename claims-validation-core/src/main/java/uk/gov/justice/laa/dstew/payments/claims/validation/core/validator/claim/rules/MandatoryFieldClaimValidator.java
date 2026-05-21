@@ -87,9 +87,4 @@ public class MandatoryFieldClaimValidator implements ClaimValidator {
   public String getValidatorCode() {
     return "CLAIM_MANDATORY_FIELD";
   }
-
-  @Override
-  public boolean appliesTo(String scope) {
-    return true;
-  }
 }

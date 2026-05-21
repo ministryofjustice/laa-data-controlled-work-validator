@@ -55,11 +55,6 @@ public class SubmissionStatusValidator implements SubmissionValidator {
   }
 
   @Override
-  public boolean appliesTo(String scope) {
-    return true;
-  }
-
-  @Override
   public String getValidatorCode() {
     return "SUBMISSION_STATUS_VALIDATOR";
   }

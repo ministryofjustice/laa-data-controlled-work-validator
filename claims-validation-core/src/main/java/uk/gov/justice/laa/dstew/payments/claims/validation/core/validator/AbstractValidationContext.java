@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import lombok.Getter;
+import lombok.experimental.SuperBuilder;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationIssue;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationSeverity;
 
@@ -15,17 +17,28 @@ import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Validation
  * {@link #addValidationIssues(List)}, and interrogating the outcome via {@link #hasErrors()} and
  * {@link #getIssues()}.
  *
+ * <p>Also carries the validation {@code scope} — an optional set of scope identifiers used by
+ * validators to determine whether they should run. Moving scope here makes it available to all
+ * subclasses without repetition.
+ *
  * <p>The issues list is initialised eagerly to an empty {@link ArrayList}; {@link #getIssues()}
  * will never return {@code null}.
  *
  * <p>Subclasses add domain-specific fields appropriate to their validation context:
  * <ul>
  *   <li>{@code SubmissionValidationContext} — accumulates issues during submission validation.
- *   <li>{@code ClaimValidationContext} — carries request-scoped input data for claim validation;
- *       accumulates issues from Stage 2 of the context-based validation refactor onwards.
+ *   <li>{@code ClaimValidationContext} — carries request-scoped input data for claim validation.
  * </ul>
  */
+@Getter
+@SuperBuilder
 public abstract class AbstractValidationContext {
+
+  /**
+   * The validation scope (e.g., "fee", "disbursement", "all"). Validators use this to determine
+   * if they should run. May be {@code null} or empty when no scoping is required.
+   */
+  private final Set<String> scope;
 
   /**
    * Internal set storing unique validation issues in insertion order. Using a set ensures

@@ -74,9 +74,4 @@ public class CaseDatesClaimValidator implements ClaimValidator {
   public String getValidatorCode() {
     return "CLAIM_CASE_DATES";
   }
-
-  @Override
-  public boolean appliesTo(String scope) {
-    return true;
-  }
 }

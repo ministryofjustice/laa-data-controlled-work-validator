@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.Set;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -132,7 +133,7 @@ class UniqueFileNumberClaimValidationTest {
   @DisplayName("UniqueFileNumberClaimValidator - priority, appliesTo and validator code")
   void uniqueFileNumberValidatorMetadata() {
     assertThat(validator.priority()).isEqualTo(100);
-    assertThat(validator.appliesTo("any-scope")).isTrue();
+    assertThat(validator.appliesTo(Set.of("CLAIM_UNIQUE_FILE_NUMBER"))).isTrue();
     assertThat(validator.getValidatorCode()).isEqualTo("CLAIM_UNIQUE_FILE_NUMBER");
   }
 }

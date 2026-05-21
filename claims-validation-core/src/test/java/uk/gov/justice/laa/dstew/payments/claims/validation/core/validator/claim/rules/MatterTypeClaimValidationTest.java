@@ -2,6 +2,7 @@ package uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -87,7 +88,7 @@ class MatterTypeClaimValidationTest {
   @DisplayName("MatterTypeClaimValidator - priority, appliesTo and validator code")
   void matterTypeValidatorMetadata() {
     assertThat(validator.priority()).isEqualTo(100);
-    assertThat(validator.appliesTo("any")).isTrue();
+    assertThat(validator.appliesTo(Set.of("CLAIM_MATTER_TYPE"))).isTrue();
     assertThat(validator.getValidatorCode()).isEqualTo("CLAIM_MATTER_TYPE");
   }
 }

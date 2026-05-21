@@ -3,6 +3,7 @@ package uk.gov.justice.laa.dstew.payments.claims.validation.core.service;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
@@ -78,7 +79,7 @@ public class ValidationService {
    *     scope-agnostic validators
    * @return the validation result containing an {@code isValid} flag and any issues found
    */
-  public ValidationResult validateClaim(Claim claim, String scope) {
+  public ValidationResult validateClaim(Claim claim, Set<String> scope) {
     return validateClaim(claim, scope, Collections.emptyList());
   }
 
@@ -93,7 +94,7 @@ public class ValidationService {
    *     validators; must not be {@code null} — pass an empty list if no context is available
    * @return the validation result containing an {@code isValid} flag and any issues found
    */
-  public ValidationResult validateClaim(Claim claim, String scope, List<Claim> relatedClaims) {
+  public ValidationResult validateClaim(Claim claim, Set<String> scope, List<Claim> relatedClaims) {
     return claimValidation.validateClaim(claim, scope, relatedClaims);
   }
 
@@ -115,7 +116,7 @@ public class ValidationService {
    *     scope-agnostic validators
    * @return the validation result containing an {@code isValid} flag and any issues found
    */
-  public ValidationResult validateSubmission(SubmissionResponse submission, String scope) {
+  public ValidationResult validateSubmission(SubmissionResponse submission, Set<String> scope) {
     return submissionValidation.validateSubmission(submission, scope);
   }
 }

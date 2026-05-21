@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.rules.OutcomeCodeClaimValidator.*;
 
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -111,7 +112,7 @@ class OutcomeCodeClaimValidationTest {
   @DisplayName("OutcomeCodeClaimValidator - priority, appliesTo and validator code")
   void outcomeCodeValidatorMetadata() {
     assertThat(validator.priority()).isEqualTo(100);
-    assertThat(validator.appliesTo("any-scope")).isTrue();
+    assertThat(validator.appliesTo(Set.of("CLAIM_OUTCOME_CODE"))).isTrue();
     assertThat(validator.getValidatorCode()).isEqualTo("CLAIM_OUTCOME_CODE");
   }
 }

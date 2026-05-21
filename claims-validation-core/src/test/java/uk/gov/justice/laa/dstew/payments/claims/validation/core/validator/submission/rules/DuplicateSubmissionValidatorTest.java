@@ -8,6 +8,7 @@ import static uk.gov.justice.laa.dstew.payments.claims.validation.core.service.V
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -53,7 +54,7 @@ class DuplicateSubmissionValidatorTest {
   @DisplayName("appliesTo returns true and validator code is set")
   @Test
   void metadata() {
-    Assertions.assertTrue(validator.appliesTo("ANY_SCOPE"));
+    Assertions.assertTrue(validator.appliesTo(Set.of("SUBMISSION_DUPLICATE_VALIDATOR")));
     Assertions.assertEquals("SUBMISSION_DUPLICATE_VALIDATOR", validator.getValidatorCode());
   }
 
@@ -67,7 +68,7 @@ class DuplicateSubmissionValidatorTest {
       when(mockClaimsDataProvider.getSubmissions(any(), any(), any()))
           .thenReturn(Collections.emptyList());
 
-      var submissionValidationContext = new SubmissionValidationContext();
+      var submissionValidationContext = SubmissionValidationContext.create();
 
       SubmissionResponse submissionResponse =
           SubmissionResponse.builder()
@@ -102,7 +103,7 @@ class DuplicateSubmissionValidatorTest {
       when(mockClaimsDataProvider.getSubmissions(any(), any(), any()))
           .thenReturn(List.of(previousExistingSubmission));
 
-      var submissionValidationContext = new SubmissionValidationContext();
+      var submissionValidationContext = SubmissionValidationContext.create();
       SubmissionResponse submissionResponse =
           SubmissionResponse.builder()
               .officeAccountNumber(OFFICE_CODE)
@@ -145,7 +146,7 @@ class DuplicateSubmissionValidatorTest {
       when(mockClaimsDataProvider.getSubmissions(any(), any(), any()))
           .thenReturn(List.of(previousExistingSubmission));
 
-      var submissionValidationContext = new SubmissionValidationContext();
+      var submissionValidationContext = SubmissionValidationContext.create();
       SubmissionResponse submissionResponse =
           SubmissionResponse.builder()
               .officeAccountNumber(OFFICE_CODE)

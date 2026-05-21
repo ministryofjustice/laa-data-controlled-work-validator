@@ -2,6 +2,7 @@ package uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -109,7 +110,7 @@ class StageReachedClaimValidationTest {
   @DisplayName("StageReachedClaimValidator - priority, appliesTo and validator code")
   void stageReachedValidatorMetadata() {
     assertThat(validator.priority()).isEqualTo(100);
-    assertThat(validator.appliesTo("any")).isTrue();
+    assertThat(validator.appliesTo(Set.of("CLAIM_STAGE_REACHED"))).isTrue();
     assertThat(validator.getValidatorCode()).isEqualTo("CLAIM_STAGE_REACHED");
   }
 }
