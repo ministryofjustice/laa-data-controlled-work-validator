@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -97,12 +98,57 @@ class DisbursementClaimStartDateValidatorTest {
   }
 
   @Test
+  @DisplayName("Should skip validation when feeCalculationType is not DISB_ONLY")
+  void shouldSkipValidationWhenNotDisbursementClaim() {
+    ClaimValidationContext feeContext = ClaimValidationContext.builder()
+        .feeCalculationType("FEE_ONLY")
+        .build();
+    // date that would otherwise fail (too recent relative to submission period)
+    Claim feeClaim = Claim.builder().id(claimId)
+        .caseStartDate("2025-01-10")
+        .submissionPeriod("FEB-2025")
+        .build();
+    validator.validate(feeClaim, feeContext);
+    assertThat(feeContext.getIssues()).isEmpty();
+  }
+
+  @Test
+  @DisplayName("Should skip validation when feeCalculationType is null")
+  void shouldSkipValidationWhenFeeCalculationTypeIsNull() {
+    ClaimValidationContext nullContext = ClaimValidationContext.builder()
+        .feeCalculationType(null)
+        .build();
+    Claim feeClaim = Claim.builder().id(claimId)
+        .caseStartDate("2025-01-10")
+        .submissionPeriod("FEB-2025")
+        .build();
+    validator.validate(feeClaim, nullContext);
+    assertThat(nullContext.getIssues()).isEmpty();
+  }
+
+  @ParameterizedTest(name = "{index} => caseStartDate={0}, submissionPeriod={1}, reason={2}")
+  @CsvSource(
+      nullValues = "NULL",
+      value = {
+        "2025-01-10, NULL,           submissionPeriod is null",
+        "2025-01-10, '   ',          submissionPeriod is blank",
+        "NULL,       FEB-2025,       caseStartDate is null",
+        "'   ',      FEB-2025,       caseStartDate is blank",
+        "2025-01-10, NOT-A-PERIOD,   submissionPeriod is unparseable",
+      })
+  @DisplayName("Should skip validation when required fields are missing or unparseable")
+  void shouldSkipValidationWhenRequiredFieldsAreAbsentOrUnparseable(
+      String caseStartDate, String submissionPeriod, String reason) {
+    claim = claim.toBuilder().caseStartDate(caseStartDate).submissionPeriod(submissionPeriod).build();
+    validator.validate(claim, context);
+    assertThat(context.getIssues()).as(reason).isEmpty();
+  }
+
+  @Test
   @DisplayName("DisbursementClaimStartDateValidator - priority, appliesTo and validator code")
   void disbursementStartDateValidatorMetadata() {
     assertThat(validator.priority()).isEqualTo(10);
-    assertThat(validator.appliesTo("disbursement")).isTrue();
-    assertThat(validator.appliesTo("all")).isTrue();
-    assertThat(validator.appliesTo("fee")).isTrue();
+    assertThat(validator.appliesTo(Set.of("CLAIM_DISBURSEMENT_START_DATE"))).isTrue();
     assertThat(validator.getValidatorCode()).isEqualTo("CLAIM_DISBURSEMENT_START_DATE");
   }
 }

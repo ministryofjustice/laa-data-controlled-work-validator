@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static uk.gov.justice.laa.dstew.payments.claims.validation.core.service.ValidationServiceTestUtils.assertContextClaimError;
 
 import java.util.Collections;
+import java.util.Set;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.submission.SubmissionValidationContext;
@@ -22,7 +23,7 @@ class NilSubmissionValidatorTest {
   @Test
   void metadata() {
     assertEquals(10, nilSubmissionValidator.priority());
-    assertTrue(nilSubmissionValidator.appliesTo("ANY_SCOPE"));
+    assertTrue(nilSubmissionValidator.appliesTo(Set.of("SUBMISSION_NIL_VALIDATOR")));
     assertEquals("SUBMISSION_NIL_VALIDATOR", nilSubmissionValidator.getValidatorCode());
   }
 
@@ -30,7 +31,7 @@ class NilSubmissionValidatorTest {
   @DisplayName("Should have no errors when not flagged as NIL Submission and has claims")
   void shouldHaveNoErrorsWhenNotFlaggedAsNilSubmissionAndHasClaims() {
     // Given
-    SubmissionValidationContext submissionValidationContext = new SubmissionValidationContext();
+    SubmissionValidationContext submissionValidationContext = SubmissionValidationContext.create();
     SubmissionResponse submissionResponse =
         SubmissionResponse.builder()
             .isNilSubmission(false)
@@ -46,7 +47,7 @@ class NilSubmissionValidatorTest {
   @DisplayName("Should have no errors when NIL Submission is null and has claims")
   void shouldHaveNoErrorsWhenNilSubmissionIsNullAndHasClaims() {
     // Given
-    SubmissionValidationContext submissionValidationContext = new SubmissionValidationContext();
+    SubmissionValidationContext submissionValidationContext = SubmissionValidationContext.create();
     SubmissionResponse submissionResponse =
         SubmissionResponse.builder()
             .isNilSubmission(null)
@@ -62,7 +63,7 @@ class NilSubmissionValidatorTest {
   @DisplayName("Should have no errors when marked as NIL Submission and has no claims") // fixed: was "has claims"
   void shouldHaveNoErrorsWhenMarkedAsNilSubmissionAndHasNoClaims() {
     // Given
-    SubmissionValidationContext submissionValidationContext = new SubmissionValidationContext();
+    SubmissionValidationContext submissionValidationContext = SubmissionValidationContext.create();
     SubmissionResponse submissionResponse =
         SubmissionResponse.builder().isNilSubmission(true).build();
     // When
@@ -75,7 +76,7 @@ class NilSubmissionValidatorTest {
   @DisplayName("Should have errors when marked as NIL submission and has claims")
   void shouldHaveErrorsWhenMarkedAsNilSubmissionAndHasClaims() {
     // Given
-    SubmissionValidationContext submissionValidationContext = new SubmissionValidationContext();
+    SubmissionValidationContext submissionValidationContext = SubmissionValidationContext.create();
     SubmissionResponse submissionResponse =
         SubmissionResponse.builder()
             .isNilSubmission(true)
@@ -94,7 +95,7 @@ class NilSubmissionValidatorTest {
   @DisplayName("Should have errors when not marked as NIL submission and has no claims")
   void shouldHaveErrorsWhenNotMarkedAsNilSubmissionAndHasNoClaims() {
     // Given
-    SubmissionValidationContext submissionValidationContext = new SubmissionValidationContext();
+    SubmissionValidationContext submissionValidationContext = SubmissionValidationContext.create();
     SubmissionResponse submissionResponse =
         SubmissionResponse.builder().isNilSubmission(false).build();
     // When
@@ -110,7 +111,7 @@ class NilSubmissionValidatorTest {
   @DisplayName("Should have no errors when marked as NIL submission and claims list is empty")
   void shouldHaveNoErrors_nilTrue_emptyClaimsList() {
     // Branch: isNilSubmission=true, claims != null but isEmpty() → inner if is NOT entered
-    SubmissionValidationContext ctx = new SubmissionValidationContext();
+    SubmissionValidationContext ctx = SubmissionValidationContext.create();
     SubmissionResponse submission = SubmissionResponse.builder()
         .isNilSubmission(true)
         .claims(Collections.emptyList())
@@ -125,7 +126,7 @@ class NilSubmissionValidatorTest {
   @DisplayName("Should have no errors when marked as NIL submission and claims list is null")
   void shouldHaveNoErrors_nilTrue_nullClaimsList() {
     // Branch: isNilSubmission=true, claims == null
-    SubmissionValidationContext ctx = new SubmissionValidationContext();
+    SubmissionValidationContext ctx = SubmissionValidationContext.create();
     SubmissionResponse submission = SubmissionResponse.builder()
             .isNilSubmission(true)
             .build();
@@ -139,7 +140,7 @@ class NilSubmissionValidatorTest {
   @DisplayName("Should have errors when not marked as NIL submission and claims list is empty")
   void shouldHaveErrors_nilFalse_emptyClaimsList() {
     // Branch: isNilSubmission=false, claims != null but isEmpty() → satisfies || isEmpty() condition
-    SubmissionValidationContext ctx = new SubmissionValidationContext();
+    SubmissionValidationContext ctx = SubmissionValidationContext.create();
     SubmissionResponse submission = SubmissionResponse.builder()
         .isNilSubmission(false)
         .claims(Collections.emptyList())
@@ -156,7 +157,7 @@ class NilSubmissionValidatorTest {
   @DisplayName("Should have errors when not marked as NIL submission and claims list is null")
   void shouldHaveErrors_nilFalse_nullClaimsList() {
     // Branch: isNilSubmission=false, claims != null but isEmpty() → satisfies || isEmpty() condition
-    SubmissionValidationContext ctx = new SubmissionValidationContext();
+    SubmissionValidationContext ctx = SubmissionValidationContext.create();
     SubmissionResponse submission = SubmissionResponse.builder()
             .isNilSubmission(false)
             .build();
@@ -178,7 +179,7 @@ class NilSubmissionValidatorTest {
   @DisplayName("Should have no errors when NIL flag is null and claims is null"
       + " — neither branch is entered")
   void shouldHaveNoErrors_nilNull_noClaimsSet() {
-    SubmissionValidationContext ctx = new SubmissionValidationContext();
+    SubmissionValidationContext ctx = SubmissionValidationContext.create();
     SubmissionResponse submission = SubmissionResponse.builder()
         .isNilSubmission(null)
         .build(); // claims null

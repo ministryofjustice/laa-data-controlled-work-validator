@@ -3,6 +3,8 @@ package uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
+import java.util.HashSet;
+import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -396,8 +398,9 @@ class MandatoryFieldClaimValidatorTest {
     @Test
     @DisplayName("Applies to any scope")
     void appliesToAnyScope() {
-      assertThat(validator.appliesTo("any")).isTrue();
+      assertThat(validator.appliesTo(Set.of("CLAIM_MANDATORY_FIELD"))).isTrue();
       assertThat(validator.appliesTo(null)).isTrue();
+      assertThat(validator.appliesTo(new HashSet<>())).isTrue();
     }
   }
 

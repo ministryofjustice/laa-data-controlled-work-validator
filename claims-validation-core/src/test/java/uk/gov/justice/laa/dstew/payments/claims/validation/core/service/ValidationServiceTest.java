@@ -8,6 +8,7 @@ import static org.mockito.Mockito.when;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.BeforeEach;
@@ -108,7 +109,7 @@ class ValidationServiceTest {
     @Test
     @DisplayName("Scope defaults to null — all scope-agnostic validators run")
     void scopeDefaultsToNull() {
-      AtomicReference<String> capturedScope = new AtomicReference<>("NOT_SET");
+      AtomicReference<Set<String>> capturedScope = new AtomicReference<>(Set.of("NOT_SET"));
 
       ClaimValidator captor = new ClaimValidator() {
         @Override public void validate(Claim c, ClaimValidationContext ctx) {
@@ -118,11 +119,6 @@ class ValidationServiceTest {
         @Override
         public int priority() {
           return 0;
-        }
-
-        @Override
-        public boolean appliesTo(String scope) {
-          return true;
         }
 
         @Override public String getValidatorCode() { return "CAPTOR"; }
@@ -145,7 +141,7 @@ class ValidationServiceTest {
     @Test
     @DisplayName("Passes scope through to the pipeline")
     void passesScopeToPipeline() {
-      AtomicReference<String> capturedScope = new AtomicReference<>();
+      AtomicReference<Set<String>> capturedScope = new AtomicReference<>();
 
       ClaimValidator captor = new ClaimValidator() {
         @Override public void validate(Claim c, ClaimValidationContext ctx) {
@@ -157,17 +153,12 @@ class ValidationServiceTest {
           return 0;
         }
 
-        @Override
-        public boolean appliesTo(String scope) {
-          return true;
-        }
-
         @Override public String getValidatorCode() { return "CAPTOR"; }
       };
 
-      withClaims(claimValidation(List.of(captor))).validateClaim(testClaim, "submission");
+      withClaims(claimValidation(List.of(captor))).validateClaim(testClaim, Set.of("CAPTOR"));
 
-      assertThat(capturedScope.get()).isEqualTo("submission");
+      assertThat(capturedScope.get()).isEqualTo(Set.of("CAPTOR"));
     }
 
     @Test
@@ -185,15 +176,10 @@ class ValidationServiceTest {
           return 0;
         }
 
-        @Override
-        public boolean appliesTo(String scope) {
-          return true;
-        }
-
         @Override public String getValidatorCode() { return "CAPTOR"; }
       };
 
-      withClaims(claimValidation(List.of(captor))).validateClaim(testClaim, "fee");
+      withClaims(claimValidation(List.of(captor))).validateClaim(testClaim, Set.of("CAPTOR"));
 
       assertThat(capturedRelated.get()).isEmpty();
     }
@@ -202,7 +188,7 @@ class ValidationServiceTest {
     @DisplayName("Returns MISSING_CLAIM error when claim is null")
     void returnsMissingClaimWhenClaimIsNull() {
       ValidationResult result = withClaims(claimValidation(Collections.emptyList()))
-          .validateClaim(null, "fee");
+          .validateClaim(null, Set.of("fee"));
 
       assertThat(result.getIsValid()).isFalse();
       assertThat(result.getIssues().getFirst().getCode()).isEqualTo("MISSING_CLAIM");
@@ -221,7 +207,7 @@ class ValidationServiceTest {
     @DisplayName("Returns valid result when no validators raise errors")
     void returnsValidResultWhenNoIssues() {
       assertThat(withClaims(claimValidation(Collections.emptyList()))
-          .validateClaim(testClaim, "fee", List.of()).getIsValid()).isTrue();
+          .validateClaim(testClaim, Set.of("fee"), List.of()).getIsValid()).isTrue();
     }
 
     @Test
@@ -238,16 +224,11 @@ class ValidationServiceTest {
           return 0;
         }
 
-        @Override
-        public boolean appliesTo(String scope) {
-          return true;
-        }
-
         @Override public String getValidatorCode() { return "ERROR_VALIDATOR"; }
       };
 
       ValidationResult result = withClaims(claimValidation(List.of(errorValidator)))
-          .validateClaim(testClaim, "fee", List.of());
+          .validateClaim(testClaim, Set.of("ERROR_VALIDATOR"), List.of());
 
       assertThat(result.getIsValid()).isFalse();
       assertThat(result.getIssues().getFirst().getCode()).isEqualTo("TEST_ERROR");
@@ -267,11 +248,6 @@ class ValidationServiceTest {
           return 0;
         }
 
-        @Override
-        public boolean appliesTo(String scope) {
-          return true;
-        }
-
         @Override public String getValidatorCode() { return "WARN_VALIDATOR"; }
       };
 
@@ -286,7 +262,7 @@ class ValidationServiceTest {
     @DisplayName("Returns MISSING_CLAIM error when claim is null")
     void returnsMissingClaimWhenClaimIsNull() {
       ValidationResult result = withClaims(claimValidation(Collections.emptyList()))
-          .validateClaim(null, "fee", List.of());
+          .validateClaim(null, Set.of("fee"), List.of());
 
       assertThat(result.getIsValid()).isFalse();
       assertThat(result.getIssues().getFirst().getCode()).isEqualTo("MISSING_CLAIM");
@@ -321,11 +297,6 @@ class ValidationServiceTest {
         @Override public int priority() { return 0; }
 
         @Override
-        public boolean appliesTo(String scope) {
-          return true;
-        }
-
-        @Override
         public String getValidatorCode() {
           return "";
         }
@@ -341,13 +312,11 @@ class ValidationServiceTest {
     @Test
     @DisplayName("Scope defaults to null — all scope-agnostic validators run")
     void scopeDefaultsToNull() {
-      AtomicReference<String> capturedScope = new AtomicReference<>("NOT_SET");
+      AtomicReference<Set<String>> capturedScope = new AtomicReference<>();
 
       SubmissionValidator captor = new SubmissionValidator() {
-        @Override public void validate(SubmissionResponse s, SubmissionValidationContext ctx) { /* no-op */ }
-        @Override public boolean appliesTo(String scope) {
-          capturedScope.set(scope);
-          return true;
+        @Override public void validate(SubmissionResponse s, SubmissionValidationContext ctx) {
+          capturedScope.set(ctx.getScope());
         }
 
         @Override
@@ -375,11 +344,11 @@ class ValidationServiceTest {
     @Test
     @DisplayName("Passes scope through to the pipeline")
     void passesScopeToPipeline() {
-      AtomicReference<String> capturedScope = new AtomicReference<>();
+      AtomicReference<Set<String>> capturedScope = new AtomicReference<>();
 
       SubmissionValidator captor = new SubmissionValidator() {
         @Override public void validate(SubmissionResponse s, SubmissionValidationContext ctx) { /* no-op */ }
-        @Override public boolean appliesTo(String scope) {
+        @Override public boolean appliesTo(Set<String> scope) {
           capturedScope.set(scope);
           return true;
         }
@@ -393,9 +362,9 @@ class ValidationServiceTest {
       };
 
       withSubmissions(new SubmissionValidation(List.of(captor)))
-          .validateSubmission(testSubmission, "pre-process");
+          .validateSubmission(testSubmission, Set.of("pre-process"));
 
-      assertThat(capturedScope.get()).isEqualTo("pre-process");
+      assertThat(capturedScope.get()).isEqualTo(Set.of("pre-process"));
     }
 
     @Test
@@ -407,11 +376,6 @@ class ValidationServiceTest {
               .code("SUB_WARN").message("warn").severity(ValidationSeverity.WARNING).build());
         }
         @Override public int priority() { return 0; }
-
-        @Override
-        public boolean appliesTo(String scope) {
-          return true;
-        }
 
         @Override
         public String getValidatorCode() {

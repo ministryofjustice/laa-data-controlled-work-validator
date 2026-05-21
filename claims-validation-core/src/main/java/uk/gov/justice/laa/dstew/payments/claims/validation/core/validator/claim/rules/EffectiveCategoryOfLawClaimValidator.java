@@ -160,7 +160,7 @@ public class EffectiveCategoryOfLawClaimValidator implements ClaimValidator {
       if (ex instanceof WebClientResponseException wcre) {
         log.error(
             "Error calling provider details API for office {}: Status={}, Message={}",
-            officeCode, wcre.getStatusCode(), wcre.getMessage(), wcre);
+            officeCode, wcre.getStatusCode(), wcre.getMessage());
       } else {
         log.error(
             "Unexpected error calling provider details API for office {}: {}",
@@ -195,7 +195,7 @@ public class EffectiveCategoryOfLawClaimValidator implements ClaimValidator {
       if (ex instanceof WebClientResponseException wcre) {
         log.error(
             "Error calling fee scheme API for fee code {}: Status={}, Message={}",
-            feeCode, wcre.getStatusCode(), wcre.getMessage(), wcre);
+            feeCode, wcre.getStatusCode(), wcre.getMessage());
       } else {
         log.error(
             "Unexpected error calling fee scheme API for fee code {}: {}",
@@ -277,20 +277,6 @@ public class EffectiveCategoryOfLawClaimValidator implements ClaimValidator {
         .map(FirmOfficeContractAndScheduleLine::getCategoryOfLaw)
         .filter(Objects::nonNull)
         .toList();
-  }
-
-  /**
-   * Returns {@code true} when this validator should run for the given validation scope.
-   *
-   * <p>The validator runs when {@code scope} is {@code null} (no scope filter), {@code "fee"}, or
-   * {@code "all"}. It is skipped for any other scope value (e.g. {@code "submission"}).
-   *
-   * @param scope the validation scope, or {@code null} for no restriction
-   * @return {@code true} if this validator applies to the scope
-   */
-  @Override
-  public boolean appliesTo(String scope) {
-    return true;
   }
 
   /**

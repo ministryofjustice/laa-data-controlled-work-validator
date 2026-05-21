@@ -1,8 +1,9 @@
 package uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.rules;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
+import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -50,17 +51,50 @@ class DisbursementsClaimValidationTest {
       String expectedMessage = "Disbursements VAT Amount has exceeded the maximum accepted value";
       assertThat(context.getIssues().getFirst().getMessage()).isEqualTo(expectedMessage);
     } else {
-      assertThat(context.getIssues().size()).isZero();
+      assertThat(context.getIssues()).isEmpty();
     }
+  }
+
+  @Test
+  @DisplayName("Should not add error when disbursementsVatAmount is null")
+  void shouldNotAddErrorWhenVatAmountIsNull() {
+    Claim claim = Claim.builder().id(new UUID(1, 1))
+        .disbursementsVatAmount(null)
+        .areaOfLaw(AreaOfLaw.LEGAL_HELP)
+        .build();
+    ClaimValidationContext context = ClaimValidationContext.builder().build();
+    validator.validate(claim, context);
+    assertThat(context.getIssues()).isEmpty();
+  }
+
+  @Test
+  @DisplayName("Should use LEGAL_HELP max when areaOfLaw is null")
+  void shouldUseLegalHelpMaxWhenAreaOfLawIsNull() {
+    // MAX_VAT_LEGAL_HELP = 99999.99 — value below should pass, value above should fail
+    Claim validClaim = Claim.builder().id(new UUID(1, 1))
+        .disbursementsVatAmount(new BigDecimal("99999.99"))
+        .areaOfLaw(null)
+        .build();
+    ClaimValidationContext validContext = ClaimValidationContext.builder().build();
+    validator.validate(validClaim, validContext);
+    assertThat(validContext.getIssues()).isEmpty();
+
+    Claim invalidClaim = Claim.builder().id(new UUID(2, 2))
+        .disbursementsVatAmount(new BigDecimal("100000.00"))
+        .areaOfLaw(null)
+        .build();
+    ClaimValidationContext invalidContext = ClaimValidationContext.builder().build();
+    validator.validate(invalidClaim, invalidContext);
+    assertThat(invalidContext.getIssues()).hasSize(1);
+    assertThat(invalidContext.getIssues().getFirst().getMessage())
+        .isEqualTo("Disbursements VAT Amount has exceeded the maximum accepted value");
   }
 
   @Test
   @DisplayName("DisbursementsClaimValidator - priority, appliesTo and validator code")
   void disbursementsValidatorMetadata() {
     assertThat(validator.priority()).isEqualTo(100);
-    assertThat(validator.appliesTo(null)).isTrue();
-    assertThat(validator.appliesTo("disbursement")).isTrue();
-    assertThat(validator.appliesTo("all")).isTrue();
+    assertThat(validator.appliesTo(Set.of("CLAIM_DISBURSEMENTS"))).isTrue();
     assertThat(validator.getValidatorCode()).isEqualTo("CLAIM_DISBURSEMENTS");
   }
 }

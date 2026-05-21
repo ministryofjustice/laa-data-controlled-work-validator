@@ -12,7 +12,7 @@ class FeeCalculationTypeTest {
     assertThat(FeeCalculationType.HOURLY.getValue()).isEqualTo("HOURLY");
     assertThat(FeeCalculationType.FIXED.getValue()).isEqualTo("FIXED");
     assertThat(FeeCalculationType.DISB_ONLY.getValue()).isEqualTo("DISB_ONLY");
-    assertThat(FeeCalculationType.HOURLY.toString()).isEqualTo("HOURLY");
+    assertThat(FeeCalculationType.HOURLY).hasToString("HOURLY");
   }
 
   @Test

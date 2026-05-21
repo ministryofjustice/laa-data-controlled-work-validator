@@ -62,8 +62,7 @@ class ClaimsValidationAutoConfigurationTest {
 
     @Bean
     public FeeSchemeClient feeSchemeClient() {
-      FeeSchemeClient mock = mock(FeeSchemeClient.class);
-      return mock;
+      return mock(FeeSchemeClient.class);
     }
 
     @Bean

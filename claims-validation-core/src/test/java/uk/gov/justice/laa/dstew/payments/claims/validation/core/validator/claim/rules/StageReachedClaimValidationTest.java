@@ -2,6 +2,7 @@ package uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -105,11 +106,49 @@ class StageReachedClaimValidationTest {
     assertThat(context.getIssues()).hasSize(1);
   }
 
+  @ParameterizedTest(name = "{index} => stageReachedCode={0}, reason={1}")
+  @CsvSource(
+      nullValues = "NULL",
+      value = {
+        "NULL,  stageReachedCode is null",
+        "'   ', stageReachedCode is blank",
+      })
+  @DisplayName("Should skip validation when stageReachedCode is null or blank")
+  void shouldSkipValidationWhenStageReachedCodeIsNullOrBlank(String stageReachedCode, String reason) {
+    Claim claim = Claim.builder()
+        .id(new UUID(1, 1))
+        .stageReachedCode(stageReachedCode)
+        .areaOfLaw(AreaOfLaw.LEGAL_HELP)
+        .build();
+    ClaimValidationContext context = ClaimValidationContext.builder().build();
+    validator.validate(claim, context);
+    assertThat(context.getIssues()).as(reason).isEmpty();
+  }
+
+  @ParameterizedTest(name = "{index} => areaOfLaw={0}, reason={1}")
+  @CsvSource(
+      nullValues = "NULL",
+      value = {
+        "NULL,      areaOfLaw is null — no pattern to validate against",
+        "MEDIATION, MEDIATION has no pattern defined — default null branch",
+      })
+  @DisplayName("Should skip validation when areaOfLaw has no pattern defined")
+  void shouldSkipValidationWhenAreaOfLawHasNoPattern(AreaOfLaw areaOfLaw, String reason) {
+    Claim claim = Claim.builder()
+        .id(new UUID(1, 1))
+        .stageReachedCode("ABCD")
+        .areaOfLaw(areaOfLaw)
+        .build();
+    ClaimValidationContext context = ClaimValidationContext.builder().build();
+    validator.validate(claim, context);
+    assertThat(context.getIssues()).as(reason).isEmpty();
+  }
+
   @Test
   @DisplayName("StageReachedClaimValidator - priority, appliesTo and validator code")
   void stageReachedValidatorMetadata() {
     assertThat(validator.priority()).isEqualTo(100);
-    assertThat(validator.appliesTo("any")).isTrue();
+    assertThat(validator.appliesTo(Set.of("CLAIM_STAGE_REACHED"))).isTrue();
     assertThat(validator.getValidatorCode()).isEqualTo("CLAIM_STAGE_REACHED");
   }
 }

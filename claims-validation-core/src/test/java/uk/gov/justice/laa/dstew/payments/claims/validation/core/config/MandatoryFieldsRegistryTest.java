@@ -1,6 +1,7 @@
 package uk.gov.justice.laa.dstew.payments.claims.validation.core.config;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.List;
 import java.util.Map;
@@ -84,7 +85,7 @@ class MandatoryFieldsRegistryTest {
     @DisplayName("List is unmodifiable")
     void listIsUnmodifiable() {
       List<String> fields = MandatoryFieldsRegistry.LEGAL_HELP_MANDATORY_FIELDS;
-      org.junit.jupiter.api.Assertions.assertThrows(
+      assertThrows(
           UnsupportedOperationException.class,
           () -> fields.add("newField")
       );
@@ -140,7 +141,7 @@ class MandatoryFieldsRegistryTest {
     @DisplayName("List is unmodifiable")
     void listIsUnmodifiable() {
       List<String> fields = MandatoryFieldsRegistry.CRIME_LOWER_MANDATORY_FIELDS;
-      org.junit.jupiter.api.Assertions.assertThrows(
+      assertThrows(
           UnsupportedOperationException.class,
           () -> fields.add("newField")
       );
@@ -209,7 +210,7 @@ class MandatoryFieldsRegistryTest {
     @DisplayName("List is unmodifiable")
     void listIsUnmodifiable() {
       List<String> fields = MandatoryFieldsRegistry.MEDIATION_MANDATORY_FIELDS;
-      org.junit.jupiter.api.Assertions.assertThrows(
+      assertThrows(
           UnsupportedOperationException.class,
           () -> fields.add("newField")
       );
@@ -268,7 +269,7 @@ class MandatoryFieldsRegistryTest {
     @DisplayName("Map is unmodifiable")
     void mapIsUnmodifiable() {
       Map<AreaOfLaw, List<String>> map = MandatoryFieldsRegistry.MANDATORY_FIELDS_BY_AREA_OF_LAW;
-      org.junit.jupiter.api.Assertions.assertThrows(
+      assertThrows(
           UnsupportedOperationException.class,
           () -> map.put(AreaOfLaw.LEGAL_HELP, List.of())
       );

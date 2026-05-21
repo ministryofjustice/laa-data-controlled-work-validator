@@ -8,6 +8,7 @@ import static uk.gov.justice.laa.dstew.payments.claims.validation.core.service.V
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
+import java.util.Set;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -50,7 +51,7 @@ class SubmissionPeriodValidatorTest {
   @DisplayName("Validator metadata: priority, appliesTo and code")
   void metadata() {
     assertEquals(10, validator.priority());
-    assertTrue(validator.appliesTo("ANY_SCOPE"));
+    assertTrue(validator.appliesTo(Set.of("SUBMISSION_PERIOD_VALIDATOR")));
     assertEquals("SUBMISSION_PERIOD_VALIDATOR", validator.getValidatorCode());
   }
 
@@ -161,7 +162,7 @@ class SubmissionPeriodValidatorTest {
   private SubmissionValidationContext validate(String submissionPeriod) {
     SubmissionResponse submission = SubmissionResponse.builder()
         .submissionPeriod(submissionPeriod).build();
-    SubmissionValidationContext ctx = new SubmissionValidationContext();
+    SubmissionValidationContext ctx = SubmissionValidationContext.create();
     validator.validate(submission, ctx);
     return ctx;
   }

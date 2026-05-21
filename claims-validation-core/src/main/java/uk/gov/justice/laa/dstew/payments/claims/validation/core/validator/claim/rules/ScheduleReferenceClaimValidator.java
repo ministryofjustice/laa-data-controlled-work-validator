@@ -47,9 +47,4 @@ public class ScheduleReferenceClaimValidator implements ClaimValidator {
   public String getValidatorCode() {
     return "CLAIM_SCHEDULE_REFERENCE";
   }
-
-  @Override
-  public boolean appliesTo(String scope) {
-    return true;
-  }
 }

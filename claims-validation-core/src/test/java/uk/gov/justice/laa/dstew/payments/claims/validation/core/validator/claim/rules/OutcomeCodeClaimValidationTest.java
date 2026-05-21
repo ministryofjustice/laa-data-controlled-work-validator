@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.rules.OutcomeCodeClaimValidator.*;
 
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -108,10 +109,49 @@ class OutcomeCodeClaimValidationTest {
   }
 
   @Test
+  @DisplayName("Should not add error when outcomeCode is null")
+  void shouldNotAddErrorWhenOutcomeCodeIsNull() {
+    Claim claim = Claim.builder()
+        .id(new UUID(1, 1))
+        .outcomeCode(null)
+        .areaOfLaw(AreaOfLaw.LEGAL_HELP)
+        .build();
+    ClaimValidationContext context = ClaimValidationContext.builder().build();
+    validator.validate(claim, context);
+    assertThat(context.getIssues()).isEmpty();
+  }
+
+  @Test
+  @DisplayName("Should not add error when areaOfLaw is null")
+  void shouldNotAddErrorWhenAreaOfLawIsNull() {
+    Claim claim = Claim.builder()
+        .id(new UUID(1, 1))
+        .outcomeCode("IX")
+        .areaOfLaw(null)
+        .build();
+    ClaimValidationContext context = ClaimValidationContext.builder().build();
+    validator.validate(claim, context);
+    assertThat(context.getIssues()).isEmpty();
+  }
+
+  @Test
+  @DisplayName("Should not add error when both outcomeCode and areaOfLaw are null")
+  void shouldNotAddErrorWhenBothNull() {
+    Claim claim = Claim.builder()
+        .id(new UUID(1, 1))
+        .outcomeCode(null)
+        .areaOfLaw(null)
+        .build();
+    ClaimValidationContext context = ClaimValidationContext.builder().build();
+    validator.validate(claim, context);
+    assertThat(context.getIssues()).isEmpty();
+  }
+
+  @Test
   @DisplayName("OutcomeCodeClaimValidator - priority, appliesTo and validator code")
   void outcomeCodeValidatorMetadata() {
     assertThat(validator.priority()).isEqualTo(100);
-    assertThat(validator.appliesTo("any-scope")).isTrue();
+    assertThat(validator.appliesTo(Set.of("CLAIM_OUTCOME_CODE"))).isTrue();
     assertThat(validator.getValidatorCode()).isEqualTo("CLAIM_OUTCOME_CODE");
   }
 }

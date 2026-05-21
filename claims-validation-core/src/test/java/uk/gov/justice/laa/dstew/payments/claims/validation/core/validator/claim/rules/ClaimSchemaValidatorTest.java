@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -98,7 +99,7 @@ class ClaimSchemaValidatorTest {
     @Test
     @DisplayName("appliesTo returns true for schema validator")
     void appliesTo_returnsTrue() {
-      assertThat(validator.appliesTo("any")).isTrue();
+      assertThat(validator.appliesTo(Set.of("CLAIM_SCHEMA"))).isTrue();
       assertThat(validator.appliesTo(null)).isTrue();
     }
   }
@@ -279,7 +280,8 @@ class ClaimSchemaValidatorTest {
     void buildAdditionalPropertiesWarning_producesWarningIssue() {
       // Create a claim with required fields set, and set a property not defined in schema
       Claim claim = createClaimWithRequiredFields();
-      claim.setVersion(12345); // 'version' is not defined in the JSON schema and should trigger additionalProperties
+      // 'isamended' is not defined in the JSON schema and should trigger additionalProperties
+      claim.setIsAmended(true);
 
       validator.validate(claim, context);
 

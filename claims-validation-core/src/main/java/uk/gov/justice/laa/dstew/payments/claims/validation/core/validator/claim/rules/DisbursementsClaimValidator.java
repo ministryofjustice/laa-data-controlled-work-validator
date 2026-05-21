@@ -57,11 +57,6 @@ public class DisbursementsClaimValidator implements ClaimValidator {
   }
 
   @Override
-  public boolean appliesTo(String scope) {
-    return true;
-  }
-
-  @Override
   public String getValidatorCode() {
     return "CLAIM_DISBURSEMENTS";
   }
