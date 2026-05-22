@@ -104,11 +104,11 @@ class ValidationResultTest {
     }
 
     @Test
-    @DisplayName("isValid is null by default")
+    @DisplayName("isValid is false by default")
     void isValidIsNullByDefault() {
       ValidationResult result = new ValidationResult();
 
-      assertThat(result.getIsValid()).isNull();
+      assertThat(result.isValid()).isFalse();
     }
   }
 }

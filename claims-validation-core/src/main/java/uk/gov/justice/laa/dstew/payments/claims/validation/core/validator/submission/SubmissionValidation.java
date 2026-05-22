@@ -18,7 +18,7 @@ import uk.gov.justice.laa.dstew.payments.claimsdata.model.SubmissionResponse;
  *
  * <ul>
  *   <li>building the {@link SubmissionValidationContext} used by individual validators,
- *   <li>executing validators that {@link SubmissionValidator#appliesTo(String) apply} for the
+ *   <li>executing validators that {@link SubmissionValidator#appliesTo apply} for the
  *       given {@code scope} in {@link SubmissionValidator#priority() priority} order,
  *   <li>collecting validation issues from each validator into the shared context, and
  *   <li>producing a {@link ValidationResult} that is considered valid when no issue with
@@ -71,9 +71,11 @@ public class SubmissionValidation {
         .sorted(Comparator.comparingInt(SubmissionValidator::priority))
         .forEach(validator -> validator.validate(submission, context));
 
-    ValidationResult result = new ValidationResult();
-    result.setIsValid(!context.hasErrors());
-    result.setIssues(context.getIssues());
+    ValidationResult result = new ValidationResult()
+            .toBuilder()
+            .isValid(!context.hasErrors())
+            .issues(context.getIssues())
+            .build();
 
     log.debug(
         "Completed validation for submission {} with result: {}",
