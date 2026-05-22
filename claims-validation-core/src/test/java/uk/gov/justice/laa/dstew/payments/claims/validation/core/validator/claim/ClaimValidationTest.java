@@ -113,7 +113,7 @@ class ClaimValidationTest {
     void returnsMissingClaimErrorWhenClaimIsNull() {
       var result = pipeline().validateClaim(null, Set.of("fee"), List.of());
 
-      assertThat(result.getIsValid()).isFalse();
+      assertThat(result.isValid()).isFalse();
       assertThat(result.getIssues()).hasSize(1);
       assertThat(result.getIssues().getFirst().getCode()).isEqualTo("MISSING_CLAIM");
     }
@@ -126,7 +126,7 @@ class ClaimValidationTest {
 
       var result = pipeline(warnOnly).validateClaim(Claim.builder().feeCode("FEE_CODE").build(), null, List.of());
 
-      assertThat(result.getIsValid()).isTrue();
+      assertThat(result.isValid()).isTrue();
       assertThat(result.getIssues()).hasSize(1);
     }
 
@@ -138,7 +138,7 @@ class ClaimValidationTest {
 
       var result = pipeline(errorValidator).validateClaim(Claim.builder().feeCode("FEE_CODE").build(), Set.of("ERR"), List.of());
 
-      assertThat(result.getIsValid()).isFalse();
+      assertThat(result.isValid()).isFalse();
       assertThat(result.getIssues()).hasSize(1);
     }
 
@@ -147,7 +147,7 @@ class ClaimValidationTest {
     void returnsValidWithNoIssuesWhenNoValidators() {
       var result = pipeline().validateClaim(Claim.builder().feeCode("FEE_CODE").build(), Set.of("fee"), List.of());
 
-      assertThat(result.getIsValid()).isTrue();
+      assertThat(result.isValid()).isTrue();
       assertThat(result.getIssues()).isEmpty();
     }
   }

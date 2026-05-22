@@ -52,7 +52,7 @@ public class ClaimValidation {
    *       {@code claim} parameter is {@code null},</li>
    *   <li>build a {@link ClaimValidationContext} containing the provided {@code scope} and
    *       {@code relatedClaims},</li>
-   *   <li>execute all validators that {@link ClaimValidator#appliesTo(String) apply} for the
+   *   <li>execute all validators that {@link ClaimValidator#appliesTo apply} for the
    *       {@code scope} in priority order, collecting and de-duplicating issues while preserving
    *       insertion order, and</li>
    *   <li>return a {@link ValidationResult} that is considered valid when no issue with
@@ -109,10 +109,7 @@ public class ClaimValidation {
     log.info("Validation completed. isValid: {}, total issues: {}, total errors: {}",
             isValid, context.getIssueCount(), context.getErrorCount());
 
-    ValidationResult result = new ValidationResult();
-    result.setIsValid(isValid);
-    result.setIssues(finalIssues);
-    return result;
+    return new ValidationResult().toBuilder().isValid(isValid).issues(finalIssues).build();
   }
 
   /**
@@ -189,10 +186,11 @@ public class ClaimValidation {
    * @return validation result with MISSING_CLAIM error
    */
   private ValidationResult buildMissingClaimResult() {
-    ValidationResult result = new ValidationResult();
-    result.setIsValid(false);
-    result.setIssues(List.of(ClaimValidationError.MISSING_CLAIM.toValidationIssue()));
-    return result;
+    return new ValidationResult()
+            .toBuilder()
+            .isValid(false)
+            .issues(List.of(ClaimValidationError.MISSING_CLAIM.toValidationIssue()))
+            .build();
   }
 
 }

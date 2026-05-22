@@ -91,7 +91,7 @@ class ValidationServiceTest {
       ValidationResult result = withClaims(claimValidation(Collections.emptyList()))
           .validateClaim(testClaim);
 
-      assertThat(result.getIsValid()).isTrue();
+      assertThat(result.isValid()).isTrue();
       assertThat(result.getIssues()).isEmpty();
     }
 
@@ -101,7 +101,7 @@ class ValidationServiceTest {
       ValidationResult result = withClaims(claimValidation(Collections.emptyList()))
           .validateClaim(null);
 
-      assertThat(result.getIsValid()).isFalse();
+      assertThat(result.isValid()).isFalse();
       assertThat(result.getIssues()).hasSize(1);
       assertThat(result.getIssues().getFirst().getCode()).isEqualTo("MISSING_CLAIM");
     }
@@ -190,7 +190,7 @@ class ValidationServiceTest {
       ValidationResult result = withClaims(claimValidation(Collections.emptyList()))
           .validateClaim(null, Set.of("fee"));
 
-      assertThat(result.getIsValid()).isFalse();
+      assertThat(result.isValid()).isFalse();
       assertThat(result.getIssues().getFirst().getCode()).isEqualTo("MISSING_CLAIM");
     }
   }
@@ -207,7 +207,7 @@ class ValidationServiceTest {
     @DisplayName("Returns valid result when no validators raise errors")
     void returnsValidResultWhenNoIssues() {
       assertThat(withClaims(claimValidation(Collections.emptyList()))
-          .validateClaim(testClaim, Set.of("fee"), List.of()).getIsValid()).isTrue();
+          .validateClaim(testClaim, Set.of("fee"), List.of()).isValid()).isTrue();
     }
 
     @Test
@@ -230,7 +230,7 @@ class ValidationServiceTest {
       ValidationResult result = withClaims(claimValidation(List.of(errorValidator)))
           .validateClaim(testClaim, Set.of("ERROR_VALIDATOR"), List.of());
 
-      assertThat(result.getIsValid()).isFalse();
+      assertThat(result.isValid()).isFalse();
       assertThat(result.getIssues().getFirst().getCode()).isEqualTo("TEST_ERROR");
     }
 
@@ -254,7 +254,7 @@ class ValidationServiceTest {
       ValidationResult result = withClaims(claimValidation(List.of(warningValidator)))
           .validateClaim(testClaim, null, List.of());
 
-      assertThat(result.getIsValid()).isTrue();
+      assertThat(result.isValid()).isTrue();
       assertThat(result.getIssues().getFirst().getSeverity()).isEqualTo(ValidationSeverity.WARNING);
     }
 
@@ -264,7 +264,7 @@ class ValidationServiceTest {
       ValidationResult result = withClaims(claimValidation(Collections.emptyList()))
           .validateClaim(null, Set.of("fee"), List.of());
 
-      assertThat(result.getIsValid()).isFalse();
+      assertThat(result.isValid()).isFalse();
       assertThat(result.getIssues().getFirst().getCode()).isEqualTo("MISSING_CLAIM");
     }
   }
@@ -283,7 +283,7 @@ class ValidationServiceTest {
       ValidationResult result = withSubmissions(new SubmissionValidation(Collections.emptyList()))
           .validateSubmission(testSubmission);
 
-      assertThat(result.getIsValid()).isTrue();
+      assertThat(result.isValid()).isTrue();
     }
 
     @Test
@@ -305,7 +305,7 @@ class ValidationServiceTest {
       ValidationResult result = withSubmissions(new SubmissionValidation(List.of(errorValidator)))
           .validateSubmission(testSubmission);
 
-      assertThat(result.getIsValid()).isFalse();
+      assertThat(result.isValid()).isFalse();
       assertThat(result.getIssues().getFirst().getCode()).isEqualTo("SUB_ERROR");
     }
 
@@ -386,7 +386,7 @@ class ValidationServiceTest {
       ValidationResult result = withSubmissions(new SubmissionValidation(List.of(warningValidator)))
           .validateSubmission(testSubmission, null);
 
-      assertThat(result.getIsValid()).isTrue();
+      assertThat(result.isValid()).isTrue();
       assertThat(result.getIssues().getFirst().getSeverity()).isEqualTo(ValidationSeverity.WARNING);
     }
   }

@@ -130,7 +130,7 @@ class SubmissionValidationTest {
     void nilSubmission_passesAllValidators() {
       ValidationResult result = validate(validNilBuilder().build());
 
-      assertThat(result.getIsValid()).isTrue();
+      assertThat(result.isValid()).isTrue();
       assertThat(errors(result)).isEmpty();
     }
 
@@ -145,7 +145,7 @@ class SubmissionValidationTest {
 
       ValidationResult result = validate(sub);
 
-      assertThat(result.getIsValid()).isTrue();
+      assertThat(result.isValid()).isTrue();
       assertThat(errors(result)).isEmpty();
     }
 
@@ -156,13 +156,13 @@ class SubmissionValidationTest {
       SubmissionResponse crimeLower = validNilBuilder()
           .areaOfLaw(AreaOfLaw.CRIME_LOWER)
           .build();
-      assertThat(validate(crimeLower).getIsValid()).isTrue();
+      assertThat(validate(crimeLower).isValid()).isTrue();
 
       // MEDIATION
       SubmissionResponse mediation = validNilBuilder()
           .areaOfLaw(AreaOfLaw.MEDIATION)
           .build();
-      assertThat(validate(mediation).getIsValid()).isTrue();
+      assertThat(validate(mediation).isValid()).isTrue();
     }
   }
 
@@ -179,7 +179,7 @@ class SubmissionValidationTest {
     void invalidOfficeAccountNumber_schemaFails() {
       ValidationResult result = validate(validNilBuilder().officeAccountNumber("bad!").build());
 
-      assertThat(result.getIsValid()).isFalse();
+      assertThat(result.isValid()).isFalse();
       assertThat(errors(result))
           .extracting(ValidationIssue::getCode)
           .containsOnly("SCHEMA_VALIDATION_ERROR");
@@ -197,7 +197,7 @@ class SubmissionValidationTest {
       // but the period validator parses it case-insensitively as APR-2025, which is valid
       ValidationResult result = validate(validNilBuilder().submissionPeriod("apr-2025").build());
 
-      assertThat(result.getIsValid()).isFalse();
+      assertThat(result.isValid()).isFalse();
       assertThat(errors(result))
           .extracting(ValidationIssue::getCode)
           .containsOnly("SCHEMA_VALIDATION_ERROR");
@@ -208,7 +208,7 @@ class SubmissionValidationTest {
     void nullNumberOfClaims_schemaRequiredFieldFails() {
       ValidationResult result = validate(validNilBuilder().numberOfClaims(null).build());
 
-      assertThat(result.getIsValid()).isFalse();
+      assertThat(result.isValid()).isFalse();
       assertThat(errors(result))
           .extracting(ValidationIssue::getMessage)
           .contains("Number Of Claims is required");
@@ -224,7 +224,7 @@ class SubmissionValidationTest {
 
       ValidationResult result = validate(sub);
 
-      assertThat(result.getIsValid()).isFalse();
+      assertThat(result.isValid()).isFalse();
       assertThat(errors(result))
           .extracting(ValidationIssue::getMessage)
           .contains("Legal Help Submission Reference is required");
@@ -250,7 +250,7 @@ class SubmissionValidationTest {
 
       ValidationResult result = validate(sub);
 
-      assertThat(result.getIsValid()).isFalse();
+      assertThat(result.isValid()).isFalse();
       assertThat(errors(result))
           .extracting(ValidationIssue::getCode)
           .containsOnly(SubmissionValidationError.INVALID_NIL_SUBMISSION_CONTAINS_CLAIMS.name());
@@ -267,7 +267,7 @@ class SubmissionValidationTest {
 
       ValidationResult result = validate(sub);
 
-      assertThat(result.getIsValid()).isFalse();
+      assertThat(result.isValid()).isFalse();
       assertThat(errors(result))
           .extracting(ValidationIssue::getCode)
           .containsOnly(SubmissionValidationError.NON_NIL_SUBMISSION_CONTAINS_NO_CLAIMS.name());
@@ -289,7 +289,7 @@ class SubmissionValidationTest {
       // MAY-2025 passes schema pattern but is rejected by period validator (same month as now)
       ValidationResult result = validate(validNilBuilder().submissionPeriod("MAY-2025").build());
 
-      assertThat(result.getIsValid()).isFalse();
+      assertThat(result.isValid()).isFalse();
       assertThat(errors(result))
           .extracting(ValidationIssue::getCode)
           .containsOnly(SubmissionValidationError.SUBMISSION_PERIOD_SAME_MONTH.name());
@@ -301,7 +301,7 @@ class SubmissionValidationTest {
     void futureMonthPeriod_onlyPeriodFails() {
       ValidationResult result = validate(validNilBuilder().submissionPeriod("AUG-2025").build());
 
-      assertThat(result.getIsValid()).isFalse();
+      assertThat(result.isValid()).isFalse();
       assertThat(errors(result))
           .extracting(ValidationIssue::getCode)
           .containsOnly(SubmissionValidationError.SUBMISSION_PERIOD_FUTURE_MONTH.name());
@@ -313,7 +313,7 @@ class SubmissionValidationTest {
     void beforeMinimumPeriod_onlyPeriodFails() {
       ValidationResult result = validate(validNilBuilder().submissionPeriod("MAR-2025").build());
 
-      assertThat(result.getIsValid()).isFalse();
+      assertThat(result.isValid()).isFalse();
       assertThat(errors(result))
           .extracting(ValidationIssue::getCode)
           .containsOnly(SubmissionValidationError.SUBMISSION_VALIDATION_MINIMUM_PERIOD.name());
@@ -339,7 +339,7 @@ class SubmissionValidationTest {
       ValidationResult result = validate(sub);
       List<ValidationIssue> errs = errors(result);
 
-      assertThat(result.getIsValid()).isFalse();
+      assertThat(result.isValid()).isFalse();
       assertThat(errs).hasSizeGreaterThanOrEqualTo(2);
       assertThat(errs).extracting(ValidationIssue::getCode)
           .contains(
@@ -359,7 +359,7 @@ class SubmissionValidationTest {
       ValidationResult result = validate(sub);
       List<ValidationIssue> errs = errors(result);
 
-      assertThat(result.getIsValid()).isFalse();
+      assertThat(result.isValid()).isFalse();
       assertThat(errs).hasSizeGreaterThanOrEqualTo(2);
       assertThat(errs).extracting(ValidationIssue::getCode)
           .contains(
@@ -379,7 +379,7 @@ class SubmissionValidationTest {
       ValidationResult result = validate(sub);
       List<ValidationIssue> errs = errors(result);
 
-      assertThat(result.getIsValid()).isFalse();
+      assertThat(result.isValid()).isFalse();
       assertThat(errs).hasSizeGreaterThanOrEqualTo(2);
       assertThat(errs).extracting(ValidationIssue::getCode)
           .contains(
@@ -400,7 +400,7 @@ class SubmissionValidationTest {
       ValidationResult result = validate(sub);
       List<ValidationIssue> errs = errors(result);
 
-      assertThat(result.getIsValid()).isFalse();
+      assertThat(result.isValid()).isFalse();
       assertThat(errs).hasSizeGreaterThanOrEqualTo(3);
       assertThat(errs).extracting(ValidationIssue::getCode)
           .contains(
@@ -420,7 +420,7 @@ class SubmissionValidationTest {
       ValidationResult result = validate(sub);
       List<ValidationIssue> errs = errors(result);
 
-      assertThat(result.getIsValid()).isFalse();
+      assertThat(result.isValid()).isFalse();
       assertThat(errs).hasSizeGreaterThanOrEqualTo(2);
       assertThat(errs).extracting(ValidationIssue::getCode)
           .allMatch("SCHEMA_VALIDATION_ERROR"::equals);

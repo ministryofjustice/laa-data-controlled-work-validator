@@ -33,7 +33,7 @@ public class ValidationResult implements Serializable {
    * Indicates whether the validation was successful.
    */
   @Getter
-  private Boolean isValid;
+  private boolean isValid;
 
   /**
    * List of validation issues found during the process.
