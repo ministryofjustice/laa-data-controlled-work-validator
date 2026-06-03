@@ -5,7 +5,7 @@ import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /** Configuration properties for the Fee Scheme Platform API. */
-@ConfigurationProperties(prefix = "laa.fee-scheme-platform-api")
+@ConfigurationProperties(prefix = ValidatorProperties.FEE_SCHEME_PREFIX)
 @Getter
 @Setter
 public class FeeSchemeApiConfig implements ApiProperties {

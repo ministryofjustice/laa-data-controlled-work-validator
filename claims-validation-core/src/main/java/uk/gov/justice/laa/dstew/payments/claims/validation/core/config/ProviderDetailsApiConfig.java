@@ -5,7 +5,7 @@ import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /** Configuration properties for the Provider Details API. */
-@ConfigurationProperties(prefix = "laa.provider-details-api")
+@ConfigurationProperties(prefix = ValidatorProperties.PROVIDER_DETAILS_PREFIX)
 @Getter
 @Setter
 public class ProviderDetailsApiConfig implements ApiProperties {

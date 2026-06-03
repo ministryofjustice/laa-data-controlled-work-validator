@@ -142,11 +142,11 @@ class ApiPropertiesConfigTest {
     @ExtendWith(SpringExtension.class)
     @EnableConfigurationProperties(DataClaimsApiConfig.class)
     @TestPropertySource(properties = {
-        "laa.data-claims-api.url=http://data-claims-api.test",
-        "laa.data-claims-api.access-token=test-data-claims-token",
-        "laa.data-claims-api.auth-header=X-Custom-Auth",
-        "laa.data-claims-api.connect-timeout-ms=1000",
-        "laa.data-claims-api.read-timeout-ms=2000"
+        "laa.dstew.payments.validator.data-claims-api.url=http://data-claims-api.test",
+        "laa.dstew.payments.validator.data-claims-api.access-token=test-data-claims-token",
+        "laa.dstew.payments.validator.data-claims-api.auth-header=X-Custom-Auth",
+        "laa.dstew.payments.validator.data-claims-api.connect-timeout-ms=1000",
+        "laa.dstew.payments.validator.data-claims-api.read-timeout-ms=2000"
     })
     class LoadedFromProperties {
 
@@ -274,11 +274,11 @@ class ApiPropertiesConfigTest {
     @ExtendWith(SpringExtension.class)
     @EnableConfigurationProperties(FeeSchemeApiConfig.class)
     @TestPropertySource(properties = {
-        "laa.fee-scheme-platform-api.url=http://fee-scheme-api.test",
-        "laa.fee-scheme-platform-api.access-token=test-fee-scheme-token",
-        "laa.fee-scheme-platform-api.auth-header=X-Fee-Auth",
-        "laa.fee-scheme-platform-api.connect-timeout-ms=3000",
-        "laa.fee-scheme-platform-api.read-timeout-ms=6000"
+        "laa.dstew.payments.validator.fee-scheme-platform-api.url=http://fee-scheme-api.test",
+        "laa.dstew.payments.validator.fee-scheme-platform-api.access-token=test-fee-scheme-token",
+        "laa.dstew.payments.validator.fee-scheme-platform-api.auth-header=X-Fee-Auth",
+        "laa.dstew.payments.validator.fee-scheme-platform-api.connect-timeout-ms=3000",
+        "laa.dstew.payments.validator.fee-scheme-platform-api.read-timeout-ms=6000"
     })
     class LoadedFromProperties {
 
@@ -406,11 +406,11 @@ class ApiPropertiesConfigTest {
     @ExtendWith(SpringExtension.class)
     @EnableConfigurationProperties(ProviderDetailsApiConfig.class)
     @TestPropertySource(properties = {
-        "laa.provider-details-api.url=http://provider-details-api.test",
-        "laa.provider-details-api.access-token=test-provider-token",
-        "laa.provider-details-api.auth-header=X-Provider-Auth",
-        "laa.provider-details-api.connect-timeout-ms=4000",
-        "laa.provider-details-api.read-timeout-ms=8000"
+        "laa.dstew.payments.validator.provider-details-api.url=http://provider-details-api.test",
+        "laa.dstew.payments.validator.provider-details-api.access-token=test-provider-token",
+        "laa.dstew.payments.validator.provider-details-api.auth-header=X-Provider-Auth",
+        "laa.dstew.payments.validator.provider-details-api.connect-timeout-ms=4000",
+        "laa.dstew.payments.validator.provider-details-api.read-timeout-ms=8000"
     })
     class LoadedFromProperties {
 
@@ -495,6 +495,98 @@ class ApiPropertiesConfigTest {
       assertThat(feeSchemeConfig.getConnectTimeoutMs())
           .as("FeeSchemeApiConfig should not be affected by changes to DataClaimsApiConfig")
           .isEqualTo(5000);
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // ValidatorProperties namespace constants
+  // ─────────────────────────────────────────────────────────────────────────
+
+  @Nested
+  @DisplayName("ValidatorProperties — namespace constants")
+  class ValidatorPropertiesConstants {
+
+    @Test
+    @DisplayName("BASE_PREFIX is the expected root namespace")
+    void basePrefixIsCorrect() {
+      assertThat(ValidatorProperties.BASE_PREFIX).isEqualTo("laa.dstew.payments.validator");
+    }
+
+    @Test
+    @DisplayName("FEE_SCHEME_PREFIX is derived from BASE_PREFIX")
+    void feeSchemePrefix() {
+      assertThat(ValidatorProperties.FEE_SCHEME_PREFIX)
+          .startsWith(ValidatorProperties.BASE_PREFIX)
+          .isEqualTo("laa.dstew.payments.validator.fee-scheme-platform-api");
+    }
+
+    @Test
+    @DisplayName("DATA_CLAIMS_PREFIX is derived from BASE_PREFIX")
+    void dataClaimsPrefix() {
+      assertThat(ValidatorProperties.DATA_CLAIMS_PREFIX)
+          .startsWith(ValidatorProperties.BASE_PREFIX)
+          .isEqualTo("laa.dstew.payments.validator.data-claims-api");
+    }
+
+    @Test
+    @DisplayName("PROVIDER_DETAILS_PREFIX is derived from BASE_PREFIX")
+    void providerDetailsPrefix() {
+      assertThat(ValidatorProperties.PROVIDER_DETAILS_PREFIX)
+          .startsWith(ValidatorProperties.BASE_PREFIX)
+          .isEqualTo("laa.dstew.payments.validator.provider-details-api");
+    }
+
+    @Test
+    @DisplayName("SERVICE_NAME_PROPERTY is derived from BASE_PREFIX")
+    void serviceNameProperty() {
+      assertThat(ValidatorProperties.SERVICE_NAME_PROPERTY)
+          .startsWith(ValidatorProperties.BASE_PREFIX)
+          .isEqualTo("laa.dstew.payments.validator.service-name");
+    }
+
+    @Test
+    @DisplayName("SUBMISSION_MINIMUM_PERIOD_PROPERTY is derived from BASE_PREFIX")
+    void submissionMinimumPeriodProperty() {
+      assertThat(ValidatorProperties.SUBMISSION_MINIMUM_PERIOD_PROPERTY)
+          .startsWith(ValidatorProperties.BASE_PREFIX)
+          .isEqualTo("laa.dstew.payments.validator.submission.minimum-period");
+    }
+
+    @Test
+    @DisplayName("No two constants share the same value")
+    void constantsAreUnique() {
+      assertThat(ValidatorProperties.FEE_SCHEME_PREFIX)
+          .isNotEqualTo(ValidatorProperties.DATA_CLAIMS_PREFIX)
+          .isNotEqualTo(ValidatorProperties.PROVIDER_DETAILS_PREFIX)
+          .isNotEqualTo(ValidatorProperties.SERVICE_NAME_PROPERTY)
+          .isNotEqualTo(ValidatorProperties.SUBMISSION_MINIMUM_PERIOD_PROPERTY);
+    }
+
+    @Test
+    @DisplayName("FeeSchemeApiConfig @ConfigurationProperties prefix matches FEE_SCHEME_PREFIX")
+    void feeSchemeAnnotationMatchesConstant() {
+      var annotation = FeeSchemeApiConfig.class.getAnnotation(
+          org.springframework.boot.context.properties.ConfigurationProperties.class);
+      assertThat(annotation).isNotNull();
+      assertThat(annotation.prefix()).isEqualTo(ValidatorProperties.FEE_SCHEME_PREFIX);
+    }
+
+    @Test
+    @DisplayName("DataClaimsApiConfig @ConfigurationProperties prefix matches DATA_CLAIMS_PREFIX")
+    void dataClaimsAnnotationMatchesConstant() {
+      var annotation = DataClaimsApiConfig.class.getAnnotation(
+          org.springframework.boot.context.properties.ConfigurationProperties.class);
+      assertThat(annotation).isNotNull();
+      assertThat(annotation.prefix()).isEqualTo(ValidatorProperties.DATA_CLAIMS_PREFIX);
+    }
+
+    @Test
+    @DisplayName("ProviderDetailsApiConfig @ConfigurationProperties prefix matches PROVIDER_DETAILS_PREFIX")
+    void providerDetailsAnnotationMatchesConstant() {
+      var annotation = ProviderDetailsApiConfig.class.getAnnotation(
+          org.springframework.boot.context.properties.ConfigurationProperties.class);
+      assertThat(annotation).isNotNull();
+      assertThat(annotation.prefix()).isEqualTo(ValidatorProperties.PROVIDER_DETAILS_PREFIX);
     }
   }
 }
