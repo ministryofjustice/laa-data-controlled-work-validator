@@ -20,7 +20,7 @@ jobs:
   build:
     # Only run the build to create the tag when the PR has been merged.
     if: ${{ github.event.pull_request.merged == true }}
-    uses: ministryofjustice/laa-ccms-common-workflows/.github/workflows/gradle-build-and-publish.yml@4c5fd7d786aee8cbe6486f20e078d49f60d8fa82 # v2
+    uses: ministryofjustice/laa-ccms-common-workflows/.github/workflows/gradle-build-and-publish.yml@3eaf64bb987ef0648a2380d4e49927d1693ec195 # v2
     permissions:
       contents: write
       packages: write
