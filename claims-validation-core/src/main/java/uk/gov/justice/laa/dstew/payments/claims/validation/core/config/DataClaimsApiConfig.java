@@ -5,7 +5,7 @@ import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /** Configuration properties for the Data Claims API. */
-@ConfigurationProperties(prefix = "laa.data-claims-api")
+@ConfigurationProperties(prefix = ValidatorProperties.DATA_CLAIMS_PREFIX)
 @Getter
 @Setter
 public class DataClaimsApiConfig implements ApiProperties {

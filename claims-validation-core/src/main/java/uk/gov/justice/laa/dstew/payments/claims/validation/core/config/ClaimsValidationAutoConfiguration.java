@@ -71,11 +71,12 @@ import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.submis
  *
  * <h2>Required application properties</h2>
  * <pre>
- * laa.data-claims-api.url=...
- * laa.fee-scheme-platform-api.url=...
- * laa.provider-details-api.url=...
- * submission.validation.minimum-period=Apr-2013
- * claims.validation.service-name=my-service   # optional, defaults to spring.application.name
+ * laa.dstew.payments.validator.data-claims-api.url=...
+ * laa.dstew.payments.validator.fee-scheme-platform-api.url=...
+ * laa.dstew.payments.validator.provider-details-api.url=...
+ * laa.dstew.payments.validator.submission.minimum-period=Apr-2013
+ * laa.dstew.payments.validator.service-name=my-service   # optional,
+ * defaults to spring.application.name
  * </pre>
  */
 @AutoConfiguration
@@ -127,12 +128,14 @@ public class ClaimsValidationAutoConfiguration {
   /**
    * Provides the {@link WebClientConfig} bean, injecting the configurable service name used in
    * the {@code X-Service-Name} header on all outbound HTTP calls. Defaults to the value of
-   * {@code spring.application.name} if {@code claims.validation.service-name} is not set.
+   * {@code spring.application.name} if {@code laa.dstew.payments.validator.service-name}
+   * is not set.
    */
   @Bean("coreWebClientConfig")
   @ConditionalOnMissingBean(WebClientConfig.class)
   public WebClientConfig coreWebClientConfig(
-      @Value("${claims.validation.service-name:${spring.application.name:claims-validation-core}}")
+      @Value("${" + ValidatorProperties.SERVICE_NAME_PROPERTY 
+              + ":${spring.application.name:claims-validation-core}}")
       String serviceName) {
     return new WebClientConfig(serviceName);
   }
@@ -319,7 +322,8 @@ public class ClaimsValidationAutoConfiguration {
   @Bean("coreSubmissionPeriodValidator")
   @ConditionalOnMissingBean(SubmissionPeriodValidator.class)
   public SubmissionPeriodValidator coreSubmissionPeriodValidator(
-      @Value("${submission.validation.minimum-period}") String minimumPeriod) {
+      @Value("${" + ValidatorProperties.SUBMISSION_MINIMUM_PERIOD_PROPERTY + "}")
+      String minimumPeriod) {
     return new SubmissionPeriodValidator(minimumPeriod);
   }
 

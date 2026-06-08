@@ -38,13 +38,13 @@ class ClaimsValidationAutoConfigurationTest {
 
   /** Minimum properties required to start the context. */
   private static final String[] REQUIRED_PROPERTIES = {
-      "laa.data-claims-api.url=http://data-claims.test",
-      "laa.data-claims-api.access-token=token",
-      "laa.fee-scheme-platform-api.url=http://fee-scheme.test",
-      "laa.fee-scheme-platform-api.access-token=token",
-      "laa.provider-details-api.url=http://provider-details.test",
-      "laa.provider-details-api.access-token=token",
-      "submission.validation.minimum-period=Apr-2013",
+      "laa.dstew.payments.validator.data-claims-api.url=http://data-claims.test",
+      "laa.dstew.payments.validator.data-claims-api.access-token=token",
+      "laa.dstew.payments.validator.fee-scheme-platform-api.url=http://fee-scheme.test",
+      "laa.dstew.payments.validator.fee-scheme-platform-api.access-token=token",
+      "laa.dstew.payments.validator.provider-details-api.url=http://provider-details.test",
+      "laa.dstew.payments.validator.provider-details-api.access-token=token",
+      "laa.dstew.payments.validator.submission.minimum-period=Apr-2013",
       "spring.application.name=test-service"
   };
 
@@ -155,10 +155,10 @@ class ClaimsValidationAutoConfigurationTest {
     }
 
     @Test
-    @DisplayName("Custom service name is applied when claims.validation.service-name is set")
+    @DisplayName("Custom service name is applied when laa.dstew.payments.validator.service-name is set")
     void webClientConfigUsesCustomServiceName() {
       contextRunner
-          .withPropertyValues("claims.validation.service-name=my-custom-service")
+          .withPropertyValues("laa.dstew.payments.validator.service-name=my-custom-service")
           .run(ctx ->
               assertThat(ctx).hasSingleBean(WebClientConfig.class));
     }

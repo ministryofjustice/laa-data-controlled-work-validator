@@ -133,10 +133,10 @@ The submission validation pipeline contains schema and business-rule validators.
 
 This project exposes configuration via Spring Boot properties (configuration properties classes) and also supports environment variable overrides. Key configurable groups and the corresponding Spring property prefixes are:
 
-- laa.fee-scheme-platform-api.* (Fee Scheme Platform API client)
-- laa.data-claims-api.* (Data Claims API client)
-- laa.provider-details-api.* (Provider Details API client)
-- submission.validation.minimum-period (Submission validation minimum period)
+- laa.dstew.payments.validator.fee-scheme-platform-api.* (Fee Scheme Platform API client)
+- laa.dstew.payments.validator.data-claims-api.* (Data Claims API client)
+- laa.dstew.payments.validator.provider-details-api.* (Provider Details API client)
+- laa.dstew.payments.validator.submission.minimum-period (Submission validation minimum period)
 
 Common properties available on each API client config (see the classes under `claims-validation-core/src/main/java/.../config`):
 
@@ -152,23 +152,27 @@ Examples
 
 ```yaml
 laa:
-  fee-scheme-platform-api:
-    url: ${FEE_SCHEME_SERVICE_URL:http://localhost:8082}
-    access-token: ${FEE_SCHEME_SERVICE_ACCESS_TOKEN:}
-    auth-header: Authorization
-    connect-timeout-ms: ${EXTERNAL_CONNECT_TIMEOUT:5000}
-    read-timeout-ms: ${EXTERNAL_READ_TIMEOUT:10000}
+  dstew:
+    payments:
+      validator:
+        fee-scheme-platform-api:
+          url: ${FEE_SCHEME_SERVICE_URL:http://localhost:8082}
+          access-token: ${FEE_SCHEME_SERVICE_ACCESS_TOKEN:}
+          auth-header: Authorization
+          connect-timeout-ms: ${EXTERNAL_CONNECT_TIMEOUT:5000}
+          read-timeout-ms: ${EXTERNAL_READ_TIMEOUT:10000}
 
-  data-claims-api:
-    url: ${DATA_CLAIMS_SERVICE_URL:http://localhost:8083}
-    access-token: ${DATA_CLAIMS_API_ACCESS_TOKEN:}
+        data-claims-api:
+          url: ${DATA_CLAIMS_SERVICE_URL:http://localhost:8083}
+          access-token: ${DATA_CLAIMS_API_ACCESS_TOKEN:}
 
-  provider-details-api:
-    url: ${PROVIDER_DETAILS_API_URL:http://localhost:8084}
+        provider-details-api:
+          url: ${PROVIDER_DETAILS_API_URL:http://localhost:8084}
 
-submission:
-  validation:
-    minimum-period: ${SUBMISSION_VALIDATION_MINIMUM_PERIOD:Jan-2018}
+        submission:
+          minimum-period: ${SUBMISSION_VALIDATION_MINIMUM_PERIOD:Jan-2018}
+
+        service-name: ${VALIDATOR_SERVICE_NAME:}  # optional; defaults to spring.application.name
 ```
 
 2) Environment variables (useful for containers / CI):
@@ -208,7 +212,8 @@ dependencies {
 Notes
 
 - Timeouts are wired via the ApiProperties implementations (`FeeSchemeApiConfig`, `DataClaimsApiConfig`, `ProviderDetailsApiConfig`).
-- `submission.validation.minimum-period` controls the earliest allowed submission period; it is parsed as a month-year (e.g. Jan-2018) in `SubmissionPeriodValidator`.
+- `laa.dstew.payments.validator.submission.minimum-period` controls the earliest allowed submission period; it is parsed as a month-year (e.g. Jan-2018) in `SubmissionPeriodValidator`.
+- `laa.dstew.payments.validator.service-name` sets the value sent in the `X-Service-Name` header on all outbound HTTP calls. Defaults to `spring.application.name` when not set.
 - The project also reads some values via environment variables when used in the standalone service modules; the examples above show common overrides.
 
 ## Build & Run
