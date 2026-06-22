@@ -38,7 +38,10 @@ public class WebClientConfig {
   }
 
   /**
-   * Creates a {@link FeeSchemeClient} bean to communicate with the Fee Scheme Platform API.
+   * Creates a {@link FeeSchemeClient} instance to communicate with the Fee Scheme Platform API.
+   *
+   * <p>Note: this is a plain factory method and does not itself register a Spring bean.
+   * Registration is the responsibility of the caller or the surrounding configuration.
    *
    * @param properties The configuration properties for the Fee Scheme Platform API
    * @return An instance of {@link FeeSchemeClient}
@@ -51,7 +54,10 @@ public class WebClientConfig {
   }
 
   /**
-   * Creates a {@link ProviderDetailsClient} bean to communicate with the Provider Details API.
+   * Creates a {@link ProviderDetailsClient} instance to communicate with the Provider Details API.
+   *
+   * <p>Note: this is a plain factory method and does not itself register a Spring bean.
+   * Registration is the responsibility of the caller or the surrounding configuration.
    *
    * @param properties The configuration properties for the Provider Details API
    * @return An instance of {@link ProviderDetailsClient}
@@ -64,7 +70,10 @@ public class WebClientConfig {
   }
 
   /**
-   * Creates a {@link DataClaimsClient} bean to communicate with the Data Claims API.
+   * Creates a {@link DataClaimsClient} instance to communicate with the Data Claims API.
+   *
+   * <p>Note: this is a plain factory method and does not itself register a Spring bean.
+   * Registration is the responsibility of the caller or the surrounding configuration.
    *
    * @param properties The configuration properties for the Data Claims API
    * @return An instance of {@link DataClaimsClient}

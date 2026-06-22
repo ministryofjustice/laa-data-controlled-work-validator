@@ -50,6 +50,18 @@ class ClaimsValidationAutoConfigurationTest {
       "spring.application.name=test-service"
   };
 
+  /** Same as REQUIRED_PROPERTIES but without Data Claims API entries. Used to verify that a
+   * consuming application that registers its own ClaimsDataProvider does not need to supply the
+   * Data Claims API properties for the context to start. */
+  private static final String[] REQUIRED_PROPERTIES_NO_DATA_CLAIMS = {
+      "laa.dstew.payments.validator.fee-scheme-platform-api.url=http://fee-scheme.test",
+      "laa.dstew.payments.validator.fee-scheme-platform-api.access-token=token",
+      "laa.dstew.payments.validator.provider-details-api.url=http://provider-details.test",
+      "laa.dstew.payments.validator.provider-details-api.access-token=token",
+      "laa.dstew.payments.validator.submission.minimum-period=Apr-2013",
+      "spring.application.name=test-service"
+  };
+
   /**
    * Test configuration providing the external dependencies that would normally be supplied by
    * the Spring context of an importing application. The auto-configuration builds its own HTTP
@@ -181,6 +193,23 @@ class ClaimsValidationAutoConfigurationTest {
           .run(ctx -> {
             ClaimsDataProvider provider = ctx.getBean(ClaimsDataProvider.class);
             assertThat(provider).isNotInstanceOf(HttpClaimsDataProvider.class);
+          });
+    }
+
+    @Test
+    @DisplayName("Custom ClaimsDataProvider allows context to start without DataClaims API properties")
+    void customClaimsDataProviderAllowsContextWithoutDataClaimsProps() {
+      new ApplicationContextRunner()
+          .withConfiguration(AutoConfigurations.of(ClaimsValidationAutoConfiguration.class))
+          .withUserConfiguration(ExternalDependenciesConfig.class,
+              CustomClaimsDataProviderConfig.class)
+          .withPropertyValues(REQUIRED_PROPERTIES_NO_DATA_CLAIMS)
+          .run(ctx -> {
+            // Context should start even though data-claims-api properties are not provided,
+            // because the consuming application supplied its own ClaimsDataProvider.
+            assertThat(ctx).hasSingleBean(ClaimsDataProvider.class);
+            assertThat(ctx.getBean(ClaimsDataProvider.class))
+                .isNotInstanceOf(HttpClaimsDataProvider.class);
           });
     }
 
