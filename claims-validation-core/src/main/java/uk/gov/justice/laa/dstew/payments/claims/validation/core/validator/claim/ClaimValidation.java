@@ -10,7 +10,7 @@ import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationIssue;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationResult;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationSeverity;
-import uk.gov.justice.laa.dstew.payments.claims.validation.core.provider.impl.HttpFeeSchemeProvider;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.provider.FeeSchemeProvider;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.rules.ClaimValidator;
 import uk.gov.justice.laa.fee.scheme.model.FeeDetailsResponseV2;
 
@@ -41,7 +41,7 @@ public class ClaimValidation {
    * preserving insertion order.
    */
   private final List<ClaimValidator> validators;
-  private final HttpFeeSchemeProvider httpFeeSchemeProvider;
+  private final FeeSchemeProvider httpFeeSchemeProvider;
 
   /**
    * Validate the supplied {@link Claim} using the configured set of {@link ClaimValidator}s.

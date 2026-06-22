@@ -3,8 +3,6 @@ package uk.gov.justice.laa.dstew.payments.claims.validation.core.config;
 import io.netty.channel.ChannelOption;
 import java.time.Duration;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.context.annotation.Bean;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.web.reactive.function.client.ClientRequest;
 import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
@@ -45,8 +43,6 @@ public class WebClientConfig {
    * @param properties The configuration properties for the Fee Scheme Platform API
    * @return An instance of {@link FeeSchemeClient}
    */
-  @Bean
-  @ConditionalOnMissingBean
   public FeeSchemeClient feeSchemeClient(final FeeSchemeApiConfig properties) {
     final WebClient webClient = createWebClient(properties);
     final WebClientAdapter webClientAdapter = WebClientAdapter.create(webClient);
@@ -60,8 +56,6 @@ public class WebClientConfig {
    * @param properties The configuration properties for the Provider Details API
    * @return An instance of {@link ProviderDetailsClient}
    */
-  @Bean
-  @ConditionalOnMissingBean
   public ProviderDetailsClient providerDetailsClient(final ProviderDetailsApiConfig properties) {
     final WebClient webClient = createWebClient(properties);
     final WebClientAdapter webClientAdapter = WebClientAdapter.create(webClient);
@@ -75,8 +69,6 @@ public class WebClientConfig {
    * @param properties The configuration properties for the Data Claims API
    * @return An instance of {@link DataClaimsClient}
    */
-  @Bean
-  @ConditionalOnMissingBean
   public DataClaimsClient dataClaimsClient(final DataClaimsApiConfig properties) {
     final WebClient webClient = createWebClient(properties);
     final WebClientAdapter webClientAdapter = WebClientAdapter.create(webClient);
@@ -85,20 +77,12 @@ public class WebClientConfig {
   }
 
   /**
-   * Creates a {@link ClaimsDataProvider} bean backed by HTTP, using {@link HttpClaimsDataProvider}
+   * Creates a {@link ClaimsDataProvider} backed by HTTP, using {@link HttpClaimsDataProvider}
    * to adapt {@link DataClaimsClient} to the transport-agnostic provider interface.
-   *
-   * <p>This bean is only registered if no other {@link ClaimsDataProvider} bean is present in the
-   * application context. Services that embed this library with direct database access (e.g. the
-   * Claims API itself) should register their own {@link ClaimsDataProvider} implementation (e.g. a
-   * repository-backed one), which will cause this bean to be skipped entirely — preventing any
-   * self-referential HTTP call or unnecessary {@link DataClaimsClient} configuration.
    *
    * @param dataClaimsClient the HTTP REST client for the Data Claims API
    * @return an {@link HttpClaimsDataProvider} wrapping the given client
    */
-  @Bean
-  @ConditionalOnMissingBean(ClaimsDataProvider.class)
   public ClaimsDataProvider claimsDataProvider(final DataClaimsClient dataClaimsClient) {
     return new HttpClaimsDataProvider(dataClaimsClient);
   }
