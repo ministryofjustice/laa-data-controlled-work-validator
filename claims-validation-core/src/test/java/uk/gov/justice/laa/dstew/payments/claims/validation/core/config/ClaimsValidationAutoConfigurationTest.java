@@ -13,10 +13,12 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.context.annotation.Bean;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.client.DataClaimsClient;
-import uk.gov.justice.laa.dstew.payments.claims.validation.core.client.FeeSchemeClient;
-import uk.gov.justice.laa.dstew.payments.claims.validation.core.client.ProviderDetailsClient;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.provider.ClaimsDataProvider;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.provider.FeeSchemeProvider;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.provider.ProviderDetailsProvider;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.provider.impl.HttpClaimsDataProvider;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.provider.impl.HttpFeeSchemeProvider;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.provider.impl.HttpProviderDetailsProvider;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.service.ValidationService;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidation;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.rules.ClaimValidator;
@@ -29,7 +31,7 @@ import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.submis
  * <p>Uses Spring Boot's {@link ApplicationContextRunner} to verify:
  * <ul>
  *   <li>All expected beans are registered when minimum required properties are present.</li>
- *   <li>{@link ConditionalOnMissingBean} allows importers to override any individual bean.</li>
+ *   <li>{@code @ConditionalOnMissingBean} allows importers to override any individual bean.</li>
  *   <li>The library never participates in component scanning (no &#64;Component anywhere).</li>
  * </ul>
  */
@@ -48,9 +50,23 @@ class ClaimsValidationAutoConfigurationTest {
       "spring.application.name=test-service"
   };
 
+  /** Same as REQUIRED_PROPERTIES but without Data Claims API entries. Used to verify that a
+   * consuming application that registers its own ClaimsDataProvider does not need to supply the
+   * Data Claims API properties for the context to start. */
+  private static final String[] REQUIRED_PROPERTIES_NO_DATA_CLAIMS = {
+      "laa.dstew.payments.validator.fee-scheme-platform-api.url=http://fee-scheme.test",
+      "laa.dstew.payments.validator.fee-scheme-platform-api.access-token=token",
+      "laa.dstew.payments.validator.provider-details-api.url=http://provider-details.test",
+      "laa.dstew.payments.validator.provider-details-api.access-token=token",
+      "laa.dstew.payments.validator.submission.minimum-period=Apr-2013",
+      "spring.application.name=test-service"
+  };
+
   /**
    * Test configuration providing the external dependencies that would normally be supplied by
-   * the Spring context of an importing application (resilience4j and the HTTP clients).
+   * the Spring context of an importing application. The auto-configuration builds its own HTTP
+   * clients internally (via {@code WebClientConfig}), so only resilience4j's {@code RetryRegistry}
+   * needs to be provided here.
    */
   @TestConfiguration
   static class ExternalDependenciesConfig {
@@ -58,21 +74,6 @@ class ClaimsValidationAutoConfigurationTest {
     @Bean
     public RetryRegistry retryRegistry() {
       return RetryRegistry.ofDefaults();
-    }
-
-    @Bean
-    public FeeSchemeClient feeSchemeClient() {
-      return mock(FeeSchemeClient.class);
-    }
-
-    @Bean
-    public ProviderDetailsClient providerDetailsClient() {
-      return mock(ProviderDetailsClient.class);
-    }
-
-    @Bean
-    public DataClaimsClient dataClaimsClient() {
-      return mock(DataClaimsClient.class);
     }
   }
 
@@ -195,6 +196,71 @@ class ClaimsValidationAutoConfigurationTest {
           });
     }
 
+    @Test
+    @DisplayName("Custom ClaimsDataProvider allows context to start without DataClaims API properties")
+    void customClaimsDataProviderAllowsContextWithoutDataClaimsProps() {
+      new ApplicationContextRunner()
+          .withConfiguration(AutoConfigurations.of(ClaimsValidationAutoConfiguration.class))
+          .withUserConfiguration(ExternalDependenciesConfig.class,
+              CustomClaimsDataProviderConfig.class)
+          .withPropertyValues(REQUIRED_PROPERTIES_NO_DATA_CLAIMS)
+          .run(ctx -> {
+            // Context should start even though data-claims-api properties are not provided,
+            // because the consuming application supplied its own ClaimsDataProvider.
+            assertThat(ctx).hasSingleBean(ClaimsDataProvider.class);
+            assertThat(ctx.getBean(ClaimsDataProvider.class))
+                .isNotInstanceOf(HttpClaimsDataProvider.class);
+          });
+    }
+
+    /** Custom FeeSchemeProvider simulating a consumer with its own client and cache. */
+    @TestConfiguration
+    static class CustomFeeSchemeProviderConfig {
+      @Bean
+      public FeeSchemeProvider customFeeSchemeProvider() {
+        return mock(FeeSchemeProvider.class);
+      }
+    }
+
+    @Test
+    @DisplayName("Custom FeeSchemeProvider replaces the default HttpFeeSchemeProvider")
+    void customFeeSchemeProviderReplacesDefault() {
+      new ApplicationContextRunner()
+          .withConfiguration(AutoConfigurations.of(ClaimsValidationAutoConfiguration.class))
+          .withUserConfiguration(ExternalDependenciesConfig.class,
+              CustomFeeSchemeProviderConfig.class)
+          .withPropertyValues(REQUIRED_PROPERTIES)
+          .run(ctx -> {
+            assertThat(ctx).doesNotHaveBean(HttpFeeSchemeProvider.class);
+            assertThat(ctx.getBean(FeeSchemeProvider.class))
+                .isNotInstanceOf(HttpFeeSchemeProvider.class);
+          });
+    }
+
+    /** Custom ProviderDetailsProvider simulating a consumer with its own client and cache. */
+    @TestConfiguration
+    static class CustomProviderDetailsProviderConfig {
+      @Bean
+      public ProviderDetailsProvider customProviderDetailsProvider() {
+        return mock(ProviderDetailsProvider.class);
+      }
+    }
+
+    @Test
+    @DisplayName("Custom ProviderDetailsProvider replaces the default HttpProviderDetailsProvider")
+    void customProviderDetailsProviderReplacesDefault() {
+      new ApplicationContextRunner()
+          .withConfiguration(AutoConfigurations.of(ClaimsValidationAutoConfiguration.class))
+          .withUserConfiguration(ExternalDependenciesConfig.class,
+              CustomProviderDetailsProviderConfig.class)
+          .withPropertyValues(REQUIRED_PROPERTIES)
+          .run(ctx -> {
+            assertThat(ctx).doesNotHaveBean(HttpProviderDetailsProvider.class);
+            assertThat(ctx.getBean(ProviderDetailsProvider.class))
+                .isNotInstanceOf(HttpProviderDetailsProvider.class);
+          });
+    }
+
     /** Custom ValidationService simulating an importer that wraps the default. */
     @TestConfiguration
     static class CustomValidationServiceConfig {
@@ -219,6 +285,63 @@ class ClaimsValidationAutoConfigurationTest {
             // Verify the exact same instance registered by the custom config is in the context
             assertThat(ctx.getBean(ValidationService.class))
                 .isSameAs(CustomValidationServiceConfig.CUSTOM_INSTANCE);
+          });
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // HTTP ClaimsDataProvider is only created when needed (client is internal)
+  // ─────────────────────────────────────────────────────────────────────────
+
+  @Nested
+  @DisplayName("HTTP ClaimsDataProvider is only created when needed")
+  class HttpClaimsDataProviderConditionalCreation {
+
+    /** Dependencies an importer supplies, excluding any claims-data wiring. */
+    @TestConfiguration
+    static class BaseDependencies {
+
+      @Bean
+      public RetryRegistry retryRegistry() {
+        return RetryRegistry.ofDefaults();
+      }
+    }
+
+    /** Custom repository-backed ClaimsDataProvider, as a consuming app would register. */
+    @TestConfiguration
+    static class CustomClaimsDataProviderConfig {
+      @Bean
+      public ClaimsDataProvider customClaimsDataProvider() {
+        return mock(ClaimsDataProvider.class);
+      }
+    }
+
+    private final ApplicationContextRunner runner = new ApplicationContextRunner()
+        .withConfiguration(AutoConfigurations.of(ClaimsValidationAutoConfiguration.class))
+        .withUserConfiguration(BaseDependencies.class)
+        .withPropertyValues(REQUIRED_PROPERTIES);
+
+    @Test
+    @DisplayName("Defaults to HttpClaimsDataProvider with no DataClaimsClient exposed as a bean")
+    void defaultsToHttpProviderWithNoClientBean() {
+      runner.run(ctx -> {
+        assertThat(ctx.getBean(ClaimsDataProvider.class))
+            .isInstanceOf(HttpClaimsDataProvider.class);
+        // The HTTP client is an internal detail of the provider, not a context bean.
+        assertThat(ctx).doesNotHaveBean(DataClaimsClient.class);
+      });
+    }
+
+    @Test
+    @DisplayName("Custom ClaimsDataProvider skips HttpClaimsDataProvider entirely")
+    void customProviderSkipsHttpProvider() {
+      runner.withUserConfiguration(CustomClaimsDataProviderConfig.class)
+          .run(ctx -> {
+            // No HTTP provider and therefore no WebClient/HTTP client is built.
+            assertThat(ctx).doesNotHaveBean(HttpClaimsDataProvider.class);
+            assertThat(ctx).doesNotHaveBean(DataClaimsClient.class);
+            assertThat(ctx.getBean(ClaimsDataProvider.class))
+                .isNotInstanceOf(HttpClaimsDataProvider.class);
           });
     }
   }

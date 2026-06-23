@@ -15,6 +15,7 @@ import java.util.stream.Stream;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.client.ProviderDetailsClient;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.provider.ProviderDetailsProvider;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.provider.impl.model.ProviderDetailsCachedSchedules;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.provider.impl.model.ProviderDetailsCoverageWindow;
 import uk.gov.justice.laadata.providers.model.FirmOfficeContractAndScheduleDetails;
@@ -26,7 +27,8 @@ import uk.gov.justice.laadata.providers.model.ProviderFirmOfficeContractAndSched
  */
 @Slf4j
 public class HttpProviderDetailsProvider
-    extends AbstractHttpCachingProvider<ProviderFirmOfficeContractAndScheduleDto> {
+    extends AbstractHttpCachingProvider<ProviderFirmOfficeContractAndScheduleDto>
+    implements ProviderDetailsProvider {
 
   private static final Duration NEGATIVE_CACHE_TIME_TO_LIVE = Duration.ofMinutes(5);
   private static final Duration POSITIVE_CACHE_TIME_TO_LIVE = Duration.ofMinutes(10);
@@ -52,6 +54,7 @@ public class HttpProviderDetailsProvider
    * <p>Returns an empty {@link Optional} when the provider has no schedules for the given
    * parameters. Throws on technical API failure.
    */
+  @Override
   public Optional<ProviderFirmOfficeContractAndScheduleDto> getProviderFirmSchedules(
       String officeCode, LocalDate effectiveDate) {
     return fetchProviderFirmSchedules(officeCode, effectiveDate).blockOptional();

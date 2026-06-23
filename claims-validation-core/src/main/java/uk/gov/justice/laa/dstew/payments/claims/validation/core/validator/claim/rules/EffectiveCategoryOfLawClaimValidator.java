@@ -10,8 +10,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
-import uk.gov.justice.laa.dstew.payments.claims.validation.core.provider.impl.HttpFeeSchemeProvider;
-import uk.gov.justice.laa.dstew.payments.claims.validation.core.provider.impl.HttpProviderDetailsProvider;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.provider.FeeSchemeProvider;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.provider.ProviderDetailsProvider;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.util.ClaimEffectiveDateUtil;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidationContext;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidationError;
@@ -27,8 +27,8 @@ import uk.gov.justice.laadata.providers.model.ProviderFirmOfficeContractAndSched
 @Slf4j
 public class EffectiveCategoryOfLawClaimValidator implements ClaimValidator {
 
-  private final HttpFeeSchemeProvider httpFeeSchemeProvider;
-  private final HttpProviderDetailsProvider httpProviderDetailsProvider;
+  private final FeeSchemeProvider feeSchemeProvider;
+  private final ProviderDetailsProvider providerDetailsProvider;
 
   /**
    * Holds the result of a safe provider-details API fetch: the extracted categories of law (empty
@@ -56,7 +56,7 @@ public class EffectiveCategoryOfLawClaimValidator implements ClaimValidator {
    *   <li>Skip if no fee code is present (handled by {@code MandatoryFieldValidator}).</li>
    *   <li>Resolve the effective date from the claim; skip if it cannot be determined.</li>
    *   <li>Fetch the categories of law authorised for the provider office on the effective date
-   *       via {@link HttpProviderDetailsProvider}; return early with a technical error issue on
+   *       via {@link ProviderDetailsProvider}; return early with a technical error issue on
    *       API failure.</li>
    *   <li>Delegate to {@link #validateCategoriesOfLaw} to check the claim fee code against the
    *       fee scheme and provider categories.</li>
@@ -151,7 +151,7 @@ public class EffectiveCategoryOfLawClaimValidator implements ClaimValidator {
       String officeCode, LocalDate effectiveDate, ClaimValidationContext context) {
     try {
       List<String> categories =
-          httpProviderDetailsProvider
+          providerDetailsProvider
               .getProviderFirmSchedules(officeCode, effectiveDate)
               .map(this::extractCategoriesFromSchedules)
               .orElse(Collections.emptyList());
@@ -189,7 +189,7 @@ public class EffectiveCategoryOfLawClaimValidator implements ClaimValidator {
    */
   private FeeDetailsResult fetchFeeDetailsSafely(String feeCode, ClaimValidationContext context) {
     try {
-      Optional<FeeDetailsResponseV2> opt = httpFeeSchemeProvider.getFeeDetails(feeCode);
+      Optional<FeeDetailsResponseV2> opt = feeSchemeProvider.getFeeDetails(feeCode);
       return new FeeDetailsResult(opt, false);
     } catch (Exception ex) {
       if (ex instanceof WebClientResponseException wcre) {
