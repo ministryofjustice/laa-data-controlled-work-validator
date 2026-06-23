@@ -11,6 +11,8 @@ import uk.gov.justice.laa.dstew.payments.claims.validation.core.client.DataClaim
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.client.FeeSchemeClient;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.client.ProviderDetailsClient;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.provider.ClaimsDataProvider;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.provider.FeeSchemeProvider;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.provider.ProviderDetailsProvider;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.provider.impl.HttpClaimsDataProvider;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.provider.impl.HttpFeeSchemeProvider;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.provider.impl.HttpProviderDetailsProvider;
@@ -89,36 +91,59 @@ public class ClaimsValidationAutoConfiguration {
   // ─────────────────────────────────────────────────────────────────────────
 
   /**
-   * HTTP-backed provider for resolving provider firm schedules.
-   * Automatically skipped if the importing application registers its own bean.
+   * HTTP-backed implementation of the {@link ProviderDetailsProvider} contract.
+   *
+   * <p>The underlying {@link ProviderDetailsClient} is created inline (via the
+   * {@link WebClientConfig} factory) rather than exposed as a separate bean — it is an internal
+   * implementation detail of this provider with no other consumers. Automatically skipped if the
+   * importing application registers its own {@link ProviderDetailsProvider} bean (e.g. one backed
+   * by the consumer's own client and cache).
    */
   @Bean("coreHttpProviderDetailsProvider")
-  @ConditionalOnMissingBean(HttpProviderDetailsProvider.class)
-  public HttpProviderDetailsProvider coreHttpProviderDetailsProvider(
-      ProviderDetailsClient providerDetailsClient, RetryRegistry retryRegistry) {
-    return new HttpProviderDetailsProvider(providerDetailsClient, retryRegistry);
+  @ConditionalOnMissingBean(ProviderDetailsProvider.class)
+  public ProviderDetailsProvider coreHttpProviderDetailsProvider(
+      WebClientConfig webClientConfig, ProviderDetailsApiConfig properties,
+      RetryRegistry retryRegistry) {
+    return new HttpProviderDetailsProvider(
+        webClientConfig.providerDetailsClient(properties), retryRegistry);
   }
 
   /**
-   * HTTP-backed provider for resolving fee scheme details.
-   * Automatically skipped if the importing application registers its own bean.
+   * HTTP-backed implementation of the {@link FeeSchemeProvider} contract.
+   *
+   * <p>The underlying {@link FeeSchemeClient} is created inline (via the {@link WebClientConfig}
+   * factory) rather than exposed as a separate bean — it is an internal implementation detail of
+   * this provider with no other consumers. Automatically skipped if the importing application
+   * registers its own {@link FeeSchemeProvider} bean (e.g. one backed by the consumer's own client
+   * and cache).
    */
   @Bean("coreHttpFeeSchemeProvider")
-  @ConditionalOnMissingBean(HttpFeeSchemeProvider.class)
-  public HttpFeeSchemeProvider coreHttpFeeSchemeProvider(
-      FeeSchemeClient feeSchemeClient, RetryRegistry retryRegistry) {
-    return new HttpFeeSchemeProvider(feeSchemeClient, retryRegistry);
+  @ConditionalOnMissingBean(FeeSchemeProvider.class)
+  public FeeSchemeProvider coreHttpFeeSchemeProvider(
+      WebClientConfig webClientConfig, FeeSchemeApiConfig properties,
+      RetryRegistry retryRegistry) {
+    return new HttpFeeSchemeProvider(
+        webClientConfig.feeSchemeClient(properties), retryRegistry);
   }
 
   /**
    * HTTP-backed provider for accessing claims data from the Data Claims API.
-   * Services that embed this library with direct database access should register their own
-   * {@link ClaimsDataProvider} bean instead, which causes this bean to be skipped entirely.
+   *
+   * <p>The underlying {@link DataClaimsClient} is created inline (via the {@link WebClientConfig}
+   * factory) rather than being exposed as a separate bean — it is an internal implementation detail
+   * of this provider and has no other consumers. Consequently, when an importing application
+   * registers its own {@link ClaimsDataProvider} (e.g. a repository-backed one), this method is
+   * skipped entirely and <em>no</em> {@code WebClient} is ever configured against the Data Claims
+   * API.
+   *
+   * <p>Importers that need a customised HTTP client should build and register their own
+   * {@link ClaimsDataProvider}, wrapping a {@link DataClaimsClient} of their choosing.
    */
   @Bean("coreClaimsDataProvider")
   @ConditionalOnMissingBean(ClaimsDataProvider.class)
-  public ClaimsDataProvider coreClaimsDataProvider(DataClaimsClient dataClaimsClient) {
-    return new HttpClaimsDataProvider(dataClaimsClient);
+  public ClaimsDataProvider coreClaimsDataProvider(WebClientConfig webClientConfig,
+      DataClaimsApiConfig properties) {
+    return new HttpClaimsDataProvider(webClientConfig.dataClaimsClient(properties));
   }
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -140,38 +165,7 @@ public class ClaimsValidationAutoConfiguration {
     return new WebClientConfig(serviceName);
   }
 
-  /**
-   * Creates a {@link FeeSchemeClient} via the {@link WebClientConfig} factory.
-   * Automatically skipped if the importing application provides its own {@link FeeSchemeClient}.
-   */
-  @Bean("coreFeeSchemeClient")
-  @ConditionalOnMissingBean(FeeSchemeClient.class)
-  public FeeSchemeClient coreFeeSchemeClient(WebClientConfig webClientConfig,
-      FeeSchemeApiConfig properties) {
-    return webClientConfig.feeSchemeClient(properties);
-  }
 
-  /**
-   * Creates a {@link ProviderDetailsClient} via the {@link WebClientConfig} factory.
-   * Automatically skipped if the importing application provides its own bean.
-   */
-  @Bean("coreProviderDetailsClient")
-  @ConditionalOnMissingBean(ProviderDetailsClient.class)
-  public ProviderDetailsClient coreProviderDetailsClient(WebClientConfig webClientConfig,
-      ProviderDetailsApiConfig properties) {
-    return webClientConfig.providerDetailsClient(properties);
-  }
-
-  /**
-   * Creates a {@link DataClaimsClient} via the {@link WebClientConfig} factory.
-   * Automatically skipped if the importing application provides its own bean.
-   */
-  @Bean("coreDataClaimsClient")
-  @ConditionalOnMissingBean(DataClaimsClient.class)
-  public DataClaimsClient coreDataClaimsClient(WebClientConfig webClientConfig,
-      DataClaimsApiConfig properties) {
-    return webClientConfig.dataClaimsClient(properties);
-  }
 
   // ─────────────────────────────────────────────────────────────────────────
   // Claim validators
@@ -246,8 +240,8 @@ public class ClaimsValidationAutoConfiguration {
   @Bean("coreEffectiveCategoryOfLawClaimValidator")
   @ConditionalOnMissingBean(EffectiveCategoryOfLawClaimValidator.class)
   public EffectiveCategoryOfLawClaimValidator coreEffectiveCategoryOfLawClaimValidator(
-      HttpFeeSchemeProvider httpFeeSchemeProvider,
-      HttpProviderDetailsProvider httpProviderDetailsProvider) {
+      FeeSchemeProvider httpFeeSchemeProvider,
+      ProviderDetailsProvider httpProviderDetailsProvider) {
     return new EffectiveCategoryOfLawClaimValidator(httpFeeSchemeProvider,
         httpProviderDetailsProvider);
   }
@@ -346,7 +340,7 @@ public class ClaimsValidationAutoConfiguration {
   @ConditionalOnMissingBean(ClaimValidation.class)
   public ClaimValidation coreClaimValidation(
       List<ClaimValidator> claimValidators,
-      HttpFeeSchemeProvider httpFeeSchemeProvider) {
+      FeeSchemeProvider httpFeeSchemeProvider) {
     return new ClaimValidation(claimValidators, httpFeeSchemeProvider);
   }
 
