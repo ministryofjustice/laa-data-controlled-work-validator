@@ -27,8 +27,8 @@ import uk.gov.justice.laadata.providers.model.ProviderFirmOfficeContractAndSched
 @Slf4j
 public class EffectiveCategoryOfLawClaimValidator implements ClaimValidator {
 
-  private final FeeSchemeProvider httpFeeSchemeProvider;
-  private final ProviderDetailsProvider httpProviderDetailsProvider;
+  private final FeeSchemeProvider feeSchemeProvider;
+  private final ProviderDetailsProvider providerDetailsProvider;
 
   /**
    * Holds the result of a safe provider-details API fetch: the extracted categories of law (empty
@@ -151,7 +151,7 @@ public class EffectiveCategoryOfLawClaimValidator implements ClaimValidator {
       String officeCode, LocalDate effectiveDate, ClaimValidationContext context) {
     try {
       List<String> categories =
-          httpProviderDetailsProvider
+          providerDetailsProvider
               .getProviderFirmSchedules(officeCode, effectiveDate)
               .map(this::extractCategoriesFromSchedules)
               .orElse(Collections.emptyList());
@@ -189,7 +189,7 @@ public class EffectiveCategoryOfLawClaimValidator implements ClaimValidator {
    */
   private FeeDetailsResult fetchFeeDetailsSafely(String feeCode, ClaimValidationContext context) {
     try {
-      Optional<FeeDetailsResponseV2> opt = httpFeeSchemeProvider.getFeeDetails(feeCode);
+      Optional<FeeDetailsResponseV2> opt = feeSchemeProvider.getFeeDetails(feeCode);
       return new FeeDetailsResult(opt, false);
     } catch (Exception ex) {
       if (ex instanceof WebClientResponseException wcre) {
