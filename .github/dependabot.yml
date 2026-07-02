@@ -5,7 +5,8 @@
 
 version: 2
 
-# Uncomment 'registries' section to receive dependabot updates for 'laa-spring-boot-common'.
+# Uncomment 'registries' section to receive dependabot updates for 'laa-spring-boot-common'
+# and/or the 'laa-data-claims-api' GitHub Packages models.
 # Ensure you have created a personal access token in GitHub and configured it with repo, write:packages and read:packages access.
 # The token must also be authorized with (MoJ) SSO. See link below for guidance:
 # https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#creating-a-personal-access-token-classic
@@ -13,26 +14,45 @@ version: 2
 #  spring-boot-common-github-packages:
 #    type: maven-repository
 #    url: https://maven.pkg.github.com/ministryofjustice/laa-spring-boot-common
-#    username: <your-username-here>
-#    password: ${{ secrets.REPO_TOKEN }}
+#    username: ${{ github.actor }}
+#    password: ${{ secrets.GITHUB_TOKEN }}
+#  data-claims-api-github-packages:
+#    type: maven-repository
+#    url: https://maven.pkg.github.com/ministryofjustice/laa-data-claims-api
+#    username: ${{ github.actor }}
+#    password: ${{ secrets.GITHUB_TOKEN }}
 
 updates:
   - package-ecosystem: "gradle"
     directory: "/"
+    allow:
+      - dependency-type: "all"
     schedule:
       interval: "weekly"
+      day: wednesday
+      time: "06:00"
+      timezone: Europe/London
+    cooldown:
+      default-days: 7
     registries: "*"
     groups:
       gradle-updates:
         exclude-patterns:
-          - "uk.gov.laa.springboot.microservice.*"
+          - "uk.gov.justice.laa.datastewardship.payments*"
+          - "uk.gov.laa.springboot*"
       internal-packages:
         patterns:
-          - "uk.gov.laa.springboot.microservice*"
+          - "uk.gov.justice.laa.datastewardship.payments*"
+          - "uk.gov.laa.springboot*"
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "weekly"
+      day: wednesday
+      time: "07:00"
+      timezone: Europe/London
+    cooldown:
+      default-days: 7
     groups:
       github-actions:
         patterns:
