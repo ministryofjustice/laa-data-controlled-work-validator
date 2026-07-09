@@ -26,6 +26,7 @@ jobs:
       java_version: *JAVA_VERSION
       java_distribution: *JDK_DISTRIBUTION
       integration_test_task: "integrationTest"
+      release_type: 'snapshot'
       publish_package: 'false'
       semgrep_check: 'true'
       junit_results_path: 'claims-validation-core/build/test-results'
