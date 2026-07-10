@@ -2,14 +2,9 @@ plugins {
     id 'com.diffplug.spotless' apply false
 }
 
-// Single source of truth for version: defined in claims-validation-core/gradle.properties
-def coreProps = new Properties()
-file("${rootDir}/claims-validation-core/gradle.properties").withInputStream { coreProps.load(it) }
-def coreVersion = coreProps.getProperty('version')
-
 subprojects {
     group = 'uk.gov.justice.laa.dstew.payments.claims.validation'
-    version = coreVersion
+    version = rootProject.version
 
     repositories {
         mavenCentral()
