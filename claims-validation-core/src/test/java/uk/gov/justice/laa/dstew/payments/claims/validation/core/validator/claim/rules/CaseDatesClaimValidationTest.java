@@ -11,6 +11,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidationContext;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidatorCode;
 import uk.gov.justice.laa.dstew.payments.claimsdata.model.AreaOfLaw;
 
 @DisplayName("Case dates claim validator test")
@@ -246,7 +247,7 @@ class CaseDatesClaimValidationTest {
   @DisplayName("CaseDatesClaimValidator - priority, appliesTo and validator code")
   void caseDatesValidatorMetadata() {
     assertThat(validator.priority()).isEqualTo(100);
-    assertThat(validator.appliesTo(Set.of("CLAIM_CASE_DATES"))).isTrue();
-    assertThat(validator.getValidatorCode()).isEqualTo("CLAIM_CASE_DATES");
+    assertThat(validator.appliesTo(Set.of(ClaimValidatorCode.CLAIM_CASE_DATES))).isTrue();
+    assertThat(validator.getValidatorCode()).isEqualTo(ClaimValidatorCode.CLAIM_CASE_DATES);
   }
 }

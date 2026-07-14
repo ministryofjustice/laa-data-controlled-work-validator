@@ -16,6 +16,7 @@ import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Validation
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.util.StringCaseUtil;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidationContext;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidationError;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidatorCode;
 import uk.gov.justice.laa.dstew.payments.claimsdata.model.AreaOfLaw;
 
 /**
@@ -84,7 +85,7 @@ public class MandatoryFieldClaimValidator implements ClaimValidator {
   }
 
   @Override
-  public String getValidatorCode() {
-    return "CLAIM_MANDATORY_FIELD";
+  public ClaimValidatorCode getValidatorCode() {
+    return ClaimValidatorCode.CLAIM_MANDATORY_FIELD;
   }
 }

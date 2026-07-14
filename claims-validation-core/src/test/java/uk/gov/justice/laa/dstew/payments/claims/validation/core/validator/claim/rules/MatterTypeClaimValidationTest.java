@@ -12,6 +12,7 @@ import org.junit.jupiter.params.provider.CsvSource;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationIssue;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidationContext;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidatorCode;
 import uk.gov.justice.laa.dstew.payments.claimsdata.model.AreaOfLaw;
 import uk.gov.justice.laa.dstew.payments.claimsdata.model.ClaimStatus;
 
@@ -88,7 +89,7 @@ class MatterTypeClaimValidationTest {
   @DisplayName("MatterTypeClaimValidator - priority, appliesTo and validator code")
   void matterTypeValidatorMetadata() {
     assertThat(validator.priority()).isEqualTo(100);
-    assertThat(validator.appliesTo(Set.of("CLAIM_MATTER_TYPE"))).isTrue();
-    assertThat(validator.getValidatorCode()).isEqualTo("CLAIM_MATTER_TYPE");
+    assertThat(validator.appliesTo(Set.of(ClaimValidatorCode.CLAIM_MATTER_TYPE))).isTrue();
+    assertThat(validator.getValidatorCode()).isEqualTo(ClaimValidatorCode.CLAIM_MATTER_TYPE);
   }
 }

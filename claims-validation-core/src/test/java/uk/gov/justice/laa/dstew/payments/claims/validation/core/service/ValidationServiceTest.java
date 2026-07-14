@@ -20,11 +20,14 @@ import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Validation
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationResult;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationSeverity;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.provider.impl.HttpFeeSchemeProvider;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.ValidatorCode;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidation;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidationContext;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidatorCode;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.rules.ClaimValidator;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.submission.SubmissionValidation;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.submission.SubmissionValidationContext;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.submission.SubmissionValidatorCode;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.submission.rules.SubmissionValidator;
 import uk.gov.justice.laa.dstew.payments.claimsdata.model.AreaOfLaw;
 import uk.gov.justice.laa.dstew.payments.claimsdata.model.SubmissionResponse;
@@ -109,7 +112,7 @@ class ValidationServiceTest {
     @Test
     @DisplayName("Scope defaults to null — all scope-agnostic validators run")
     void scopeDefaultsToNull() {
-      AtomicReference<Set<String>> capturedScope = new AtomicReference<>(Set.of("NOT_SET"));
+      AtomicReference<Set<? extends ValidatorCode>> capturedScope = new AtomicReference<>(Set.of(ClaimValidatorCode.CLAIM_MATTER_TYPE));
 
       ClaimValidator captor = new ClaimValidator() {
         @Override public void validate(Claim c, ClaimValidationContext ctx) {
@@ -121,7 +124,7 @@ class ValidationServiceTest {
           return 0;
         }
 
-        @Override public String getValidatorCode() { return "CAPTOR"; }
+        @Override public ValidatorCode getValidatorCode() { return ClaimValidatorCode.CLAIM_SCHEMA; }
       };
 
       withClaims(claimValidation(List.of(captor))).validateClaim(testClaim);
@@ -131,17 +134,17 @@ class ValidationServiceTest {
   }
 
   // ─────────────────────────────────────────────────────────────────────────
-  // validateClaim(Claim, String)
+  // validateClaim(Claim, Set<ValidatorCode>)
   // ─────────────────────────────────────────────────────────────────────────
 
   @Nested
-  @DisplayName("validateClaim(Claim, String) — two-arg overload")
+  @DisplayName("validateClaim(Claim, Set<ValidatorCode>) — two-arg overload")
   class TwoArgClaimOverload {
 
     @Test
     @DisplayName("Passes scope through to the pipeline")
     void passesScopeToPipeline() {
-      AtomicReference<Set<String>> capturedScope = new AtomicReference<>();
+      AtomicReference<Set<? extends ValidatorCode>> capturedScope = new AtomicReference<>();
 
       ClaimValidator captor = new ClaimValidator() {
         @Override public void validate(Claim c, ClaimValidationContext ctx) {
@@ -153,12 +156,12 @@ class ValidationServiceTest {
           return 0;
         }
 
-        @Override public String getValidatorCode() { return "CAPTOR"; }
+        @Override public ValidatorCode getValidatorCode() { return ClaimValidatorCode.CLAIM_SCHEMA; }
       };
 
-      withClaims(claimValidation(List.of(captor))).validateClaim(testClaim, Set.of("CAPTOR"));
+      withClaims(claimValidation(List.of(captor))).validateClaim(testClaim, Set.of(ClaimValidatorCode.CLAIM_SCHEMA));
 
-      assertThat(capturedScope.get()).isEqualTo(Set.of("CAPTOR"));
+      assertThat(capturedScope.get()).isEqualTo(Set.of(ClaimValidatorCode.CLAIM_SCHEMA));
     }
 
     @Test
@@ -176,10 +179,10 @@ class ValidationServiceTest {
           return 0;
         }
 
-        @Override public String getValidatorCode() { return "CAPTOR"; }
+        @Override public ValidatorCode getValidatorCode() { return ClaimValidatorCode.CLAIM_SCHEMA; }
       };
 
-      withClaims(claimValidation(List.of(captor))).validateClaim(testClaim, Set.of("CAPTOR"));
+      withClaims(claimValidation(List.of(captor))).validateClaim(testClaim, Set.of(ClaimValidatorCode.CLAIM_SCHEMA));
 
       assertThat(capturedRelated.get()).isEmpty();
     }
@@ -188,7 +191,7 @@ class ValidationServiceTest {
     @DisplayName("Returns MISSING_CLAIM error when claim is null")
     void returnsMissingClaimWhenClaimIsNull() {
       ValidationResult result = withClaims(claimValidation(Collections.emptyList()))
-          .validateClaim(null, Set.of("fee"));
+          .validateClaim(null, Set.of(ClaimValidatorCode.CLAIM_SCHEMA));
 
       assertThat(result.isValid()).isFalse();
       assertThat(result.getIssues().getFirst().getCode()).isEqualTo("MISSING_CLAIM");
@@ -196,18 +199,18 @@ class ValidationServiceTest {
   }
 
   // ─────────────────────────────────────────────────────────────────────────
-  // validateClaim(Claim, String, List<Claim>)
+  // validateClaim(Claim, Set<ValidatorCode>, List<Claim>)
   // ─────────────────────────────────────────────────────────────────────────
 
   @Nested
-  @DisplayName("validateClaim(Claim, String, List) — three-arg overload")
+  @DisplayName("validateClaim(Claim, Set<ValidatorCode>, List) — three-arg overload")
   class ThreeArgClaimOverload {
 
     @Test
     @DisplayName("Returns valid result when no validators raise errors")
     void returnsValidResultWhenNoIssues() {
       assertThat(withClaims(claimValidation(Collections.emptyList()))
-          .validateClaim(testClaim, Set.of("fee"), List.of()).isValid()).isTrue();
+          .validateClaim(testClaim, Set.of(ClaimValidatorCode.CLAIM_SCHEMA), List.of()).isValid()).isTrue();
     }
 
     @Test
@@ -224,11 +227,11 @@ class ValidationServiceTest {
           return 0;
         }
 
-        @Override public String getValidatorCode() { return "ERROR_VALIDATOR"; }
+        @Override public ValidatorCode getValidatorCode() { return ClaimValidatorCode.CLAIM_MATTER_TYPE; }
       };
 
       ValidationResult result = withClaims(claimValidation(List.of(errorValidator)))
-          .validateClaim(testClaim, Set.of("ERROR_VALIDATOR"), List.of());
+          .validateClaim(testClaim, Set.of(ClaimValidatorCode.CLAIM_MATTER_TYPE), List.of());
 
       assertThat(result.isValid()).isFalse();
       assertThat(result.getIssues().getFirst().getCode()).isEqualTo("TEST_ERROR");
@@ -248,11 +251,11 @@ class ValidationServiceTest {
           return 0;
         }
 
-        @Override public String getValidatorCode() { return "WARN_VALIDATOR"; }
+        @Override public ValidatorCode getValidatorCode() { return ClaimValidatorCode.CLAIM_CASE_DATES; }
       };
 
       ValidationResult result = withClaims(claimValidation(List.of(warningValidator)))
-          .validateClaim(testClaim, null, List.of());
+          .validateClaim(testClaim, (Set<ClaimValidatorCode>) null, List.of());
 
       assertThat(result.isValid()).isTrue();
       assertThat(result.getIssues().getFirst().getSeverity()).isEqualTo(ValidationSeverity.WARNING);
@@ -262,7 +265,7 @@ class ValidationServiceTest {
     @DisplayName("Returns MISSING_CLAIM error when claim is null")
     void returnsMissingClaimWhenClaimIsNull() {
       ValidationResult result = withClaims(claimValidation(Collections.emptyList()))
-          .validateClaim(null, Set.of("fee"), List.of());
+          .validateClaim(null, Set.of(ClaimValidatorCode.CLAIM_SCHEMA), List.of());
 
       assertThat(result.isValid()).isFalse();
       assertThat(result.getIssues().getFirst().getCode()).isEqualTo("MISSING_CLAIM");
@@ -297,8 +300,8 @@ class ValidationServiceTest {
         @Override public int priority() { return 0; }
 
         @Override
-        public String getValidatorCode() {
-          return "";
+        public ValidatorCode getValidatorCode() {
+          return SubmissionValidatorCode.SUBMISSION_SCHEMA_VALIDATOR;
         }
       };
 
@@ -312,7 +315,7 @@ class ValidationServiceTest {
     @Test
     @DisplayName("Scope defaults to null — all scope-agnostic validators run")
     void scopeDefaultsToNull() {
-      AtomicReference<Set<String>> capturedScope = new AtomicReference<>();
+      AtomicReference<Set<? extends ValidatorCode>> capturedScope = new AtomicReference<>();
 
       SubmissionValidator captor = new SubmissionValidator() {
         @Override public void validate(SubmissionResponse s, SubmissionValidationContext ctx) {
@@ -320,8 +323,8 @@ class ValidationServiceTest {
         }
 
         @Override
-        public String getValidatorCode() {
-          return "";
+        public ValidatorCode getValidatorCode() {
+          return SubmissionValidatorCode.SUBMISSION_SCHEMA_VALIDATOR;
         }
 
         @Override public int priority() { return 0; }
@@ -334,37 +337,37 @@ class ValidationServiceTest {
   }
 
   // ─────────────────────────────────────────────────────────────────────────
-  // validateSubmission(SubmissionResponse, String)
+  // validateSubmission(SubmissionResponse, Set<ValidatorCode>)
   // ─────────────────────────────────────────────────────────────────────────
 
   @Nested
-  @DisplayName("validateSubmission(SubmissionResponse, String) — two-arg overload")
+  @DisplayName("validateSubmission(SubmissionResponse, Set<ValidatorCode>) — two-arg overload")
   class TwoArgSubmissionOverload {
 
     @Test
     @DisplayName("Passes scope through to the pipeline")
     void passesScopeToPipeline() {
-      AtomicReference<Set<String>> capturedScope = new AtomicReference<>();
+      AtomicReference<Set<? extends ValidatorCode>> capturedScope = new AtomicReference<>();
 
       SubmissionValidator captor = new SubmissionValidator() {
         @Override public void validate(SubmissionResponse s, SubmissionValidationContext ctx) { /* no-op */ }
-        @Override public boolean appliesTo(Set<String> scope) {
+        @Override public boolean appliesTo(Set<? extends ValidatorCode> scope) {
           capturedScope.set(scope);
           return true;
         }
 
         @Override
-        public String getValidatorCode() {
-          return "";
+        public ValidatorCode getValidatorCode() {
+          return SubmissionValidatorCode.SUBMISSION_SCHEMA_VALIDATOR;
         }
 
         @Override public int priority() { return 0; }
       };
 
       withSubmissions(new SubmissionValidation(List.of(captor)))
-          .validateSubmission(testSubmission, Set.of("pre-process"));
+          .validateSubmission(testSubmission, Set.of(SubmissionValidatorCode.SUBMISSION_STATUS_VALIDATOR));
 
-      assertThat(capturedScope.get()).isEqualTo(Set.of("pre-process"));
+      assertThat(capturedScope.get()).isEqualTo(Set.of(SubmissionValidatorCode.SUBMISSION_STATUS_VALIDATOR));
     }
 
     @Test
@@ -378,16 +381,146 @@ class ValidationServiceTest {
         @Override public int priority() { return 0; }
 
         @Override
-        public String getValidatorCode() {
-          return "";
+        public ValidatorCode getValidatorCode() {
+          return SubmissionValidatorCode.SUBMISSION_SCHEMA_VALIDATOR;
         }
       };
 
       ValidationResult result = withSubmissions(new SubmissionValidation(List.of(warningValidator)))
-          .validateSubmission(testSubmission, null);
+          .validateSubmission(testSubmission, (Set<SubmissionValidatorCode>) null);
 
       assertThat(result.isValid()).isTrue();
       assertThat(result.getIssues().getFirst().getSeverity()).isEqualTo(ValidationSeverity.WARNING);
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Type-safe ValidatorCode overloads
+  // ─────────────────────────────────────────────────────────────────────────
+
+  @Nested
+  @DisplayName("ValidatorCode (type-safe) overloads")
+  class ValidatorCodeOverloads {
+
+    @Test
+    @DisplayName("validateClaim(Claim, Set<ValidatorCode>) passes converted scope to the pipeline")
+    void validateClaimTypedScope() {
+      AtomicReference<Set<? extends ValidatorCode>> capturedScope = new AtomicReference<>();
+
+      ClaimValidator captor = new ClaimValidator() {
+        @Override public void validate(Claim c, ClaimValidationContext ctx) { /* no-op */ }
+        @Override public boolean appliesTo(Set<? extends ValidatorCode> scope) {
+          capturedScope.set(scope);
+          return true;
+        }
+        @Override public int priority() { return 0; }
+        @Override public ValidatorCode getValidatorCode() {
+          return ClaimValidatorCode.CLAIM_SCHEMA;
+        }
+      };
+
+      withClaims(claimValidation(List.of(captor)))
+          .validateClaim(testClaim,
+              Set.of(ClaimValidatorCode.CLAIM_SCHEMA, ClaimValidatorCode.CLAIM_MATTER_TYPE));
+
+      assertThat(capturedScope.get())
+          .isEqualTo(Set.of(ClaimValidatorCode.CLAIM_SCHEMA, ClaimValidatorCode.CLAIM_MATTER_TYPE));
+    }
+
+    @Test
+    @DisplayName("validateClaim(Claim, Set<ValidatorCode>, List) passes related claims and scope")
+    void validateClaimRelatedAndTypedScope() {
+      AtomicReference<Set<? extends ValidatorCode>> capturedScope = new AtomicReference<>();
+      AtomicReference<List<Claim>> capturedRelated = new AtomicReference<>();
+
+      ClaimValidator captor = new ClaimValidator() {
+        @Override public void validate(Claim c, ClaimValidationContext ctx) {
+          capturedRelated.set(ctx.getRelatedClaims());
+        }
+        @Override public boolean appliesTo(Set<? extends ValidatorCode> scope) {
+          capturedScope.set(scope);
+          return true;
+        }
+        @Override public int priority() { return 0; }
+        @Override public ValidatorCode getValidatorCode() {
+          return ClaimValidatorCode.CLAIM_DUPLICATE_CLAIM;
+        }
+      };
+
+      List<Claim> related = List.of(new Claim());
+      withClaims(claimValidation(List.of(captor)))
+          .validateClaim(testClaim, Set.of(ClaimValidatorCode.CLAIM_DUPLICATE_CLAIM), related);
+
+      assertThat(capturedScope.get()).isEqualTo(Set.of(ClaimValidatorCode.CLAIM_DUPLICATE_CLAIM));
+      assertThat(capturedRelated.get()).isEqualTo(related);
+    }
+
+    @Test
+    @DisplayName("validateClaim(Claim, empty Set<ValidatorCode>) runs all scope-agnostic validators")
+    void validateClaimEmptyTypedScope() {
+      AtomicReference<Set<? extends ValidatorCode>> capturedScope = new AtomicReference<>(Set.of(ClaimValidatorCode.CLAIM_MATTER_TYPE));
+
+      ClaimValidator captor = new ClaimValidator() {
+        @Override public void validate(Claim c, ClaimValidationContext ctx) {
+          capturedScope.set(ctx.getScope());
+        }
+        @Override public int priority() { return 0; }
+        @Override public ValidatorCode getValidatorCode() {
+          return ClaimValidatorCode.CLAIM_SCHEMA;
+        }
+      };
+
+      // Empty scope -> all scope-agnostic validators run.
+      withClaims(claimValidation(List.of(captor)))
+          .validateClaim(testClaim, Set.<ClaimValidatorCode>of());
+
+      assertThat(capturedScope.get()).isEmpty();
+    }
+
+    @Test
+    @DisplayName("validateClaim(Claim, (Set<ValidatorCode>) null) runs all scope-agnostic validators")
+    void validateClaimNullTypedScope() {
+      AtomicReference<Set<? extends ValidatorCode>> capturedScope = new AtomicReference<>(Set.of(ClaimValidatorCode.CLAIM_MATTER_TYPE));
+
+      ClaimValidator captor = new ClaimValidator() {
+        @Override public void validate(Claim c, ClaimValidationContext ctx) {
+          capturedScope.set(ctx.getScope());
+        }
+        @Override public int priority() { return 0; }
+        @Override public ValidatorCode getValidatorCode() {
+          return ClaimValidatorCode.CLAIM_SCHEMA;
+        }
+      };
+
+      // Null scope is preserved as null -> pipeline runs all scope-agnostic validators.
+      withClaims(claimValidation(List.of(captor)))
+          .validateClaim(testClaim, (Set<ClaimValidatorCode>) null);
+
+      assertThat(capturedScope.get()).isNull();
+    }
+
+    @Test
+    @DisplayName("validateSubmission(SubmissionResponse, Set<ValidatorCode>) passes converted scope")
+    void validateSubmissionTypedScope() {
+      AtomicReference<Set<? extends ValidatorCode>> capturedScope = new AtomicReference<>();
+
+      SubmissionValidator captor = new SubmissionValidator() {
+        @Override public void validate(SubmissionResponse s, SubmissionValidationContext ctx) { /* no-op */ }
+        @Override public boolean appliesTo(Set<? extends ValidatorCode> scope) {
+          capturedScope.set(scope);
+          return true;
+        }
+        @Override public ValidatorCode getValidatorCode() {
+          return SubmissionValidatorCode.SUBMISSION_SCHEMA_VALIDATOR;
+        }
+        @Override public int priority() { return 0; }
+      };
+
+      withSubmissions(new SubmissionValidation(List.of(captor)))
+          .validateSubmission(testSubmission, Set.of(SubmissionValidatorCode.SUBMISSION_SCHEMA_VALIDATOR));
+
+      assertThat(capturedScope.get())
+          .isEqualTo(Set.of(SubmissionValidatorCode.SUBMISSION_SCHEMA_VALIDATOR));
     }
   }
 }

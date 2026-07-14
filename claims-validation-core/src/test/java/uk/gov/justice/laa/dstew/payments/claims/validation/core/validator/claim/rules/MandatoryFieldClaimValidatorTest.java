@@ -16,6 +16,7 @@ import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Validation
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationSeverity;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.util.StringCaseUtil;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidationContext;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidatorCode;
 import uk.gov.justice.laa.dstew.payments.claimsdata.model.AreaOfLaw;
 
 @DisplayName("MandatoryFieldClaimValidator")
@@ -386,7 +387,7 @@ class MandatoryFieldClaimValidatorTest {
     @Test
     @DisplayName("Validator code is CLAIM_MANDATORY_FIELD")
     void validatorCode() {
-      assertThat(validator.getValidatorCode()).isEqualTo("CLAIM_MANDATORY_FIELD");
+      assertThat(validator.getValidatorCode()).isEqualTo(ClaimValidatorCode.CLAIM_MANDATORY_FIELD);
     }
 
     @Test
@@ -398,7 +399,7 @@ class MandatoryFieldClaimValidatorTest {
     @Test
     @DisplayName("Applies to any scope")
     void appliesToAnyScope() {
-      assertThat(validator.appliesTo(Set.of("CLAIM_MANDATORY_FIELD"))).isTrue();
+      assertThat(validator.appliesTo(Set.of(ClaimValidatorCode.CLAIM_MANDATORY_FIELD))).isTrue();
       assertThat(validator.appliesTo(null)).isTrue();
       assertThat(validator.appliesTo(new HashSet<>())).isTrue();
     }

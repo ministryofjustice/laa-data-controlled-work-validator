@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationIssue;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidationContext;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidatorCode;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.rules.duplicate.DuplicateClaimValidationStrategy;
 import uk.gov.justice.laa.dstew.payments.claimsdata.model.AreaOfLaw;
 
@@ -64,7 +65,7 @@ public class DuplicateClaimValidator implements ClaimValidator {
   }
 
   @Override
-  public String getValidatorCode() {
-    return "CLAIM_DUPLICATE_CLAIM";
+  public ClaimValidatorCode getValidatorCode() {
+    return ClaimValidatorCode.CLAIM_DUPLICATE_CLAIM;
   }
 }

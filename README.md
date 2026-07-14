@@ -129,6 +129,42 @@ The submission validation pipeline contains schema and business-rule validators.
 | [DuplicateSubmissionValidator](docs/validators/submission-duplicate-submission-validator.md) | 100 | Checks for duplicate submissions for the same Office × Area of Law × Submission Period |
 
 
+### Validator codes and scope filtering
+
+Validators are identified by type-safe codes, split by validation type so a claim code can't be
+used for submission validation and vice versa:
+
+- `ClaimValidatorCode` — the built-in claim validator codes.
+- `SubmissionValidatorCode` — the built-in submission validator codes.
+
+Both implement the shared `ValidatorCode` sealed interface
+(`claims-validation-core/src/main/java/.../validator/`). `Validator.getValidatorCode()` returns a
+`ValidatorCode`, and scope filtering operates on `Set<? extends ValidatorCode>`.
+
+`ValidationService` accepts scopes typed to the relevant enum:
+
+```java
+// Run a subset of claim validators:
+validationService.validateClaim(claim,
+    Set.of(ClaimValidatorCode.CLAIM_SCHEMA, ClaimValidatorCode.CLAIM_MATTER_TYPE));
+
+// Run a subset of submission validators:
+validationService.validateSubmission(submission,
+    Set.of(SubmissionValidatorCode.SUBMISSION_SCHEMA_VALIDATOR));
+
+// With related claims for duplicate detection:
+validationService.validateClaim(claim,
+    Set.of(ClaimValidatorCode.CLAIM_DUPLICATE_CLAIM), relatedClaims);
+
+// Passing null (or an empty set) runs all scope-agnostic validators:
+validationService.validateClaim(claim);
+```
+
+Each code exposes a `code()` string (its constant name), and `ValidatorCode.fromCode(String)` (or the
+per-enum `fromCode`) resolves a string back to a code — supporting the serialization boundary, for
+example an HTTP adapter mapping a `"scope"` field of strings to codes and rejecting anything unknown.
+
+
 ## Configuration
 
 This project exposes configuration via Spring Boot properties (configuration properties classes) and also supports environment variable overrides. Key configurable groups and the corresponding Spring property prefixes are:

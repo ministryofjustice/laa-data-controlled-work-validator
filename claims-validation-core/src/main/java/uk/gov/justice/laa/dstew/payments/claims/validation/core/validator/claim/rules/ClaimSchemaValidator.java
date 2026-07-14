@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import lombok.extern.slf4j.Slf4j;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidationContext;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidatorCode;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.schema.AbstractSchemaValidator;
 
 /**
@@ -68,8 +69,8 @@ public class ClaimSchemaValidator
   }
 
   @Override
-  public String getValidatorCode() {
-    return "CLAIM_SCHEMA";
+  public ClaimValidatorCode getValidatorCode() {
+    return ClaimValidatorCode.CLAIM_SCHEMA;
   }
 
   // ─────────────────────────────────────────────────────────────────────────

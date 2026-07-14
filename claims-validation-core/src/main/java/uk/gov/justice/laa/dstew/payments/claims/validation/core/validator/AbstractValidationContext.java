@@ -35,10 +35,10 @@ import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Validation
 public abstract class AbstractValidationContext {
 
   /**
-   * The validation scope (e.g., "fee", "disbursement", "all"). Validators use this to determine
-   * if they should run. May be {@code null} or empty when no scoping is required.
+   * The validation scope, expressed as a set of {@link ValidatorCode}s. Validators use this to
+   * determine if they should run. May be {@code null} or empty when no scoping is required.
    */
-  private final Set<String> scope;
+  private final Set<ValidatorCode> scope;
 
   /**
    * Internal set storing unique validation issues in insertion order. Using a set ensures

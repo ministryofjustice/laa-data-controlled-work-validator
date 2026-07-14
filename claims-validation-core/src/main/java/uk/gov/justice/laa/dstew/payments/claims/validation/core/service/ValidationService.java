@@ -9,7 +9,9 @@ import lombok.extern.slf4j.Slf4j;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationResult;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidation;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidatorCode;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.submission.SubmissionValidation;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.submission.SubmissionValidatorCode;
 import uk.gov.justice.laa.dstew.payments.claimsdata.model.SubmissionResponse;
 
 /**
@@ -43,13 +45,15 @@ import uk.gov.justice.laa.dstew.payments.claimsdata.model.SubmissionResponse;
  * ValidationResult result = validationService.validateClaim(claim);
  *
  * // Validate a claim within a specific scope with related claims for duplicate detection:
- * ValidationResult result = validationService.validateClaim(claim, "submission", submissionClaims);
+ * ValidationResult result = validationService.validateClaim(
+ *     claim, Set.of(ClaimValidatorCode.CLAIM_DUPLICATE_CLAIM), submissionClaims);
  *
  * // Validate a submission with no scope filter:
  * ValidationResult result = validationService.validateSubmission(submission);
  *
  * // Validate a submission within a specific scope:
- * ValidationResult result = validationService.validateSubmission(submission, "pre-process");
+ * ValidationResult result = validationService.validateSubmission(
+ *     submission, Set.of(SubmissionValidatorCode.SUBMISSION_SCHEMA_VALIDATOR));
  * }</pre>
  */
 @RequiredArgsConstructor
@@ -67,7 +71,7 @@ public class ValidationService {
    * @return the validation result containing an {@code isValid} flag and any issues found
    */
   public ValidationResult validateClaim(Claim claim) {
-    return validateClaim(claim, null);
+    return validateClaim(claim, (Set<ClaimValidatorCode>) null);
   }
 
   /**
@@ -79,7 +83,7 @@ public class ValidationService {
    *     scope-agnostic validators
    * @return the validation result containing an {@code isValid} flag and any issues found
    */
-  public ValidationResult validateClaim(Claim claim, Set<String> scope) {
+  public ValidationResult validateClaim(Claim claim, Set<ClaimValidatorCode> scope) {
     return validateClaim(claim, scope, Collections.emptyList());
   }
 
@@ -94,7 +98,8 @@ public class ValidationService {
    *     validators; must not be {@code null} — pass an empty list if no context is available
    * @return the validation result containing an {@code isValid} flag and any issues found
    */
-  public ValidationResult validateClaim(Claim claim, Set<String> scope, List<Claim> relatedClaims) {
+  public ValidationResult validateClaim(
+      Claim claim, Set<ClaimValidatorCode> scope, List<Claim> relatedClaims) {
     return claimValidation.validateClaim(claim, scope, relatedClaims);
   }
 
@@ -105,7 +110,7 @@ public class ValidationService {
    * @return the validation result containing an {@code isValid} flag and any issues found
    */
   public ValidationResult validateSubmission(SubmissionResponse submission) {
-    return submissionValidation.validateSubmission(submission, null);
+    return validateSubmission(submission, (Set<SubmissionValidatorCode>) null);
   }
 
   /**
@@ -116,7 +121,8 @@ public class ValidationService {
    *     scope-agnostic validators
    * @return the validation result containing an {@code isValid} flag and any issues found
    */
-  public ValidationResult validateSubmission(SubmissionResponse submission, Set<String> scope) {
+  public ValidationResult validateSubmission(
+      SubmissionResponse submission, Set<SubmissionValidatorCode> scope) {
     return submissionValidation.validateSubmission(submission, scope);
   }
 }

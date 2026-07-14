@@ -13,6 +13,7 @@ import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationIssue;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationSeverity;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidationContext;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidatorCode;
 import uk.gov.justice.laa.dstew.payments.claimsdata.model.AreaOfLaw;
 import uk.gov.justice.laa.dstew.payments.claimsdata.model.ClaimStatus;
 
@@ -93,13 +94,13 @@ class ClaimSchemaValidatorTest {
     @Test
     @DisplayName("validator code is CLAIM_SCHEMA")
     void getValidatorCode_returnsClaimSchema() {
-      assertThat(validator.getValidatorCode()).isEqualTo("CLAIM_SCHEMA");
+      assertThat(validator.getValidatorCode()).isEqualTo(ClaimValidatorCode.CLAIM_SCHEMA);
     }
 
     @Test
     @DisplayName("appliesTo returns true for schema validator")
     void appliesTo_returnsTrue() {
-      assertThat(validator.appliesTo(Set.of("CLAIM_SCHEMA"))).isTrue();
+      assertThat(validator.appliesTo(Set.of(ClaimValidatorCode.CLAIM_SCHEMA))).isTrue();
       assertThat(validator.appliesTo(null)).isTrue();
     }
   }

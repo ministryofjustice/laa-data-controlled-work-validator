@@ -11,6 +11,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidationContext;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidatorCode;
 import uk.gov.justice.laa.dstew.payments.claimsdata.model.AreaOfLaw;
 
 @DisplayName("Disbursements claim validator test")
@@ -94,7 +95,7 @@ class DisbursementsClaimValidationTest {
   @DisplayName("DisbursementsClaimValidator - priority, appliesTo and validator code")
   void disbursementsValidatorMetadata() {
     assertThat(validator.priority()).isEqualTo(100);
-    assertThat(validator.appliesTo(Set.of("CLAIM_DISBURSEMENTS"))).isTrue();
-    assertThat(validator.getValidatorCode()).isEqualTo("CLAIM_DISBURSEMENTS");
+    assertThat(validator.appliesTo(Set.of(ClaimValidatorCode.CLAIM_DISBURSEMENTS))).isTrue();
+    assertThat(validator.getValidatorCode()).isEqualTo(ClaimValidatorCode.CLAIM_DISBURSEMENTS);
   }
 }

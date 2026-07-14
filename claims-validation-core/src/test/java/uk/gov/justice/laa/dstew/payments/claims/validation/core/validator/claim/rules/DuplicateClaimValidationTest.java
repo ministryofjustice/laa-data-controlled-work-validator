@@ -19,6 +19,7 @@ import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationIssue;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationSeverity;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidationContext;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidatorCode;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.rules.duplicate.DuplicateClaimValidationStrategy;
 import uk.gov.justice.laa.dstew.payments.claimsdata.model.AreaOfLaw;
 
@@ -110,7 +111,7 @@ class DuplicateClaimValidationTest {
 
   @Test
   void getValidatorCode_returnsDuplicateClaim() {
-    assertThat(validator.getValidatorCode()).isEqualTo("CLAIM_DUPLICATE_CLAIM");
+    assertThat(validator.getValidatorCode()).isEqualTo(ClaimValidatorCode.CLAIM_DUPLICATE_CLAIM);
   }
 
   @Test
@@ -120,6 +121,6 @@ class DuplicateClaimValidationTest {
 
   @Test
   void appliesTo_returnsTrue() {
-    assertThat(validator.appliesTo(Set.of("CLAIM_DUPLICATE_CLAIM"))).isTrue();
+    assertThat(validator.appliesTo(Set.of(ClaimValidatorCode.CLAIM_DUPLICATE_CLAIM))).isTrue();
   }
 }

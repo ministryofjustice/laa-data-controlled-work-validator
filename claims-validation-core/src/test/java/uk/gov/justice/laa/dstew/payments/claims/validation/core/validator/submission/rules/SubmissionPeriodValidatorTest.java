@@ -19,6 +19,7 @@ import org.junit.jupiter.params.provider.NullAndEmptySource;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.util.DateUtils;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.submission.SubmissionValidationContext;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.submission.SubmissionValidationError;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.submission.SubmissionValidatorCode;
 import uk.gov.justice.laa.dstew.payments.claimsdata.model.SubmissionResponse;
 
 /**
@@ -51,8 +52,8 @@ class SubmissionPeriodValidatorTest {
   @DisplayName("Validator metadata: priority, appliesTo and code")
   void metadata() {
     assertEquals(10, validator.priority());
-    assertTrue(validator.appliesTo(Set.of("SUBMISSION_PERIOD_VALIDATOR")));
-    assertEquals("SUBMISSION_PERIOD_VALIDATOR", validator.getValidatorCode());
+    assertTrue(validator.appliesTo(Set.of(SubmissionValidatorCode.SUBMISSION_PERIOD_VALIDATOR)));
+    assertEquals(SubmissionValidatorCode.SUBMISSION_PERIOD_VALIDATOR, validator.getValidatorCode());
   }
 
   @AfterEach

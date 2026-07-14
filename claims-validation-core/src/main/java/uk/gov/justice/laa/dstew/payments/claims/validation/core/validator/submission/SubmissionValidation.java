@@ -62,7 +62,7 @@ public class SubmissionValidation {
    *     discovered
    */
   public ValidationResult validateSubmission(
-      final SubmissionResponse submission, Set<String> scope) {
+      final SubmissionResponse submission, Set<SubmissionValidatorCode> scope) {
     log.debug("Starting validation for submission {}", submission.getSubmissionId());
     SubmissionValidationContext context = SubmissionValidationContext.create();
 

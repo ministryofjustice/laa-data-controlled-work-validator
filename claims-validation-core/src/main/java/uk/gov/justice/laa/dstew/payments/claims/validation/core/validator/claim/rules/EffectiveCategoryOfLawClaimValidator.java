@@ -15,6 +15,7 @@ import uk.gov.justice.laa.dstew.payments.claims.validation.core.provider.Provide
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.util.ClaimEffectiveDateUtil;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidationContext;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidationError;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidatorCode;
 import uk.gov.justice.laa.fee.scheme.model.FeeDetailsResponseV2;
 import uk.gov.justice.laadata.providers.model.FirmOfficeContractAndScheduleDetails;
 import uk.gov.justice.laadata.providers.model.FirmOfficeContractAndScheduleLine;
@@ -285,7 +286,7 @@ public class EffectiveCategoryOfLawClaimValidator implements ClaimValidator {
    * @return {@code "CLAIM_CATEGORY_OF_LAW"}
    */
   @Override
-  public String getValidatorCode() {
-    return "CLAIM_CATEGORY_OF_LAW";
+  public ClaimValidatorCode getValidatorCode() {
+    return ClaimValidatorCode.CLAIM_CATEGORY_OF_LAW;
   }
 }

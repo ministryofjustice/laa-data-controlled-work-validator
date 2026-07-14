@@ -35,6 +35,7 @@ import uk.gov.justice.laa.dstew.payments.claims.validation.core.provider.impl.Ht
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.provider.impl.HttpProviderDetailsProvider;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidationContext;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidationError;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidatorCode;
 import uk.gov.justice.laa.dstew.payments.claimsdata.model.AreaOfLaw;
 import uk.gov.justice.laa.dstew.payments.claimsdata.model.ClaimStatus;
 import uk.gov.justice.laa.fee.scheme.model.FeeDetailsResponseV2;
@@ -191,8 +192,8 @@ class EffectiveCategoryOfLawClaimValidationTest {
   @DisplayName("EffectiveCategoryOfLawClaimValidator - priority, appliesTo and validator code")
   void effectiveCategoryOfLawValidatorMetadata() {
     assertThat(validator.priority()).isEqualTo(1000);
-    assertThat(validator.appliesTo(Set.of("CLAIM_CATEGORY_OF_LAW"))).isTrue();
-    assertThat(validator.getValidatorCode()).isEqualTo("CLAIM_CATEGORY_OF_LAW");
+    assertThat(validator.appliesTo(Set.of(ClaimValidatorCode.CLAIM_CATEGORY_OF_LAW))).isTrue();
+    assertThat(validator.getValidatorCode()).isEqualTo(ClaimValidatorCode.CLAIM_CATEGORY_OF_LAW);
   }
 
   @Test

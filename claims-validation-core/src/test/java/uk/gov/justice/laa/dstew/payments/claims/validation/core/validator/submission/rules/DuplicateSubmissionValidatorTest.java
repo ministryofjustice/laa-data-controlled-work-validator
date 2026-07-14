@@ -24,6 +24,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.provider.ClaimsDataProvider;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.submission.SubmissionValidationContext;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.submission.SubmissionValidationError;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.submission.SubmissionValidatorCode;
 import uk.gov.justice.laa.dstew.payments.claimsdata.model.AreaOfLaw;
 import uk.gov.justice.laa.dstew.payments.claimsdata.model.SubmissionBase;
 import uk.gov.justice.laa.dstew.payments.claimsdata.model.SubmissionResponse;
@@ -54,8 +55,8 @@ class DuplicateSubmissionValidatorTest {
   @DisplayName("appliesTo returns true and validator code is set")
   @Test
   void metadata() {
-    Assertions.assertTrue(validator.appliesTo(Set.of("SUBMISSION_DUPLICATE_VALIDATOR")));
-    Assertions.assertEquals("SUBMISSION_DUPLICATE_VALIDATOR", validator.getValidatorCode());
+    Assertions.assertTrue(validator.appliesTo(Set.of(SubmissionValidatorCode.SUBMISSION_DUPLICATE_VALIDATOR)));
+    Assertions.assertEquals(SubmissionValidatorCode.SUBMISSION_DUPLICATE_VALIDATOR, validator.getValidatorCode());
   }
 
   @Nested
