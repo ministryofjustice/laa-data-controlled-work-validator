@@ -134,11 +134,11 @@ class ValidationServiceTest {
   }
 
   // ─────────────────────────────────────────────────────────────────────────
-  // validateClaim(Claim, Set<ValidatorCode>)
+  // validateClaim(Claim, Set<ClaimValidatorCode>)
   // ─────────────────────────────────────────────────────────────────────────
 
   @Nested
-  @DisplayName("validateClaim(Claim, Set<ValidatorCode>) — two-arg overload")
+  @DisplayName("validateClaim(Claim, Set<ClaimValidatorCode>) — two-arg overload")
   class TwoArgClaimOverload {
 
     @Test
@@ -199,11 +199,11 @@ class ValidationServiceTest {
   }
 
   // ─────────────────────────────────────────────────────────────────────────
-  // validateClaim(Claim, Set<ValidatorCode>, List<Claim>)
+  // validateClaim(Claim, Set<ClaimValidatorCode>, List<Claim>)
   // ─────────────────────────────────────────────────────────────────────────
 
   @Nested
-  @DisplayName("validateClaim(Claim, Set<ValidatorCode>, List) — three-arg overload")
+  @DisplayName("validateClaim(Claim, Set<ClaimValidatorCode>, List) — three-arg overload")
   class ThreeArgClaimOverload {
 
     @Test
@@ -337,11 +337,11 @@ class ValidationServiceTest {
   }
 
   // ─────────────────────────────────────────────────────────────────────────
-  // validateSubmission(SubmissionResponse, Set<ValidatorCode>)
+  // validateSubmission(SubmissionResponse, Set<SubmissionValidatorCode>)
   // ─────────────────────────────────────────────────────────────────────────
 
   @Nested
-  @DisplayName("validateSubmission(SubmissionResponse, Set<ValidatorCode>) — two-arg overload")
+  @DisplayName("validateSubmission(SubmissionResponse, Set<SubmissionValidatorCode>) — two-arg overload")
   class TwoArgSubmissionOverload {
 
     @Test
@@ -403,7 +403,7 @@ class ValidationServiceTest {
   class ValidatorCodeOverloads {
 
     @Test
-    @DisplayName("validateClaim(Claim, Set<ValidatorCode>) passes converted scope to the pipeline")
+    @DisplayName("validateClaim(Claim, Set<ClaimValidatorCode>) passes converted scope to the pipeline")
     void validateClaimTypedScope() {
       AtomicReference<Set<? extends ValidatorCode>> capturedScope = new AtomicReference<>();
 
@@ -428,7 +428,7 @@ class ValidationServiceTest {
     }
 
     @Test
-    @DisplayName("validateClaim(Claim, Set<ValidatorCode>, List) passes related claims and scope")
+    @DisplayName("validateClaim(Claim, Set<ClaimValidatorCode>, List) passes related claims and scope")
     void validateClaimRelatedAndTypedScope() {
       AtomicReference<Set<? extends ValidatorCode>> capturedScope = new AtomicReference<>();
       AtomicReference<List<Claim>> capturedRelated = new AtomicReference<>();
@@ -456,7 +456,7 @@ class ValidationServiceTest {
     }
 
     @Test
-    @DisplayName("validateClaim(Claim, empty Set<ValidatorCode>) runs all scope-agnostic validators")
+    @DisplayName("validateClaim(Claim, empty Set<ClaimValidatorCode>) runs all scope-agnostic validators")
     void validateClaimEmptyTypedScope() {
       AtomicReference<Set<? extends ValidatorCode>> capturedScope = new AtomicReference<>(Set.of(ClaimValidatorCode.CLAIM_MATTER_TYPE));
 
@@ -478,7 +478,7 @@ class ValidationServiceTest {
     }
 
     @Test
-    @DisplayName("validateClaim(Claim, (Set<ValidatorCode>) null) runs all scope-agnostic validators")
+    @DisplayName("validateClaim(Claim, (Set<ClaimValidatorCode>) null) runs all scope-agnostic validators")
     void validateClaimNullTypedScope() {
       AtomicReference<Set<? extends ValidatorCode>> capturedScope = new AtomicReference<>(Set.of(ClaimValidatorCode.CLAIM_MATTER_TYPE));
 
@@ -500,7 +500,7 @@ class ValidationServiceTest {
     }
 
     @Test
-    @DisplayName("validateSubmission(SubmissionResponse, Set<ValidatorCode>) passes converted scope")
+    @DisplayName("validateSubmission(SubmissionResponse, Set<SubmissionValidatorCode>) passes converted scope")
     void validateSubmissionTypedScope() {
       AtomicReference<Set<? extends ValidatorCode>> capturedScope = new AtomicReference<>();
 

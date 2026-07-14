@@ -71,7 +71,7 @@ public class ValidationService {
    * @return the validation result containing an {@code isValid} flag and any issues found
    */
   public ValidationResult validateClaim(Claim claim) {
-    return validateClaim(claim, (Set<ClaimValidatorCode>) null);
+    return validateClaim(claim, null);
   }
 
   /**
@@ -110,7 +110,7 @@ public class ValidationService {
    * @return the validation result containing an {@code isValid} flag and any issues found
    */
   public ValidationResult validateSubmission(SubmissionResponse submission) {
-    return validateSubmission(submission, (Set<SubmissionValidatorCode>) null);
+    return validateSubmission(submission, null);
   }
 
   /**

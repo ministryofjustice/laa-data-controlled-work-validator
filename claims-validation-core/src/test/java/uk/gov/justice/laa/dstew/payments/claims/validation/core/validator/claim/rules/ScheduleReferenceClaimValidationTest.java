@@ -96,7 +96,6 @@ class ScheduleReferenceClaimValidationTest {
   void scheduleReferenceValidatorMetadata() {
     assertThat(validator.priority()).isEqualTo(100);
     assertThat(validator.appliesTo(Set.of(ClaimValidatorCode.CLAIM_SCHEDULE_REFERENCE))).isTrue();
-    assertThat(validator.appliesTo(Set.of(ClaimValidatorCode.CLAIM_SCHEDULE_REFERENCE))).isTrue();
     assertThat(validator.getValidatorCode()).isEqualTo(ClaimValidatorCode.CLAIM_SCHEDULE_REFERENCE);
   }
 }
