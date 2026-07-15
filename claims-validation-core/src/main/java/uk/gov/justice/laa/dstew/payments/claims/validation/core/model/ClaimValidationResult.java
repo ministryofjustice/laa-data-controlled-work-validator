@@ -1,6 +1,7 @@
 package uk.gov.justice.laa.dstew.payments.claims.validation.core.model;
 
 import java.io.Serial;
+import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.SuperBuilder;
 
@@ -16,7 +17,7 @@ public class ClaimValidationResult extends ValidationResult {
   @Serial
   private static final long serialVersionUID = 1L;
 
-  @lombok.Builder.Default
+  @Builder.Default
   private final ResolvedClaimData resolvedData = ResolvedClaimData.empty();
 
   /**
