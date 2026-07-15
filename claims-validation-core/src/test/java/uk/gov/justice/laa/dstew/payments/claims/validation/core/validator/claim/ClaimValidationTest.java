@@ -43,18 +43,13 @@ class ClaimValidationTest {
   @BeforeEach
   void setUpProvider() {
     feeSchemeProvider = mock(HttpFeeSchemeProvider.class);
-    // Default test provider returns feeType and an areaOfLaw value so existing tests that
-    // don't care about areaOfLaw continue to pass. The areaOfLaw getter may not be
-    // available on the generated model in all environments; expose it via an
-    // anonymous subclass so the ClaimValidation reflection logic can discover it.
+    // Default test provider returns both feeType and areaOfLaw so tests that don't care about
+    // fee-scheme resolution continue to pass without a TECHNICAL error.
     when(feeSchemeProvider.getFeeDetails(anyString()))
-            .thenReturn(Optional.of(new FeeDetailsResponseV2() {
-              @Override
-              public String getFeeType() { return "TEST_FEE_TYPE"; }
-
-              // Provide areaOfLaw to avoid TECHNICAL errors in tests unrelated to area lookup
-              public String getAreaOfLaw() { return "TEST_AREA"; }
-            }));
+            .thenReturn(Optional.of(FeeDetailsResponseV2.builder()
+                    .feeType("TEST_FEE_TYPE")
+                    .areaOfLaw("TEST_AREA")
+                    .build()));
   }
 
   // Helper: build a ClaimValidation with the shared mock provider
@@ -233,15 +228,12 @@ class ClaimValidationTest {
     @Test
     @DisplayName("Sets feeCalculationType from provider when feeType is present and non-blank")
     void setsFeeTypeFromProviderWhenPresent() {
-        // Use an anonymous subclass to expose getAreaOfLaw() in test environments where the
-        // generated model may not yet include that accessor. This mirrors runtime behaviour
-        // expected by ClaimValidation which requires both feeType and areaOfLaw to be present.
-        FeeDetailsResponseV2 response = new FeeDetailsResponseV2() {
-          @Override
-          public String getFeeType() { return "FIXED"; }
-
-          public String getAreaOfLaw() { return "TEST_AREA"; }
-        };
+        // ClaimValidation requires both feeType and areaOfLaw to be present for a successful
+        // resolution, so provide both via the generated builder.
+        FeeDetailsResponseV2 response = FeeDetailsResponseV2.builder()
+            .feeType("FIXED")
+            .areaOfLaw("TEST_AREA")
+            .build();
         when(feeSchemeProvider.getFeeDetails("FEE01")).thenReturn(Optional.of(response));
 
       AtomicReference<ClaimValidationContext> captured = new AtomicReference<>();

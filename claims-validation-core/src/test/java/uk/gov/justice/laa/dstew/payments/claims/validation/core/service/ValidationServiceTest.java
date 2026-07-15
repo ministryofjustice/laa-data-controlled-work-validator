@@ -50,20 +50,13 @@ class ValidationServiceTest {
   @BeforeEach
   void setUp() {
     feeSchemeProvider = mock(HttpFeeSchemeProvider.class);
-    // Default test provider returns feeType and an areaOfLaw value. The areaOfLaw getter does not
-    // yet exist on the generated model in some environments; create an anonymous subclass that
-    // exposes the accessor so tests can exercise the happy-path resolution.
+    // Default test provider returns both feeType and areaOfLaw so the happy-path fee-scheme
+    // resolution succeeds.
     when(feeSchemeProvider.getFeeDetails(anyString()))
-            .thenReturn(Optional.of(new FeeDetailsResponseV2() {
-              @Override
-              public String getFeeType() { return "TEST_FEE_TYPE"; }
-
-              // Best-effort helper for tests: provide areaOfLaw on the runtime class so the
-              // ClaimValidation reflection logic can discover it even when the base model
-              // lacks the declared method. This mirrors the real-field that will be added
-              // to FeeDetailsResponseV2 in a later artifact.
-              public String getAreaOfLaw() { return "TEST_AREA"; }
-            }));
+            .thenReturn(Optional.of(FeeDetailsResponseV2.builder()
+                    .feeType("TEST_FEE_TYPE")
+                    .areaOfLaw("TEST_AREA")
+                    .build()));
 
     testClaim = new Claim();
     testClaim.setAreaOfLaw(AreaOfLaw.LEGAL_HELP);

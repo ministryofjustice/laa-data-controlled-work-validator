@@ -183,26 +183,8 @@ public class ClaimValidation {
 
     FeeDetailsResponseV2 details = opt.get();
 
-    // Best-guess for area of law getter on FeeDetailsResponseV2. TODO: confirm getter name once
-    // areaOfLaw is added to FeeDetailsResponseV2 in the fee-scheme model artifact.
-    String areaOfLaw = null;
-    try {
-      var m = details.getClass().getMethod("getAreaOfLaw");
-      // Allow access to non-public runtime subclasses used in tests or during runtime shading
-      // so that the reflection lookup is robust when the generated model library is not yet
-      // updated with the accessor.
-      m.setAccessible(true);
-      Object val = m.invoke(details);
-      if (val != null) {
-        areaOfLaw = String.valueOf(val);
-      }
-    } catch (NoSuchMethodException e) {
-      log.debug("FeeDetailsResponseV2.getAreaOfLaw() not available on current model version");
-    } catch (Exception e) {
-      log.warn("Unexpected error while trying to read areaOfLaw from FeeDetailsResponseV2", e);
-    }
-
     String feeType = details.getFeeType();
+    String areaOfLaw = details.getAreaOfLaw();
 
     if (feeType == null || feeType.isBlank()) {
       log.warn("Fee details returned for fee code: {} but feeType is null or blank", feeCode);
