@@ -17,6 +17,7 @@ import java.util.Map;
 import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationIssue;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.ValidatorCode;
 
 /**
  * Abstract base class for JSON schema validators.
@@ -139,7 +140,7 @@ public abstract class AbstractSchemaValidator<T> {
    *
    * @return validator code
    */
-  public abstract String getValidatorCode();
+  public abstract ValidatorCode getValidatorCode();
 
   /**
    * Returns the JSON Schema specification version to use when building the {@link JsonSchema}.

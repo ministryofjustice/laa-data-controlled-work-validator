@@ -13,6 +13,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidationContext;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidationError;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidatorCode;
 
 @DisplayName("Unique file number claim validator test")
 class UniqueFileNumberClaimValidationTest {
@@ -133,7 +134,7 @@ class UniqueFileNumberClaimValidationTest {
   @DisplayName("UniqueFileNumberClaimValidator - priority, appliesTo and validator code")
   void uniqueFileNumberValidatorMetadata() {
     assertThat(validator.priority()).isEqualTo(100);
-    assertThat(validator.appliesTo(Set.of("CLAIM_UNIQUE_FILE_NUMBER"))).isTrue();
-    assertThat(validator.getValidatorCode()).isEqualTo("CLAIM_UNIQUE_FILE_NUMBER");
+    assertThat(validator.appliesTo(Set.of(ClaimValidatorCode.CLAIM_UNIQUE_FILE_NUMBER_VALIDATOR))).isTrue();
+    assertThat(validator.getValidatorCode()).isEqualTo(ClaimValidatorCode.CLAIM_UNIQUE_FILE_NUMBER_VALIDATOR);
   }
 }

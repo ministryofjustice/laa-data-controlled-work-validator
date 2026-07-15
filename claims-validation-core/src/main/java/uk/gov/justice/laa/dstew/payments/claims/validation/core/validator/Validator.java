@@ -33,10 +33,10 @@ public interface Validator<T, C> {
   /**
    * Whether this validator should run for the given scope.
    *
-   * @param scope the validation scope (for example, "fee" or "disbursement")
+   * @param scope the validation scope, expressed as a set of {@link ValidatorCode}s
    * @return true if this validator should run for the scope
    */
-  default boolean appliesTo(Set<String> scope) {
+  default boolean appliesTo(Set<? extends ValidatorCode> scope) {
     return scope == null || scope.isEmpty() || scope.contains(getValidatorCode());
   }
 
@@ -45,5 +45,5 @@ public interface Validator<T, C> {
    *
    * @return validator code
    */
-  String getValidatorCode();
+  ValidatorCode getValidatorCode();
 }
