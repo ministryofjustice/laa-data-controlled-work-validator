@@ -26,6 +26,10 @@ public class ClaimValidationContext extends AbstractValidationContext {
   @Setter
   private String feeCalculationType;
 
+  /** The resolved area of law code derived from the fee-scheme response. */
+  @Setter
+  private String areaOfLaw;
+
   @Setter
   private String authorisedCategoryOfLawCode;
 

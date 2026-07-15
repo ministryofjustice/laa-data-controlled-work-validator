@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationIssue;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationResult;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationSeverity;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.submission.rules.SubmissionValidator;
@@ -58,8 +59,7 @@ public class SubmissionValidation {
    * @param scope an optional set of scope identifiers used to filter applicable validators;
    *     {@code null} runs all scope-agnostic validators
    * @return a {@link ValidationResult} describing whether the submission is valid and listing
-   *     any {@link uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationIssue}s
-   *     discovered
+   *     any {@link ValidationIssue}s discovered
    */
   public ValidationResult validateSubmission(
       final SubmissionResponse submission, Set<String> scope) {

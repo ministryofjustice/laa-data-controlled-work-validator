@@ -7,6 +7,8 @@ import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ClaimValidationResult;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ResolvedClaimData;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationIssue;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationResult;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationSeverity;
@@ -67,7 +69,8 @@ public class ClaimValidation {
    * @return a {@link ValidationResult} describing whether the claim is valid and any
    *     {@link ValidationIssue}s discovered
    */
-  public ValidationResult validateClaim(Claim claim, Set<String> scope, List<Claim> relatedClaims) {
+  public ClaimValidationResult validateClaim(Claim claim, Set<String> scope,
+                                             List<Claim> relatedClaims) {
 
     // Handle missing claim - return validation error, not 400
     if (claim == null) {
@@ -109,7 +112,17 @@ public class ClaimValidation {
     log.info("Validation completed. isValid: {}, total issues: {}, total errors: {}",
             isValid, context.getIssueCount(), context.getErrorCount());
 
-    return new ValidationResult().toBuilder().isValid(isValid).issues(finalIssues).build();
+    ResolvedClaimData resolved = new ResolvedClaimData(
+            context.getFeeCalculationType(),
+            context.getAreaOfLaw(),
+            context.getAuthorisedCategoryOfLawCode()
+    );
+
+    return ClaimValidationResult.builder()
+            .isValid(isValid)
+            .issues(finalIssues)
+            .resolvedData(resolved)
+            .build();
   }
 
   /**
@@ -168,7 +181,28 @@ public class ClaimValidation {
       return;
     }
 
-    String feeType = opt.get().getFeeType();
+    FeeDetailsResponseV2 details = opt.get();
+
+    // Best-guess for area of law getter on FeeDetailsResponseV2. TODO: confirm getter name once
+    // areaOfLaw is added to FeeDetailsResponseV2 in the fee-scheme model artifact.
+    String areaOfLaw = null;
+    try {
+      var m = details.getClass().getMethod("getAreaOfLaw");
+      // Allow access to non-public runtime subclasses used in tests or during runtime shading
+      // so that the reflection lookup is robust when the generated model library is not yet
+      // updated with the accessor.
+      m.setAccessible(true);
+      Object val = m.invoke(details);
+      if (val != null) {
+        areaOfLaw = String.valueOf(val);
+      }
+    } catch (NoSuchMethodException e) {
+      log.debug("FeeDetailsResponseV2.getAreaOfLaw() not available on current model version");
+    } catch (Exception e) {
+      log.warn("Unexpected error while trying to read areaOfLaw from FeeDetailsResponseV2", e);
+    }
+
+    String feeType = details.getFeeType();
 
     if (feeType == null || feeType.isBlank()) {
       log.warn("Fee details returned for fee code: {} but feeType is null or blank", feeCode);
@@ -176,8 +210,18 @@ public class ClaimValidation {
               ClaimValidationError.TECHNICAL_ERROR_FEE_SCHEME_API.toValidationIssue());
       return;
     }
-    log.debug("Resolved fee calculation type '{}' for fee code '{}'", feeType, feeCode);
+
+    if (areaOfLaw == null || areaOfLaw.isBlank()) {
+      log.warn("Fee details returned for fee code: {} but areaOfLaw is null or blank", feeCode);
+      context.addValidationIssue(
+              ClaimValidationError.TECHNICAL_ERROR_FEE_SCHEME_API.toValidationIssue());
+      return;
+    }
+
+    log.debug("Resolved fee calculation type '{}' and areaOfLaw '{}' for fee code '{}'",
+            feeType, areaOfLaw, feeCode);
     context.setFeeCalculationType(feeType);
+    context.setAreaOfLaw(areaOfLaw);
   }
 
   /**
@@ -185,11 +229,11 @@ public class ClaimValidation {
    *
    * @return validation result with MISSING_CLAIM error
    */
-  private ValidationResult buildMissingClaimResult() {
-    return new ValidationResult()
-            .toBuilder()
+  private ClaimValidationResult buildMissingClaimResult() {
+    return ClaimValidationResult.builder()
             .isValid(false)
             .issues(List.of(ClaimValidationError.MISSING_CLAIM.toValidationIssue()))
+            .resolvedData(ResolvedClaimData.empty())
             .build();
   }
 

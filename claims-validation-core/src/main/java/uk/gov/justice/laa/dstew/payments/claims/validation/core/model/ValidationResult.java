@@ -4,11 +4,11 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 /**
  * Represents the result of an internal validation process, including whether the validation passed
@@ -18,9 +18,8 @@ import lombok.NoArgsConstructor;
  * This class is for internal use only and is not intended for API serialization.
  */
 @Data
-@Builder(toBuilder = true)
+@SuperBuilder(toBuilder = true)
 @NoArgsConstructor
-@AllArgsConstructor
 public class ValidationResult implements Serializable {
 
   /**

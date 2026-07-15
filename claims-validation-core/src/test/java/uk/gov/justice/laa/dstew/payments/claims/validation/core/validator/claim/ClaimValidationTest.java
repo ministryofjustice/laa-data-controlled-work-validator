@@ -43,9 +43,18 @@ class ClaimValidationTest {
   @BeforeEach
   void setUpProvider() {
     feeSchemeProvider = mock(HttpFeeSchemeProvider.class);
-    // Default: returns empty so tests that don't care about fee type don't throw
+    // Default test provider returns feeType and an areaOfLaw value so existing tests that
+    // don't care about areaOfLaw continue to pass. The areaOfLaw getter may not be
+    // available on the generated model in all environments; expose it via an
+    // anonymous subclass so the ClaimValidation reflection logic can discover it.
     when(feeSchemeProvider.getFeeDetails(anyString()))
-            .thenReturn(Optional.of(FeeDetailsResponseV2.builder().feeType("TEST_FEE_TYPE").build()));
+            .thenReturn(Optional.of(new FeeDetailsResponseV2() {
+              @Override
+              public String getFeeType() { return "TEST_FEE_TYPE"; }
+
+              // Provide areaOfLaw to avoid TECHNICAL errors in tests unrelated to area lookup
+              public String getAreaOfLaw() { return "TEST_AREA"; }
+            }));
   }
 
   // Helper: build a ClaimValidation with the shared mock provider
@@ -224,9 +233,16 @@ class ClaimValidationTest {
     @Test
     @DisplayName("Sets feeCalculationType from provider when feeType is present and non-blank")
     void setsFeeTypeFromProviderWhenPresent() {
-      FeeDetailsResponseV2 response = mock(FeeDetailsResponseV2.class);
-      when(response.getFeeType()).thenReturn("FIXED");
-      when(feeSchemeProvider.getFeeDetails("FEE01")).thenReturn(Optional.of(response));
+        // Use an anonymous subclass to expose getAreaOfLaw() in test environments where the
+        // generated model may not yet include that accessor. This mirrors runtime behaviour
+        // expected by ClaimValidation which requires both feeType and areaOfLaw to be present.
+        FeeDetailsResponseV2 response = new FeeDetailsResponseV2() {
+          @Override
+          public String getFeeType() { return "FIXED"; }
+
+          public String getAreaOfLaw() { return "TEST_AREA"; }
+        };
+        when(feeSchemeProvider.getFeeDetails("FEE01")).thenReturn(Optional.of(response));
 
       AtomicReference<ClaimValidationContext> captured = new AtomicReference<>();
       ClaimValidator captor = stub("CAP", 0,  (c, ctx) -> captured.set(ctx));

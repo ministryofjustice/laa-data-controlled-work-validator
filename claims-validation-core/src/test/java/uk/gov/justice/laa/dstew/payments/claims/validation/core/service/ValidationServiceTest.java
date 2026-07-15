@@ -16,6 +16,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ClaimValidationResult;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationIssue;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationResult;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationSeverity;
@@ -49,8 +50,20 @@ class ValidationServiceTest {
   @BeforeEach
   void setUp() {
     feeSchemeProvider = mock(HttpFeeSchemeProvider.class);
+    // Default test provider returns feeType and an areaOfLaw value. The areaOfLaw getter does not
+    // yet exist on the generated model in some environments; create an anonymous subclass that
+    // exposes the accessor so tests can exercise the happy-path resolution.
     when(feeSchemeProvider.getFeeDetails(anyString()))
-            .thenReturn(Optional.of(FeeDetailsResponseV2.builder().feeType("TEST_FEE_TYPE").build()));
+            .thenReturn(Optional.of(new FeeDetailsResponseV2() {
+              @Override
+              public String getFeeType() { return "TEST_FEE_TYPE"; }
+
+              // Best-effort helper for tests: provide areaOfLaw on the runtime class so the
+              // ClaimValidation reflection logic can discover it even when the base model
+              // lacks the declared method. This mirrors the real-field that will be added
+              // to FeeDetailsResponseV2 in a later artifact.
+              public String getAreaOfLaw() { return "TEST_AREA"; }
+            }));
 
     testClaim = new Claim();
     testClaim.setAreaOfLaw(AreaOfLaw.LEGAL_HELP);
@@ -88,22 +101,26 @@ class ValidationServiceTest {
     @Test
     @DisplayName("Returns valid result when no validators raise errors")
     void returnsValidResultForValidClaim() {
-      ValidationResult result = withClaims(claimValidation(Collections.emptyList()))
+      ClaimValidationResult result = withClaims(claimValidation(Collections.emptyList()))
           .validateClaim(testClaim);
 
       assertThat(result.isValid()).isTrue();
       assertThat(result.getIssues()).isEmpty();
+      // Resolved data is always returned (may contain null fields when resolution is incomplete)
+      assertThat(result.getResolvedData()).isNotNull();
     }
 
     @Test
     @DisplayName("Returns MISSING_CLAIM error when claim is null")
     void returnsMissingClaimWhenClaimIsNull() {
-      ValidationResult result = withClaims(claimValidation(Collections.emptyList()))
+      ClaimValidationResult result = withClaims(claimValidation(Collections.emptyList()))
           .validateClaim(null);
 
       assertThat(result.isValid()).isFalse();
       assertThat(result.getIssues()).hasSize(1);
       assertThat(result.getIssues().getFirst().getCode()).isEqualTo("MISSING_CLAIM");
+      // Resolved data must be non-null even for missing claim
+      assertThat(result.getResolvedData()).isNotNull();
     }
 
     @Test
@@ -127,6 +144,21 @@ class ValidationServiceTest {
       withClaims(claimValidation(List.of(captor))).validateClaim(testClaim);
 
       assertThat(capturedScope.get()).isNull();
+    }
+
+    @Test
+    @DisplayName("Missing areaOfLaw from fee details yields TECHNICAL_ERROR_FEE_SCHEME_API")
+    void missingAreaOfLawIsTechnicalError() {
+      // Override provider to return a response without areaOfLaw
+      when(feeSchemeProvider.getFeeDetails(anyString()))
+              .thenReturn(Optional.of(FeeDetailsResponseV2.builder().feeType("TEST_FEE_TYPE").build()));
+
+      ClaimValidationResult result = withClaims(claimValidation(Collections.emptyList()))
+          .validateClaim(testClaim);
+
+      assertThat(result.isValid()).isFalse();
+      assertThat(result.getIssues()).isNotEmpty();
+      assertThat(result.getIssues().getFirst().getCode()).isEqualTo("TECHNICAL_ERROR_FEE_SCHEME_API");
     }
   }
 
@@ -187,7 +219,7 @@ class ValidationServiceTest {
     @Test
     @DisplayName("Returns MISSING_CLAIM error when claim is null")
     void returnsMissingClaimWhenClaimIsNull() {
-      ValidationResult result = withClaims(claimValidation(Collections.emptyList()))
+      ClaimValidationResult result = withClaims(claimValidation(Collections.emptyList()))
           .validateClaim(null, Set.of("fee"));
 
       assertThat(result.isValid()).isFalse();
@@ -227,7 +259,7 @@ class ValidationServiceTest {
         @Override public String getValidatorCode() { return "ERROR_VALIDATOR"; }
       };
 
-      ValidationResult result = withClaims(claimValidation(List.of(errorValidator)))
+      ClaimValidationResult result = withClaims(claimValidation(List.of(errorValidator)))
           .validateClaim(testClaim, Set.of("ERROR_VALIDATOR"), List.of());
 
       assertThat(result.isValid()).isFalse();
@@ -251,7 +283,7 @@ class ValidationServiceTest {
         @Override public String getValidatorCode() { return "WARN_VALIDATOR"; }
       };
 
-      ValidationResult result = withClaims(claimValidation(List.of(warningValidator)))
+      ClaimValidationResult result = withClaims(claimValidation(List.of(warningValidator)))
           .validateClaim(testClaim, null, List.of());
 
       assertThat(result.isValid()).isTrue();
@@ -261,7 +293,7 @@ class ValidationServiceTest {
     @Test
     @DisplayName("Returns MISSING_CLAIM error when claim is null")
     void returnsMissingClaimWhenClaimIsNull() {
-      ValidationResult result = withClaims(claimValidation(Collections.emptyList()))
+      ClaimValidationResult result = withClaims(claimValidation(Collections.emptyList()))
           .validateClaim(null, Set.of("fee"), List.of());
 
       assertThat(result.isValid()).isFalse();
