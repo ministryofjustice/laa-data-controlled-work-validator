@@ -12,6 +12,7 @@ import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Validation
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.util.DateUtils;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidationContext;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidationError;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidatorCode;
 
 /**
  * Validator that checks if disbursement claims are submitted within the allowed timeframe relative
@@ -66,7 +67,7 @@ public final class DisbursementClaimStartDateValidator implements ClaimValidator
   }
 
   @Override
-  public String getValidatorCode() {
-    return "CLAIM_DISBURSEMENT_START_DATE";
+  public ClaimValidatorCode getValidatorCode() {
+    return ClaimValidatorCode.CLAIM_DISBURSEMENT_START_DATE_VALIDATOR;
   }
 }

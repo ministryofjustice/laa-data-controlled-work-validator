@@ -14,6 +14,7 @@ import org.junit.jupiter.params.provider.CsvSource;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.FeeCalculationType;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidationContext;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidatorCode;
 
 class DisbursementClaimStartDateValidatorTest {
 
@@ -148,7 +149,7 @@ class DisbursementClaimStartDateValidatorTest {
   @DisplayName("DisbursementClaimStartDateValidator - priority, appliesTo and validator code")
   void disbursementStartDateValidatorMetadata() {
     assertThat(validator.priority()).isEqualTo(10);
-    assertThat(validator.appliesTo(Set.of("CLAIM_DISBURSEMENT_START_DATE"))).isTrue();
-    assertThat(validator.getValidatorCode()).isEqualTo("CLAIM_DISBURSEMENT_START_DATE");
+    assertThat(validator.appliesTo(Set.of(ClaimValidatorCode.CLAIM_DISBURSEMENT_START_DATE_VALIDATOR))).isTrue();
+    assertThat(validator.getValidatorCode()).isEqualTo(ClaimValidatorCode.CLAIM_DISBURSEMENT_START_DATE_VALIDATOR);
   }
 }

@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.submission.SubmissionValidationContext;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.submission.SubmissionValidationError;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.submission.SubmissionValidatorCode;
 import uk.gov.justice.laa.dstew.payments.claimsdata.model.SubmissionResponse;
 import uk.gov.justice.laa.dstew.payments.claimsdata.model.SubmissionStatus;
 
@@ -55,8 +56,8 @@ public class SubmissionStatusValidator implements SubmissionValidator {
   }
 
   @Override
-  public String getValidatorCode() {
-    return "SUBMISSION_STATUS_VALIDATOR";
+  public SubmissionValidatorCode getValidatorCode() {
+    return SubmissionValidatorCode.SUBMISSION_STATUS_VALIDATOR;
   }
 
 }

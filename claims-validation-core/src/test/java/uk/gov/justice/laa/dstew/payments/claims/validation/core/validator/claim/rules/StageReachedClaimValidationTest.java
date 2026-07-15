@@ -11,6 +11,7 @@ import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidationContext;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidatorCode;
 import uk.gov.justice.laa.dstew.payments.claimsdata.model.AreaOfLaw;
 import uk.gov.justice.laa.dstew.payments.claimsdata.model.ClaimStatus;
 
@@ -148,7 +149,7 @@ class StageReachedClaimValidationTest {
   @DisplayName("StageReachedClaimValidator - priority, appliesTo and validator code")
   void stageReachedValidatorMetadata() {
     assertThat(validator.priority()).isEqualTo(100);
-    assertThat(validator.appliesTo(Set.of("CLAIM_STAGE_REACHED"))).isTrue();
-    assertThat(validator.getValidatorCode()).isEqualTo("CLAIM_STAGE_REACHED");
+    assertThat(validator.appliesTo(Set.of(ClaimValidatorCode.CLAIM_STAGE_REACHED_VALIDATOR))).isTrue();
+    assertThat(validator.getValidatorCode()).isEqualTo(ClaimValidatorCode.CLAIM_STAGE_REACHED_VALIDATOR);
   }
 }

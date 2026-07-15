@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.provider.ClaimsDataProvider;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.submission.SubmissionValidationContext;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.submission.SubmissionValidationError;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.submission.SubmissionValidatorCode;
 import uk.gov.justice.laa.dstew.payments.claimsdata.model.SubmissionBase;
 import uk.gov.justice.laa.dstew.payments.claimsdata.model.SubmissionResponse;
 import uk.gov.justice.laa.dstew.payments.claimsdata.model.SubmissionStatus;
@@ -43,8 +44,8 @@ public class DuplicateSubmissionValidator implements SubmissionValidator {
   }
 
   @Override
-  public String getValidatorCode() {
-    return "SUBMISSION_DUPLICATE_VALIDATOR";
+  public SubmissionValidatorCode getValidatorCode() {
+    return SubmissionValidatorCode.SUBMISSION_DUPLICATE_VALIDATOR;
   }
 
   private boolean isDuplicateSubmission(SubmissionResponse submission) {

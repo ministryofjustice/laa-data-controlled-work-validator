@@ -8,6 +8,7 @@ import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.util.DateUtils;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidationContext;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidationError;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidatorCode;
 
 /**
  * Validator for checking the Unique File Number (UFN) date validity. UFN must be in format
@@ -91,7 +92,7 @@ public class UniqueFileNumberClaimValidator implements ClaimValidator {
   }
 
   @Override
-  public String getValidatorCode() {
-    return "CLAIM_UNIQUE_FILE_NUMBER";
+  public ClaimValidatorCode getValidatorCode() {
+    return ClaimValidatorCode.CLAIM_UNIQUE_FILE_NUMBER_VALIDATOR;
   }
 }
