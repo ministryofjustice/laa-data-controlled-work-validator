@@ -16,6 +16,7 @@ import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.submission.SubmissionValidationContext;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.submission.SubmissionValidationError;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.submission.SubmissionValidatorCode;
 import uk.gov.justice.laa.dstew.payments.claimsdata.model.SubmissionResponse;
 import uk.gov.justice.laa.dstew.payments.claimsdata.model.SubmissionStatus;
 
@@ -35,8 +36,8 @@ class SubmissionStatusValidatorTest {
   @DisplayName("Validator metadata: priority, appliesTo and code")
   void metadata() {
     assertEquals(1, validator.priority());
-    assertTrue(validator.appliesTo(Set.of("SUBMISSION_STATUS_VALIDATOR")));
-    assertEquals("SUBMISSION_STATUS_VALIDATOR", validator.getValidatorCode());
+    assertTrue(validator.appliesTo(Set.of(SubmissionValidatorCode.SUBMISSION_STATUS_VALIDATOR)));
+    assertEquals(SubmissionValidatorCode.SUBMISSION_STATUS_VALIDATOR, validator.getValidatorCode());
   }
 
   @Test

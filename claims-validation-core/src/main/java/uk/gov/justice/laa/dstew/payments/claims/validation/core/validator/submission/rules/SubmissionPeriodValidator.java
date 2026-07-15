@@ -7,6 +7,7 @@ import org.apache.commons.lang3.StringUtils;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.util.DateUtils;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.submission.SubmissionValidationContext;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.submission.SubmissionValidationError;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.submission.SubmissionValidatorCode;
 import uk.gov.justice.laa.dstew.payments.claimsdata.model.SubmissionResponse;
 
 /**
@@ -89,7 +90,7 @@ public class SubmissionPeriodValidator implements SubmissionValidator {
   }
 
   @Override
-  public String getValidatorCode() {
-    return "SUBMISSION_PERIOD_VALIDATOR";
+  public SubmissionValidatorCode getValidatorCode() {
+    return SubmissionValidatorCode.SUBMISSION_PERIOD_VALIDATOR;
   }
 }

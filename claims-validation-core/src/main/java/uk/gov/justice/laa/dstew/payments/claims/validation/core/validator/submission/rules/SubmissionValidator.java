@@ -2,6 +2,7 @@ package uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.submi
 
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.Validator;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.submission.SubmissionValidationContext;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.submission.SubmissionValidatorCode;
 import uk.gov.justice.laa.dstew.payments.claimsdata.model.SubmissionResponse;
 
 /**
@@ -15,4 +16,14 @@ import uk.gov.justice.laa.dstew.payments.claimsdata.model.SubmissionResponse;
  */
 public interface SubmissionValidator extends
         Validator<SubmissionResponse, SubmissionValidationContext> {
+
+  /**
+   * Submission validators are identified by a {@link SubmissionValidatorCode}. The return type
+   * narrows the generic {@link Validator#getValidatorCode()} contract so submission validators
+   * cannot accidentally report a claim-scoped code.
+   *
+   * @return the submission validator code identifying this validator
+   */
+  @Override
+  SubmissionValidatorCode getValidatorCode();
 }

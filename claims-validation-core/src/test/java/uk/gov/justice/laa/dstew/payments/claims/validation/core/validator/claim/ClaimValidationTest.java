@@ -71,8 +71,8 @@ class ClaimValidationTest {
     void runValidatorsInPriorityOrder() {
       List<String> callOrder = new ArrayList<>();
 
-      ClaimValidator lowPriority = stub("LOW", 20,  (c, ctx) -> callOrder.add("low"));
-      ClaimValidator highPriority = stub("HIGH", 10,  (c, ctx) -> callOrder.add("high"));
+      ClaimValidator lowPriority = stub(ClaimValidatorCode.CLAIM_SCHEMA_VALIDATOR, 20,  (c, ctx) -> callOrder.add("low"));
+      ClaimValidator highPriority = stub(ClaimValidatorCode.CLAIM_MATTER_TYPE_VALIDATOR, 10,  (c, ctx) -> callOrder.add("high"));
 
       pipeline(lowPriority, highPriority)
           .validateClaim(Claim.builder().build(), null, List.of());
@@ -85,9 +85,9 @@ class ClaimValidationTest {
     void excludesValidatorsNotApplicableToScope() {
       List<String> called = new ArrayList<>();
 
-      ClaimValidator excluded = stub("EXCLUDED", 0,  (c, ctx) -> called.add("excluded"));
+      ClaimValidator excluded = stub(ClaimValidatorCode.CLAIM_SCHEMA_VALIDATOR, 0,  (c, ctx) -> called.add("excluded"));
 
-      pipeline(excluded).validateClaim(Claim.builder().build(), Set.of("fee"), List.of());
+      pipeline(excluded).validateClaim(Claim.builder().build(), Set.of(ClaimValidatorCode.CLAIM_MATTER_TYPE_VALIDATOR), List.of());
 
       assertThat(called).isEmpty();
     }
@@ -100,10 +100,10 @@ class ClaimValidationTest {
       ValidationIssue issueC = issue("A", "path_dupe", ValidationSeverity.WARNING);
 
 
-      ClaimValidator v1 = stub("V1", 0,  (c, ctx) -> ctx.addValidationIssue(issueA));
-      ClaimValidator v2 = stub("V2", 10,  (c, ctx) -> ctx.addValidationIssue(issueB));
+      ClaimValidator v1 = stub(ClaimValidatorCode.CLAIM_SCHEMA_VALIDATOR, 0,  (c, ctx) -> ctx.addValidationIssue(issueA));
+      ClaimValidator v2 = stub(ClaimValidatorCode.CLAIM_MATTER_TYPE_VALIDATOR, 10,  (c, ctx) -> ctx.addValidationIssue(issueB));
       // v3 adds path_dupe again — should be deduplicated
-      ClaimValidator v3 = stub("V3", 20,  (c, ctx) -> ctx.addValidationIssue(issueC));
+      ClaimValidator v3 = stub(ClaimValidatorCode.CLAIM_CASE_DATES_VALIDATOR, 20,  (c, ctx) -> ctx.addValidationIssue(issueC));
 
       var result = pipeline(v1, v2, v3)
           .validateClaim(Claim.builder().feeCode("FEE_CODE").build(), null, List.of());
@@ -116,7 +116,7 @@ class ClaimValidationTest {
     @Test
     @DisplayName("Returns MISSING_CLAIM error result when claim is null")
     void returnsMissingClaimErrorWhenClaimIsNull() {
-      var result = pipeline().validateClaim(null, Set.of("fee"), List.of());
+      var result = pipeline().validateClaim(null, Set.of(ClaimValidatorCode.CLAIM_SCHEMA_VALIDATOR), List.of());
 
       assertThat(result.isValid()).isFalse();
       assertThat(result.getIssues()).hasSize(1);
@@ -126,7 +126,7 @@ class ClaimValidationTest {
     @Test
     @DisplayName("Returns valid result when no validators produce ERROR issues")
     void returnsValidWhenNoErrors() {
-      ClaimValidator warnOnly = stub("WARN", 0,  (c, ctx) ->
+      ClaimValidator warnOnly = stub(ClaimValidatorCode.CLAIM_SCHEMA_VALIDATOR, 0,  (c, ctx) ->
           ctx.addValidationIssue(issue("W", "path", ValidationSeverity.WARNING)));
 
       var result = pipeline(warnOnly).validateClaim(Claim.builder().feeCode("FEE_CODE").build(), null, List.of());
@@ -138,10 +138,10 @@ class ClaimValidationTest {
     @Test
     @DisplayName("Returns invalid result when any validator produces an ERROR issue")
     void returnsInvalidWhenErrorPresent() {
-      ClaimValidator errorValidator = stub("ERR", 0,  (c, ctx) ->
+      ClaimValidator errorValidator = stub(ClaimValidatorCode.CLAIM_SCHEMA_VALIDATOR, 0,  (c, ctx) ->
           ctx.addValidationIssue(issue("E","path", ValidationSeverity.ERROR)));
 
-      var result = pipeline(errorValidator).validateClaim(Claim.builder().feeCode("FEE_CODE").build(), Set.of("ERR"), List.of());
+      var result = pipeline(errorValidator).validateClaim(Claim.builder().feeCode("FEE_CODE").build(), Set.of(ClaimValidatorCode.CLAIM_SCHEMA_VALIDATOR), List.of());
 
       assertThat(result.isValid()).isFalse();
       assertThat(result.getIssues()).hasSize(1);
@@ -150,7 +150,7 @@ class ClaimValidationTest {
     @Test
     @DisplayName("Returns valid result with empty issues when no validators are registered")
     void returnsValidWithNoIssuesWhenNoValidators() {
-      var result = pipeline().validateClaim(Claim.builder().feeCode("FEE_CODE").build(), Set.of("fee"), List.of());
+      var result = pipeline().validateClaim(Claim.builder().feeCode("FEE_CODE").build(), Set.of(ClaimValidatorCode.CLAIM_SCHEMA_VALIDATOR), List.of());
 
       assertThat(result.isValid()).isTrue();
       assertThat(result.getIssues()).isEmpty();
@@ -171,10 +171,10 @@ class ClaimValidationTest {
     @DisplayName("Sets feeCalculationType to null when feeCode is null, empty, or blank")
     void setsNullFeeTypeForBlankFeeCode(String feeCode) {
       AtomicReference<ClaimValidationContext> captured = new AtomicReference<>();
-      ClaimValidator captor = stub("CAP", 0,  (c, ctx) -> captured.set(ctx));
+      ClaimValidator captor = stub(ClaimValidatorCode.CLAIM_SCHEMA_VALIDATOR, 0,  (c, ctx) -> captured.set(ctx));
 
       pipeline(captor).validateClaim(
-          Claim.builder().feeCode(feeCode).build(), Set.of("CAP"), List.of());
+          Claim.builder().feeCode(feeCode).build(), Set.of(ClaimValidatorCode.CLAIM_SCHEMA_VALIDATOR), List.of());
 
       assertThat(captured.get().getFeeCalculationType()).isNull();
       verify(feeSchemeProvider, never()).getFeeDetails(anyString());
@@ -186,10 +186,10 @@ class ClaimValidationTest {
       when(feeSchemeProvider.getFeeDetails("UNKNOWN")).thenReturn(Optional.empty());
 
       AtomicReference<ClaimValidationContext> captured = new AtomicReference<>();
-      ClaimValidator captor = stub("CAP", 0,  (c, ctx) -> captured.set(ctx));
+      ClaimValidator captor = stub(ClaimValidatorCode.CLAIM_SCHEMA_VALIDATOR, 0,  (c, ctx) -> captured.set(ctx));
 
       pipeline(captor).validateClaim(
-          Claim.builder().feeCode("UNKNOWN").build(), Set.of("CAP"), List.of());
+          Claim.builder().feeCode("UNKNOWN").build(), Set.of(ClaimValidatorCode.CLAIM_SCHEMA_VALIDATOR), List.of());
 
       assertThat(captured.get().getFeeCalculationType()).isNull();
     }
@@ -202,10 +202,10 @@ class ClaimValidationTest {
       when(feeSchemeProvider.getFeeDetails("FEE01")).thenReturn(Optional.of(response));
 
       AtomicReference<ClaimValidationContext> captured = new AtomicReference<>();
-      ClaimValidator captor = stub("CAP", 0,  (c, ctx) -> captured.set(ctx));
+      ClaimValidator captor = stub(ClaimValidatorCode.CLAIM_SCHEMA_VALIDATOR, 0,  (c, ctx) -> captured.set(ctx));
 
       pipeline(captor).validateClaim(
-          Claim.builder().feeCode("FEE01").build(), Set.of("CAP"), List.of());
+          Claim.builder().feeCode("FEE01").build(), Set.of(ClaimValidatorCode.CLAIM_SCHEMA_VALIDATOR), List.of());
 
       assertThat(captured.get().getFeeCalculationType()).isNull();
     }
@@ -218,10 +218,10 @@ class ClaimValidationTest {
       when(feeSchemeProvider.getFeeDetails("FEE01")).thenReturn(Optional.of(response));
 
       AtomicReference<ClaimValidationContext> captured = new AtomicReference<>();
-      ClaimValidator captor = stub("CAP", 0,  (c, ctx) -> captured.set(ctx));
+      ClaimValidator captor = stub(ClaimValidatorCode.CLAIM_SCHEMA_VALIDATOR, 0,  (c, ctx) -> captured.set(ctx));
 
       pipeline(captor).validateClaim(
-          Claim.builder().feeCode("FEE01").build(), Set.of("CAP"), List.of());
+          Claim.builder().feeCode("FEE01").build(), Set.of(ClaimValidatorCode.CLAIM_SCHEMA_VALIDATOR), List.of());
 
       assertThat(captured.get().getFeeCalculationType()).isNull();
     }
@@ -238,10 +238,10 @@ class ClaimValidationTest {
         when(feeSchemeProvider.getFeeDetails("FEE01")).thenReturn(Optional.of(response));
 
       AtomicReference<ClaimValidationContext> captured = new AtomicReference<>();
-      ClaimValidator captor = stub("CAP", 0,  (c, ctx) -> captured.set(ctx));
+      ClaimValidator captor = stub(ClaimValidatorCode.CLAIM_SCHEMA_VALIDATOR, 0,  (c, ctx) -> captured.set(ctx));
 
       pipeline(captor).validateClaim(
-          Claim.builder().feeCode("FEE01").build(), Set.of("CAP"), List.of());
+          Claim.builder().feeCode("FEE01").build(), Set.of(ClaimValidatorCode.CLAIM_SCHEMA_VALIDATOR), List.of());
 
       assertThat(captured.get().getFeeCalculationType()).isEqualTo("FIXED");
       assertThat(captured.get().getFeeSchemeAreaOfLaw()).isEqualTo("TEST_AREA");
@@ -257,10 +257,10 @@ class ClaimValidationTest {
       when(feeSchemeProvider.getFeeDetails("FEE01")).thenReturn(Optional.of(response));
 
       AtomicReference<ClaimValidationContext> captured = new AtomicReference<>();
-      ClaimValidator captor = stub("CAP", 0,  (c, ctx) -> captured.set(ctx));
+      ClaimValidator captor = stub(ClaimValidatorCode.CLAIM_SCHEMA_VALIDATOR, 0,  (c, ctx) -> captured.set(ctx));
 
       ClaimValidationResult result = pipeline(captor).validateClaim(
-          Claim.builder().feeCode("FEE01").build(), Set.of("CAP"), List.of());
+          Claim.builder().feeCode("FEE01").build(), Set.of(ClaimValidatorCode.CLAIM_SCHEMA_VALIDATOR), List.of());
 
       assertThat(captured.get().getFeeCalculationType()).isEqualTo("FIXED");
       assertThat(captured.get().getFeeSchemeAreaOfLaw()).isNull();
@@ -278,10 +278,10 @@ class ClaimValidationTest {
       when(feeSchemeProvider.getFeeDetails("FEE01")).thenReturn(Optional.of(response));
 
       AtomicReference<ClaimValidationContext> captured = new AtomicReference<>();
-      ClaimValidator captor = stub("CAP", 0,  (c, ctx) -> captured.set(ctx));
+      ClaimValidator captor = stub(ClaimValidatorCode.CLAIM_SCHEMA_VALIDATOR, 0,  (c, ctx) -> captured.set(ctx));
 
       ClaimValidationResult result = pipeline(captor).validateClaim(
-          Claim.builder().feeCode("FEE01").build(), Set.of("CAP"), List.of());
+          Claim.builder().feeCode("FEE01").build(), Set.of(ClaimValidatorCode.CLAIM_SCHEMA_VALIDATOR), List.of());
 
       assertThat(captured.get().getFeeSchemeAreaOfLaw()).isNull();
       assertThat(result.getIssues())
@@ -295,7 +295,7 @@ class ClaimValidationTest {
           .thenThrow(new IllegalStateException("boom"));
 
       ClaimValidationResult result = pipeline().validateClaim(
-          Claim.builder().feeCode("FEE01").build(), Set.of("CAP"), List.of());
+          Claim.builder().feeCode("FEE01").build(), Set.of(ClaimValidatorCode.CLAIM_SCHEMA_VALIDATOR), List.of());
 
       assertThat(result.isValid()).isFalse();
       assertThat(result.getIssues())
@@ -307,11 +307,11 @@ class ClaimValidationTest {
     void populatesResolvedDataWithResolvedValues() {
       // The default provider (setUpProvider) returns feeType TEST_FEE_TYPE and areaOfLaw TEST_AREA.
       // A validator contributes the authorised category of law code.
-      ClaimValidator categorySetter = stub("CAT", 0,
+      ClaimValidator categorySetter = stub(ClaimValidatorCode.CLAIM_SCHEMA_VALIDATOR, 0,
           (c, ctx) -> ctx.setAuthorisedCategoryOfLawCode("CAT_CODE"));
 
       ClaimValidationResult result = pipeline(categorySetter).validateClaim(
-          Claim.builder().feeCode("FEE01").build(), Set.of("CAT"), List.of());
+          Claim.builder().feeCode("FEE01").build(), Set.of(ClaimValidatorCode.CLAIM_SCHEMA_VALIDATOR), List.of());
 
       assertThat(result.getResolvedData()).isNotNull();
       assertThat(result.getResolvedData().feeCalculationType()).isEqualTo("TEST_FEE_TYPE");
@@ -322,7 +322,7 @@ class ClaimValidationTest {
     @Test
     @DisplayName("Does not call provider when claim has null feeCode")
     void doesNotCallProviderWhenFeeCodeNull() {
-      pipeline().validateClaim(Claim.builder().feeCode(null).build(), Set.of("CAP"), List.of());
+      pipeline().validateClaim(Claim.builder().feeCode(null).build(), Set.of(ClaimValidatorCode.CLAIM_SCHEMA_VALIDATOR), List.of());
 
       verify(feeSchemeProvider, never()).getFeeDetails(anyString());
     }
@@ -340,10 +340,10 @@ class ClaimValidationTest {
     @DisplayName("Passes related claims to validators via the context")
     void passesRelatedClaimsToValidators() {
       AtomicReference<ClaimValidationContext> captured = new AtomicReference<>();
-      ClaimValidator captor = stub("CAP", 0,  (c, ctx) -> captured.set(ctx));
+      ClaimValidator captor = stub(ClaimValidatorCode.CLAIM_SCHEMA_VALIDATOR, 0,  (c, ctx) -> captured.set(ctx));
 
       List<Claim> related = List.of(Claim.builder().uniqueFileNumber("010101/001").build());
-      pipeline(captor).validateClaim(Claim.builder().build(), Set.of("CAP"), related);
+      pipeline(captor).validateClaim(Claim.builder().build(), Set.of(ClaimValidatorCode.CLAIM_SCHEMA_VALIDATOR), related);
 
       assertThat(captured.get().getRelatedClaims()).isEqualTo(related);
     }
@@ -352,9 +352,9 @@ class ClaimValidationTest {
     @DisplayName("Converts null relatedClaims to an empty list in the context")
     void convertsNullRelatedClaimsToEmptyList() {
       AtomicReference<ClaimValidationContext> captured = new AtomicReference<>();
-      ClaimValidator captor = stub("CAP", 0,  (c, ctx) -> captured.set(ctx));
+      ClaimValidator captor = stub(ClaimValidatorCode.CLAIM_SCHEMA_VALIDATOR, 0,  (c, ctx) -> captured.set(ctx));
 
-      pipeline(captor).validateClaim(Claim.builder().build(), Set.of("CAP"), null);
+      pipeline(captor).validateClaim(Claim.builder().build(), Set.of(ClaimValidatorCode.CLAIM_SCHEMA_VALIDATOR), null);
 
       assertThat(captured.get().getRelatedClaims()).isEmpty();
     }
@@ -363,11 +363,11 @@ class ClaimValidationTest {
     @DisplayName("Passes scope to the context")
     void passesScopeToContext() {
       AtomicReference<ClaimValidationContext> captured = new AtomicReference<>();
-      ClaimValidator captor = stub("CAP", 0,  (c, ctx) -> captured.set(ctx));
+      ClaimValidator captor = stub(ClaimValidatorCode.CLAIM_SCHEMA_VALIDATOR, 0,  (c, ctx) -> captured.set(ctx));
 
-      pipeline(captor).validateClaim(Claim.builder().build(), Set.of("CAP"), List.of());
+      pipeline(captor).validateClaim(Claim.builder().build(), Set.of(ClaimValidatorCode.CLAIM_SCHEMA_VALIDATOR), List.of());
 
-      assertThat(captured.get().getScope()).isEqualTo(Set.of("CAP"));
+      assertThat(captured.get().getScope()).isEqualTo(Set.of(ClaimValidatorCode.CLAIM_SCHEMA_VALIDATOR));
     }
   }
 
@@ -390,7 +390,7 @@ class ClaimValidationTest {
     @DisplayName("Returns MISSING_MANDATORY_FIELD errors when mandatory fields are absent")
     void returnsErrorWhenMandatoryFieldsMissing() {
       Claim claim = Claim.builder().areaOfLaw(AreaOfLaw.CRIME_LOWER).build();
-      ClaimValidationContext context = ClaimValidationContext.builder().scope(Set.of("fee")).build();
+      ClaimValidationContext context = ClaimValidationContext.builder().scope(Set.of(ClaimValidatorCode.CLAIM_SCHEMA_VALIDATOR)).build();
 
       validator.validate(claim, context);
 
@@ -409,7 +409,7 @@ class ClaimValidationTest {
           .netProfitCostsAmount(new java.math.BigDecimal("100.00"))
           .disbursementsVatAmount(new java.math.BigDecimal("20.00"))
           .build();
-      ClaimValidationContext context = ClaimValidationContext.builder().scope(Set.of("fee")).build();
+      ClaimValidationContext context = ClaimValidationContext.builder().scope(Set.of(ClaimValidatorCode.CLAIM_SCHEMA_VALIDATOR)).build();
 
       validator.validate(claim, context);
       assertThat(context.getIssues()).isEmpty();
@@ -419,7 +419,7 @@ class ClaimValidationTest {
     @DisplayName("Returns no errors when no area of law is set — nothing to check")
     void returnsNoErrorsWhenNoAreaOfLaw() {
       Claim claim = Claim.builder().build();
-      ClaimValidationContext context = ClaimValidationContext.builder().scope(Set.of("fee")).build();
+      ClaimValidationContext context = ClaimValidationContext.builder().scope(Set.of(ClaimValidatorCode.CLAIM_SCHEMA_VALIDATOR)).build();
 
       validator.validate(claim, context);
       assertThat(context.getIssues()).isEmpty();
@@ -429,7 +429,7 @@ class ClaimValidationTest {
     @DisplayName("Path on missing-field issue is snake_case")
     void missingFieldIssuePathIsSnakeCase() {
       Claim claim = Claim.builder().areaOfLaw(AreaOfLaw.CRIME_LOWER).build();
-      ClaimValidationContext context = ClaimValidationContext.builder().scope(Set.of("fee")).build();
+      ClaimValidationContext context = ClaimValidationContext.builder().scope(Set.of(ClaimValidatorCode.CLAIM_SCHEMA_VALIDATOR)).build();
 
       validator.validate(claim, context);
 
@@ -442,7 +442,7 @@ class ClaimValidationTest {
     @Test
     @DisplayName("Has validator code CLAIM_MANDATORY_FIELD")
     void hasCorrectValidatorCode() {
-      assertThat(validator.getValidatorCode()).isEqualTo("CLAIM_MANDATORY_FIELD");
+      assertThat(validator.getValidatorCode()).isEqualTo(ClaimValidatorCode.CLAIM_MANDATORY_FIELD_VALIDATOR);
     }
 
     @Test
@@ -451,7 +451,7 @@ class ClaimValidationTest {
       assertThat(validator.priority()).isEqualTo(10);
       assertThat(validator.appliesTo(null)).isTrue();
       assertThat(validator.appliesTo(new HashSet<>())).isTrue();
-      assertThat(validator.appliesTo(Set.of("CLAIM_MANDATORY_FIELD"))).isTrue();
+      assertThat(validator.appliesTo(Set.of(ClaimValidatorCode.CLAIM_MANDATORY_FIELD_VALIDATOR))).isTrue();
     }
   }
 
@@ -515,7 +515,7 @@ class ClaimValidationTest {
     @Test
     @DisplayName("Has validator code CLAIM_UNIQUE_FILE_NUMBER")
     void hasCorrectValidatorCode() {
-      assertThat(validator.getValidatorCode()).isEqualTo("CLAIM_UNIQUE_FILE_NUMBER");
+      assertThat(validator.getValidatorCode()).isEqualTo(ClaimValidatorCode.CLAIM_UNIQUE_FILE_NUMBER_VALIDATOR);
     }
   }
 
@@ -528,11 +528,11 @@ class ClaimValidationTest {
     void run(Claim claim, ClaimValidationContext context);
   }
 
-  private static ClaimValidator stub(String code, int priority, ValidatorAction action) {
+  private static ClaimValidator stub(ClaimValidatorCode code, int priority, ValidatorAction action) {
     return new ClaimValidator() {
       @Override public void validate(Claim claim, ClaimValidationContext context) { action.run(claim, context); }
       @Override public int priority() { return priority; }
-      @Override public String getValidatorCode() { return code; }
+      @Override public ClaimValidatorCode getValidatorCode() { return code; }
     };
   }
 

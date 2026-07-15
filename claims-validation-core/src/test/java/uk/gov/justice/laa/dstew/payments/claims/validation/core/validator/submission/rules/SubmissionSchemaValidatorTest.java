@@ -18,6 +18,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationIssue;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationSeverity;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.submission.SubmissionValidationContext;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.submission.SubmissionValidatorCode;
 import uk.gov.justice.laa.dstew.payments.claimsdata.model.AreaOfLaw;
 import uk.gov.justice.laa.dstew.payments.claimsdata.model.SubmissionResponse;
 import uk.gov.justice.laa.dstew.payments.claimsdata.model.SubmissionStatus;
@@ -52,8 +53,8 @@ class SubmissionSchemaValidatorTest {
   @DisplayName("Validator metadata: priority, appliesTo and code")
   void metadata() {
     assertEquals(1, submissionSchemaValidator.priority());
-    assertTrue(submissionSchemaValidator.appliesTo(Set.of("SUBMISSION_SCHEMA_VALIDATOR")));
-    assertEquals("SUBMISSION_SCHEMA_VALIDATOR", submissionSchemaValidator.getValidatorCode());
+    assertTrue(submissionSchemaValidator.appliesTo(Set.of(SubmissionValidatorCode.SUBMISSION_SCHEMA_VALIDATOR)));
+    assertEquals(SubmissionValidatorCode.SUBMISSION_SCHEMA_VALIDATOR, submissionSchemaValidator.getValidatorCode());
   }
 
   // ─────────────────────────────────────────────────────────────────────────

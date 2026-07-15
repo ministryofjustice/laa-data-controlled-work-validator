@@ -3,6 +3,7 @@ package uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.submi
 import lombok.extern.slf4j.Slf4j;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.submission.SubmissionValidationContext;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.submission.SubmissionValidationError;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.submission.SubmissionValidatorCode;
 import uk.gov.justice.laa.dstew.payments.claimsdata.model.SubmissionResponse;
 
 /**
@@ -44,7 +45,7 @@ public class NilSubmissionValidator implements SubmissionValidator {
   }
 
   @Override
-  public String getValidatorCode() {
-    return "SUBMISSION_NIL_VALIDATOR";
+  public SubmissionValidatorCode getValidatorCode() {
+    return SubmissionValidatorCode.SUBMISSION_NIL_VALIDATOR;
   }
 }
