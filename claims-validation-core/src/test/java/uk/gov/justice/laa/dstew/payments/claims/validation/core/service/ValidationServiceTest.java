@@ -17,6 +17,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ClaimValidationResult;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ResolvedClaimData;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationIssue;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationResult;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationSeverity;
@@ -99,8 +100,10 @@ class ValidationServiceTest {
 
       assertThat(result.isValid()).isTrue();
       assertThat(result.getIssues()).isEmpty();
-      // Resolved data is always returned (may contain null fields when resolution is incomplete)
+      // Resolved data is surfaced with the values resolved from the fee-scheme provider.
       assertThat(result.getResolvedData()).isNotNull();
+      assertThat(result.getResolvedData().feeCalculationType()).isEqualTo("TEST_FEE_TYPE");
+      assertThat(result.getResolvedData().feeSchemeAreaOfLaw()).isEqualTo("TEST_AREA");
     }
 
     @Test
@@ -112,8 +115,11 @@ class ValidationServiceTest {
       assertThat(result.isValid()).isFalse();
       assertThat(result.getIssues()).hasSize(1);
       assertThat(result.getIssues().getFirst().getCode()).isEqualTo("MISSING_CLAIM");
-      // Resolved data must be non-null even for missing claim
-      assertThat(result.getResolvedData()).isNotNull();
+      // Resolved data must be non-null (empty) even for a missing claim
+      assertThat(result.getResolvedData()).isEqualTo(ResolvedClaimData.empty());
+      assertThat(result.getResolvedData().feeCalculationType()).isNull();
+      assertThat(result.getResolvedData().feeSchemeAreaOfLaw()).isNull();
+      assertThat(result.getResolvedData().authorisedCategoryOfLawCode()).isNull();
     }
 
     @Test

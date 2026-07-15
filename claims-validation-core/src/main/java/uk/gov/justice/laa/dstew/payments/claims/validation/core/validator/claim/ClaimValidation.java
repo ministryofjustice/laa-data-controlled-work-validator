@@ -114,7 +114,7 @@ public class ClaimValidation {
 
     ResolvedClaimData resolved = new ResolvedClaimData(
             context.getFeeCalculationType(),
-            context.getAreaOfLaw(),
+            context.getFeeSchemeAreaOfLaw(),
             context.getAuthorisedCategoryOfLawCode()
     );
 
@@ -172,7 +172,18 @@ public class ClaimValidation {
       return;
     }
 
-    Optional<FeeDetailsResponseV2> opt = feeSchemeProvider.getFeeDetails(feeCode);
+    Optional<FeeDetailsResponseV2> opt;
+    try {
+      opt = feeSchemeProvider.getFeeDetails(feeCode);
+    } catch (RuntimeException e) {
+      // The provider throws on technical API failure (as opposed to returning an empty Optional
+      // for a 404). Map both to the same technical issue so the failure is surfaced as a
+      // validation outcome rather than propagating out of the pipeline.
+      log.warn("Technical error retrieving fee details for fee code: {}", feeCode, e);
+      context.addValidationIssue(
+              ClaimValidationError.TECHNICAL_ERROR_FEE_SCHEME_API.toValidationIssue());
+      return;
+    }
 
     if (opt.isEmpty()) {
       log.warn("Unable to retrieve fee details for fee code: {} — fee type will be null", feeCode);
@@ -184,7 +195,7 @@ public class ClaimValidation {
     FeeDetailsResponseV2 details = opt.get();
 
     String feeType = details.getFeeType();
-    String areaOfLaw = details.getAreaOfLaw();
+    String feeSchemeAreaOfLaw = details.getAreaOfLaw();
 
     if (feeType == null || feeType.isBlank()) {
       log.warn("Fee details returned for fee code: {} but feeType is null or blank", feeCode);
@@ -193,7 +204,11 @@ public class ClaimValidation {
       return;
     }
 
-    if (areaOfLaw == null || areaOfLaw.isBlank()) {
+    // Surface the fee calculation type we successfully resolved, even if the area of law is
+    // subsequently found to be missing (best-effort partial resolution).
+    context.setFeeCalculationType(feeType);
+
+    if (feeSchemeAreaOfLaw == null || feeSchemeAreaOfLaw.isBlank()) {
       log.warn("Fee details returned for fee code: {} but areaOfLaw is null or blank", feeCode);
       context.addValidationIssue(
               ClaimValidationError.TECHNICAL_ERROR_FEE_SCHEME_API.toValidationIssue());
@@ -201,9 +216,8 @@ public class ClaimValidation {
     }
 
     log.debug("Resolved fee calculation type '{}' and areaOfLaw '{}' for fee code '{}'",
-            feeType, areaOfLaw, feeCode);
-    context.setFeeCalculationType(feeType);
-    context.setAreaOfLaw(areaOfLaw);
+            feeType, feeSchemeAreaOfLaw, feeCode);
+    context.setFeeSchemeAreaOfLaw(feeSchemeAreaOfLaw);
   }
 
   /**

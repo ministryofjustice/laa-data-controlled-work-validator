@@ -21,6 +21,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ClaimValidationResult;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationIssue;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationSeverity;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.provider.impl.HttpFeeSchemeProvider;
@@ -243,6 +244,79 @@ class ClaimValidationTest {
           Claim.builder().feeCode("FEE01").build(), Set.of("CAP"), List.of());
 
       assertThat(captured.get().getFeeCalculationType()).isEqualTo("FIXED");
+      assertThat(captured.get().getFeeSchemeAreaOfLaw()).isEqualTo("TEST_AREA");
+    }
+
+    @Test
+    @DisplayName("Best-effort: surfaces feeCalculationType and a technical error when areaOfLaw "
+        + "is missing")
+    void surfacesFeeTypeButFlagsErrorWhenAreaOfLawMissing() {
+      // feeType resolves but areaOfLaw is absent — the fee calculation type should still be
+      // surfaced (best-effort partial resolution) while a technical error is raised.
+      FeeDetailsResponseV2 response = FeeDetailsResponseV2.builder().feeType("FIXED").build();
+      when(feeSchemeProvider.getFeeDetails("FEE01")).thenReturn(Optional.of(response));
+
+      AtomicReference<ClaimValidationContext> captured = new AtomicReference<>();
+      ClaimValidator captor = stub("CAP", 0,  (c, ctx) -> captured.set(ctx));
+
+      ClaimValidationResult result = pipeline(captor).validateClaim(
+          Claim.builder().feeCode("FEE01").build(), Set.of("CAP"), List.of());
+
+      assertThat(captured.get().getFeeCalculationType()).isEqualTo("FIXED");
+      assertThat(captured.get().getFeeSchemeAreaOfLaw()).isNull();
+      assertThat(result.getResolvedData().feeCalculationType()).isEqualTo("FIXED");
+      assertThat(result.getResolvedData().feeSchemeAreaOfLaw()).isNull();
+      assertThat(result.getIssues())
+          .anyMatch(i -> "TECHNICAL_ERROR_FEE_SCHEME_API".equals(i.getCode()));
+    }
+
+    @Test
+    @DisplayName("Raises a technical error and skips areaOfLaw when areaOfLaw is blank")
+    void flagsErrorWhenAreaOfLawIsBlank() {
+      FeeDetailsResponseV2 response =
+          FeeDetailsResponseV2.builder().feeType("FIXED").areaOfLaw("   ").build();
+      when(feeSchemeProvider.getFeeDetails("FEE01")).thenReturn(Optional.of(response));
+
+      AtomicReference<ClaimValidationContext> captured = new AtomicReference<>();
+      ClaimValidator captor = stub("CAP", 0,  (c, ctx) -> captured.set(ctx));
+
+      ClaimValidationResult result = pipeline(captor).validateClaim(
+          Claim.builder().feeCode("FEE01").build(), Set.of("CAP"), List.of());
+
+      assertThat(captured.get().getFeeSchemeAreaOfLaw()).isNull();
+      assertThat(result.getIssues())
+          .anyMatch(i -> "TECHNICAL_ERROR_FEE_SCHEME_API".equals(i.getCode()));
+    }
+
+    @Test
+    @DisplayName("Maps a provider exception to a technical error instead of propagating")
+    void mapsProviderExceptionToTechnicalError() {
+      when(feeSchemeProvider.getFeeDetails("FEE01"))
+          .thenThrow(new IllegalStateException("boom"));
+
+      ClaimValidationResult result = pipeline().validateClaim(
+          Claim.builder().feeCode("FEE01").build(), Set.of("CAP"), List.of());
+
+      assertThat(result.isValid()).isFalse();
+      assertThat(result.getIssues())
+          .anyMatch(i -> "TECHNICAL_ERROR_FEE_SCHEME_API".equals(i.getCode()));
+    }
+
+    @Test
+    @DisplayName("Populates resolvedData with values resolved during validation")
+    void populatesResolvedDataWithResolvedValues() {
+      // The default provider (setUpProvider) returns feeType TEST_FEE_TYPE and areaOfLaw TEST_AREA.
+      // A validator contributes the authorised category of law code.
+      ClaimValidator categorySetter = stub("CAT", 0,
+          (c, ctx) -> ctx.setAuthorisedCategoryOfLawCode("CAT_CODE"));
+
+      ClaimValidationResult result = pipeline(categorySetter).validateClaim(
+          Claim.builder().feeCode("FEE01").build(), Set.of("CAT"), List.of());
+
+      assertThat(result.getResolvedData()).isNotNull();
+      assertThat(result.getResolvedData().feeCalculationType()).isEqualTo("TEST_FEE_TYPE");
+      assertThat(result.getResolvedData().feeSchemeAreaOfLaw()).isEqualTo("TEST_AREA");
+      assertThat(result.getResolvedData().authorisedCategoryOfLawCode()).isEqualTo("CAT_CODE");
     }
 
     @Test
