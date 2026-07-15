@@ -67,7 +67,7 @@ public class ClaimValidation {
    * @param scope an optional validation scope used to filter applicable validators
    * @param relatedClaims optional related claims; if {@code null} it will be treated as an
    *     empty list
-   * @return a {@link ValidationResult} describing whether the claim is valid and any
+   * @return a {@link ClaimValidationResult} describing whether the claim is valid and any
    *     {@link ValidationIssue}s discovered
    */
   public ClaimValidationResult validateClaim(
