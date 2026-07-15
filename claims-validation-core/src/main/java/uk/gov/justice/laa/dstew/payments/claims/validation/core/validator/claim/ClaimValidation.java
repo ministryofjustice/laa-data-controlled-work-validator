@@ -146,24 +146,21 @@ public class ClaimValidation {
     return context;
   }
 
+
   /**
-   * Fetches the fee calculation type for the given fee code by delegating to the fee scheme
-   * provider.
+   * Resolves fee-scheme details for the supplied fee code and updates the
+   * validation context with the resolved fee calculation type and area of law.
    *
-   * <p>Defensive behaviour:
-   * <ul>
-   *   <li>A {@code null} or blank {@code feeCode} is treated as unresolvable; {@code null} is
-   *       returned immediately with a warning.</li>
-   *   <li>If the provider returns an empty {@link Optional} (e.g. fee code not found / 404),
-   *       {@code null} is returned and a warning is logged. The caller is responsible for
-   *       deciding how to handle an unknown fee type.</li>
-   *   <li>If the provider returns a response whose {@code feeType} is {@code null} or blank,
-   *       {@code null} is returned and a warning is logged so the gap is visible in logs.</li>
-   * </ul>
+   * <p>Any resolution failure is recorded on the context rather than propagated:
+   * missing fee codes, missing fee-scheme data, invalid responses, and technical
+   * provider failures are all mapped to validation issues.
    *
-   * @param feeCode the fee code to resolve; may be {@code null} or blank
-   * @param context the validation context to update with the resolved fee calculation type
-   *     (if found)
+   * <p>Note: the fee calculation type is populated as soon as it is successfully
+   * resolved, even if validation subsequently fails because the area of law is
+   * missing.
+   *
+   * @param feeCode fee code to resolve
+   * @param context validation context to update
    */
   private void fetchFeeCalculationType(String feeCode, ClaimValidationContext context) {
     if (feeCode == null || feeCode.isBlank()) {
