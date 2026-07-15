@@ -247,7 +247,7 @@ class CaseDatesClaimValidationTest {
   @DisplayName("CaseDatesClaimValidator - priority, appliesTo and validator code")
   void caseDatesValidatorMetadata() {
     assertThat(validator.priority()).isEqualTo(100);
-    assertThat(validator.appliesTo(Set.of(ClaimValidatorCode.CLAIM_CASE_DATES))).isTrue();
-    assertThat(validator.getValidatorCode()).isEqualTo(ClaimValidatorCode.CLAIM_CASE_DATES);
+    assertThat(validator.appliesTo(Set.of(ClaimValidatorCode.CLAIM_CASE_DATES_VALIDATOR))).isTrue();
+    assertThat(validator.getValidatorCode()).isEqualTo(ClaimValidatorCode.CLAIM_CASE_DATES_VALIDATOR);
   }
 }

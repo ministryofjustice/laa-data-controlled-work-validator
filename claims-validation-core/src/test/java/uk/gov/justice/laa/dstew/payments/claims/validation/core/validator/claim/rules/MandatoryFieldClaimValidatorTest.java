@@ -387,7 +387,7 @@ class MandatoryFieldClaimValidatorTest {
     @Test
     @DisplayName("Validator code is CLAIM_MANDATORY_FIELD")
     void validatorCode() {
-      assertThat(validator.getValidatorCode()).isEqualTo(ClaimValidatorCode.CLAIM_MANDATORY_FIELD);
+      assertThat(validator.getValidatorCode()).isEqualTo(ClaimValidatorCode.CLAIM_MANDATORY_FIELD_VALIDATOR);
     }
 
     @Test
@@ -399,7 +399,7 @@ class MandatoryFieldClaimValidatorTest {
     @Test
     @DisplayName("Applies to any scope")
     void appliesToAnyScope() {
-      assertThat(validator.appliesTo(Set.of(ClaimValidatorCode.CLAIM_MANDATORY_FIELD))).isTrue();
+      assertThat(validator.appliesTo(Set.of(ClaimValidatorCode.CLAIM_MANDATORY_FIELD_VALIDATOR))).isTrue();
       assertThat(validator.appliesTo(null)).isTrue();
       assertThat(validator.appliesTo(new HashSet<>())).isTrue();
     }

@@ -134,7 +134,7 @@ class UniqueFileNumberClaimValidationTest {
   @DisplayName("UniqueFileNumberClaimValidator - priority, appliesTo and validator code")
   void uniqueFileNumberValidatorMetadata() {
     assertThat(validator.priority()).isEqualTo(100);
-    assertThat(validator.appliesTo(Set.of(ClaimValidatorCode.CLAIM_UNIQUE_FILE_NUMBER))).isTrue();
-    assertThat(validator.getValidatorCode()).isEqualTo(ClaimValidatorCode.CLAIM_UNIQUE_FILE_NUMBER);
+    assertThat(validator.appliesTo(Set.of(ClaimValidatorCode.CLAIM_UNIQUE_FILE_NUMBER_VALIDATOR))).isTrue();
+    assertThat(validator.getValidatorCode()).isEqualTo(ClaimValidatorCode.CLAIM_UNIQUE_FILE_NUMBER_VALIDATOR);
   }
 }

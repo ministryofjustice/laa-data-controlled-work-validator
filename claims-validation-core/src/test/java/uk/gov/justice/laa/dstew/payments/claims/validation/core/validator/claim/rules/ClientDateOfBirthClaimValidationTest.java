@@ -127,8 +127,8 @@ class ClientDateOfBirthClaimValidationTest {
   @DisplayName("ClientDateOfBirthClaimValidator - priority, appliesTo and validator code")
   void clientDobValidatorMetadata() {
     assertThat(validator.priority()).isEqualTo(100);
-    assertThat(validator.appliesTo(Set.of(ClaimValidatorCode.CLAIM_CLIENT_DATE_OF_BIRTH))).isTrue();
-    assertThat(validator.getValidatorCode()).isEqualTo(ClaimValidatorCode.CLAIM_CLIENT_DATE_OF_BIRTH);
+    assertThat(validator.appliesTo(Set.of(ClaimValidatorCode.CLAIM_CLIENT_DATE_OF_BIRTH_VALIDATOR))).isTrue();
+    assertThat(validator.getValidatorCode()).isEqualTo(ClaimValidatorCode.CLAIM_CLIENT_DATE_OF_BIRTH_VALIDATOR);
   }
 
   // ─── Helpers ──────────────────────────────────────────────────────────────

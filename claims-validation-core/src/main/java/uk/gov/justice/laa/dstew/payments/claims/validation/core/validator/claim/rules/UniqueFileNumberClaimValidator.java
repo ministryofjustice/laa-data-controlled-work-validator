@@ -93,6 +93,6 @@ public class UniqueFileNumberClaimValidator implements ClaimValidator {
 
   @Override
   public ClaimValidatorCode getValidatorCode() {
-    return ClaimValidatorCode.CLAIM_UNIQUE_FILE_NUMBER;
+    return ClaimValidatorCode.CLAIM_UNIQUE_FILE_NUMBER_VALIDATOR;
   }
 }

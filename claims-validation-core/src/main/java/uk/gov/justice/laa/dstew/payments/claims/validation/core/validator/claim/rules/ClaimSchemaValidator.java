@@ -70,7 +70,7 @@ public class ClaimSchemaValidator
 
   @Override
   public ClaimValidatorCode getValidatorCode() {
-    return ClaimValidatorCode.CLAIM_SCHEMA;
+    return ClaimValidatorCode.CLAIM_SCHEMA_VALIDATOR;
   }
 
   // ─────────────────────────────────────────────────────────────────────────

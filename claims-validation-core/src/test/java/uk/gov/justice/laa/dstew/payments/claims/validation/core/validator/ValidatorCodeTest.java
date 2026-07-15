@@ -69,7 +69,7 @@ class ValidatorCodeTest {
       assertThat(SubmissionValidatorCode.fromCode("NOPE")).isEmpty();
       assertThat(SubmissionValidatorCode.fromCode(null)).isEmpty();
       // A claim code is not a submission code.
-      assertThat(SubmissionValidatorCode.fromCode("CLAIM_SCHEMA")).isEmpty();
+      assertThat(SubmissionValidatorCode.fromCode("CLAIM_SCHEMA_VALIDATOR")).isEmpty();
     }
   }
 
@@ -80,7 +80,8 @@ class ValidatorCodeTest {
     @Test
     @DisplayName("Resolves claim codes")
     void resolvesClaimCodes() {
-      assertThat(ValidatorCode.fromCode("CLAIM_SCHEMA")).contains(ClaimValidatorCode.CLAIM_SCHEMA);
+      assertThat(ValidatorCode.fromCode("CLAIM_SCHEMA_VALIDATOR"))
+              .contains(ClaimValidatorCode.CLAIM_SCHEMA_VALIDATOR);
     }
 
     @Test

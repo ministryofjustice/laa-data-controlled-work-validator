@@ -86,6 +86,6 @@ public class MandatoryFieldClaimValidator implements ClaimValidator {
 
   @Override
   public ClaimValidatorCode getValidatorCode() {
-    return ClaimValidatorCode.CLAIM_MANDATORY_FIELD;
+    return ClaimValidatorCode.CLAIM_MANDATORY_FIELD_VALIDATOR;
   }
 }

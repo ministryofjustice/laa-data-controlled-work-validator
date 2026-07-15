@@ -89,7 +89,7 @@ class MatterTypeClaimValidationTest {
   @DisplayName("MatterTypeClaimValidator - priority, appliesTo and validator code")
   void matterTypeValidatorMetadata() {
     assertThat(validator.priority()).isEqualTo(100);
-    assertThat(validator.appliesTo(Set.of(ClaimValidatorCode.CLAIM_MATTER_TYPE))).isTrue();
-    assertThat(validator.getValidatorCode()).isEqualTo(ClaimValidatorCode.CLAIM_MATTER_TYPE);
+    assertThat(validator.appliesTo(Set.of(ClaimValidatorCode.CLAIM_MATTER_TYPE_VALIDATOR))).isTrue();
+    assertThat(validator.getValidatorCode()).isEqualTo(ClaimValidatorCode.CLAIM_MATTER_TYPE_VALIDATOR);
   }
 }

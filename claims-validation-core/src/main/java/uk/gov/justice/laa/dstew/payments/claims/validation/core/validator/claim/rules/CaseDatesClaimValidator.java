@@ -73,6 +73,6 @@ public class CaseDatesClaimValidator implements ClaimValidator {
 
   @Override
   public ClaimValidatorCode getValidatorCode() {
-    return ClaimValidatorCode.CLAIM_CASE_DATES;
+    return ClaimValidatorCode.CLAIM_CASE_DATES_VALIDATOR;
   }
 }

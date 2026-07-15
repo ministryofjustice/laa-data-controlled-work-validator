@@ -192,8 +192,8 @@ class EffectiveCategoryOfLawClaimValidationTest {
   @DisplayName("EffectiveCategoryOfLawClaimValidator - priority, appliesTo and validator code")
   void effectiveCategoryOfLawValidatorMetadata() {
     assertThat(validator.priority()).isEqualTo(1000);
-    assertThat(validator.appliesTo(Set.of(ClaimValidatorCode.CLAIM_CATEGORY_OF_LAW))).isTrue();
-    assertThat(validator.getValidatorCode()).isEqualTo(ClaimValidatorCode.CLAIM_CATEGORY_OF_LAW);
+    assertThat(validator.appliesTo(Set.of(ClaimValidatorCode.CLAIM_CATEGORY_OF_LAW_VALIDATOR))).isTrue();
+    assertThat(validator.getValidatorCode()).isEqualTo(ClaimValidatorCode.CLAIM_CATEGORY_OF_LAW_VALIDATOR);
   }
 
   @Test

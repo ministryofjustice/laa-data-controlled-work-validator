@@ -112,7 +112,7 @@ class ValidationServiceTest {
     @Test
     @DisplayName("Scope defaults to null — all scope-agnostic validators run")
     void scopeDefaultsToNull() {
-      AtomicReference<Set<? extends ValidatorCode>> capturedScope = new AtomicReference<>(Set.of(ClaimValidatorCode.CLAIM_MATTER_TYPE));
+      AtomicReference<Set<? extends ValidatorCode>> capturedScope = new AtomicReference<>(Set.of(ClaimValidatorCode.CLAIM_MATTER_TYPE_VALIDATOR));
 
       ClaimValidator captor = new ClaimValidator() {
         @Override public void validate(Claim c, ClaimValidationContext ctx) {
@@ -124,7 +124,7 @@ class ValidationServiceTest {
           return 0;
         }
 
-        @Override public ClaimValidatorCode getValidatorCode() { return ClaimValidatorCode.CLAIM_SCHEMA; }
+        @Override public ClaimValidatorCode getValidatorCode() { return ClaimValidatorCode.CLAIM_SCHEMA_VALIDATOR; }
       };
 
       withClaims(claimValidation(List.of(captor))).validateClaim(testClaim);
@@ -156,12 +156,12 @@ class ValidationServiceTest {
           return 0;
         }
 
-        @Override public ClaimValidatorCode getValidatorCode() { return ClaimValidatorCode.CLAIM_SCHEMA; }
+        @Override public ClaimValidatorCode getValidatorCode() { return ClaimValidatorCode.CLAIM_SCHEMA_VALIDATOR; }
       };
 
-      withClaims(claimValidation(List.of(captor))).validateClaim(testClaim, Set.of(ClaimValidatorCode.CLAIM_SCHEMA));
+      withClaims(claimValidation(List.of(captor))).validateClaim(testClaim, Set.of(ClaimValidatorCode.CLAIM_SCHEMA_VALIDATOR));
 
-      assertThat(capturedScope.get()).isEqualTo(Set.of(ClaimValidatorCode.CLAIM_SCHEMA));
+      assertThat(capturedScope.get()).isEqualTo(Set.of(ClaimValidatorCode.CLAIM_SCHEMA_VALIDATOR));
     }
 
     @Test
@@ -179,10 +179,10 @@ class ValidationServiceTest {
           return 0;
         }
 
-        @Override public ClaimValidatorCode getValidatorCode() { return ClaimValidatorCode.CLAIM_SCHEMA; }
+        @Override public ClaimValidatorCode getValidatorCode() { return ClaimValidatorCode.CLAIM_SCHEMA_VALIDATOR; }
       };
 
-      withClaims(claimValidation(List.of(captor))).validateClaim(testClaim, Set.of(ClaimValidatorCode.CLAIM_SCHEMA));
+      withClaims(claimValidation(List.of(captor))).validateClaim(testClaim, Set.of(ClaimValidatorCode.CLAIM_SCHEMA_VALIDATOR));
 
       assertThat(capturedRelated.get()).isEmpty();
     }
@@ -191,7 +191,7 @@ class ValidationServiceTest {
     @DisplayName("Returns MISSING_CLAIM error when claim is null")
     void returnsMissingClaimWhenClaimIsNull() {
       ValidationResult result = withClaims(claimValidation(Collections.emptyList()))
-          .validateClaim(null, Set.of(ClaimValidatorCode.CLAIM_SCHEMA));
+          .validateClaim(null, Set.of(ClaimValidatorCode.CLAIM_SCHEMA_VALIDATOR));
 
       assertThat(result.isValid()).isFalse();
       assertThat(result.getIssues().getFirst().getCode()).isEqualTo("MISSING_CLAIM");
@@ -210,7 +210,7 @@ class ValidationServiceTest {
     @DisplayName("Returns valid result when no validators raise errors")
     void returnsValidResultWhenNoIssues() {
       assertThat(withClaims(claimValidation(Collections.emptyList()))
-          .validateClaim(testClaim, Set.of(ClaimValidatorCode.CLAIM_SCHEMA), List.of()).isValid()).isTrue();
+          .validateClaim(testClaim, Set.of(ClaimValidatorCode.CLAIM_SCHEMA_VALIDATOR), List.of()).isValid()).isTrue();
     }
 
     @Test
@@ -227,11 +227,11 @@ class ValidationServiceTest {
           return 0;
         }
 
-        @Override public ClaimValidatorCode getValidatorCode() { return ClaimValidatorCode.CLAIM_MATTER_TYPE; }
+        @Override public ClaimValidatorCode getValidatorCode() { return ClaimValidatorCode.CLAIM_MATTER_TYPE_VALIDATOR; }
       };
 
       ValidationResult result = withClaims(claimValidation(List.of(errorValidator)))
-          .validateClaim(testClaim, Set.of(ClaimValidatorCode.CLAIM_MATTER_TYPE), List.of());
+          .validateClaim(testClaim, Set.of(ClaimValidatorCode.CLAIM_MATTER_TYPE_VALIDATOR), List.of());
 
       assertThat(result.isValid()).isFalse();
       assertThat(result.getIssues().getFirst().getCode()).isEqualTo("TEST_ERROR");
@@ -251,7 +251,7 @@ class ValidationServiceTest {
           return 0;
         }
 
-        @Override public ClaimValidatorCode getValidatorCode() { return ClaimValidatorCode.CLAIM_CASE_DATES; }
+        @Override public ClaimValidatorCode getValidatorCode() { return ClaimValidatorCode.CLAIM_CASE_DATES_VALIDATOR; }
       };
 
       ValidationResult result = withClaims(claimValidation(List.of(warningValidator)))
@@ -265,7 +265,7 @@ class ValidationServiceTest {
     @DisplayName("Returns MISSING_CLAIM error when claim is null")
     void returnsMissingClaimWhenClaimIsNull() {
       ValidationResult result = withClaims(claimValidation(Collections.emptyList()))
-          .validateClaim(null, Set.of(ClaimValidatorCode.CLAIM_SCHEMA), List.of());
+          .validateClaim(null, Set.of(ClaimValidatorCode.CLAIM_SCHEMA_VALIDATOR), List.of());
 
       assertThat(result.isValid()).isFalse();
       assertThat(result.getIssues().getFirst().getCode()).isEqualTo("MISSING_CLAIM");
@@ -415,16 +415,16 @@ class ValidationServiceTest {
         }
         @Override public int priority() { return 0; }
         @Override public ClaimValidatorCode getValidatorCode() {
-          return ClaimValidatorCode.CLAIM_SCHEMA;
+          return ClaimValidatorCode.CLAIM_SCHEMA_VALIDATOR;
         }
       };
 
       withClaims(claimValidation(List.of(captor)))
           .validateClaim(testClaim,
-              Set.of(ClaimValidatorCode.CLAIM_SCHEMA, ClaimValidatorCode.CLAIM_MATTER_TYPE));
+              Set.of(ClaimValidatorCode.CLAIM_SCHEMA_VALIDATOR, ClaimValidatorCode.CLAIM_MATTER_TYPE_VALIDATOR));
 
       assertThat(capturedScope.get())
-          .isEqualTo(Set.of(ClaimValidatorCode.CLAIM_SCHEMA, ClaimValidatorCode.CLAIM_MATTER_TYPE));
+          .isEqualTo(Set.of(ClaimValidatorCode.CLAIM_SCHEMA_VALIDATOR, ClaimValidatorCode.CLAIM_MATTER_TYPE_VALIDATOR));
     }
 
     @Test
@@ -443,22 +443,22 @@ class ValidationServiceTest {
         }
         @Override public int priority() { return 0; }
         @Override public ClaimValidatorCode getValidatorCode() {
-          return ClaimValidatorCode.CLAIM_DUPLICATE_CLAIM;
+          return ClaimValidatorCode.CLAIM_DUPLICATE_VALIDATOR;
         }
       };
 
       List<Claim> related = List.of(new Claim());
       withClaims(claimValidation(List.of(captor)))
-          .validateClaim(testClaim, Set.of(ClaimValidatorCode.CLAIM_DUPLICATE_CLAIM), related);
+          .validateClaim(testClaim, Set.of(ClaimValidatorCode.CLAIM_DUPLICATE_VALIDATOR), related);
 
-      assertThat(capturedScope.get()).isEqualTo(Set.of(ClaimValidatorCode.CLAIM_DUPLICATE_CLAIM));
+      assertThat(capturedScope.get()).isEqualTo(Set.of(ClaimValidatorCode.CLAIM_DUPLICATE_VALIDATOR));
       assertThat(capturedRelated.get()).isEqualTo(related);
     }
 
     @Test
     @DisplayName("validateClaim(Claim, empty Set<ClaimValidatorCode>) runs all scope-agnostic validators")
     void validateClaimEmptyTypedScope() {
-      AtomicReference<Set<? extends ValidatorCode>> capturedScope = new AtomicReference<>(Set.of(ClaimValidatorCode.CLAIM_MATTER_TYPE));
+      AtomicReference<Set<? extends ValidatorCode>> capturedScope = new AtomicReference<>(Set.of(ClaimValidatorCode.CLAIM_MATTER_TYPE_VALIDATOR));
 
       ClaimValidator captor = new ClaimValidator() {
         @Override public void validate(Claim c, ClaimValidationContext ctx) {
@@ -466,7 +466,7 @@ class ValidationServiceTest {
         }
         @Override public int priority() { return 0; }
         @Override public ClaimValidatorCode getValidatorCode() {
-          return ClaimValidatorCode.CLAIM_SCHEMA;
+          return ClaimValidatorCode.CLAIM_SCHEMA_VALIDATOR;
         }
       };
 
@@ -480,7 +480,7 @@ class ValidationServiceTest {
     @Test
     @DisplayName("validateClaim(Claim, (Set<ClaimValidatorCode>) null) runs all scope-agnostic validators")
     void validateClaimNullTypedScope() {
-      AtomicReference<Set<? extends ValidatorCode>> capturedScope = new AtomicReference<>(Set.of(ClaimValidatorCode.CLAIM_MATTER_TYPE));
+      AtomicReference<Set<? extends ValidatorCode>> capturedScope = new AtomicReference<>(Set.of(ClaimValidatorCode.CLAIM_MATTER_TYPE_VALIDATOR));
 
       ClaimValidator captor = new ClaimValidator() {
         @Override public void validate(Claim c, ClaimValidationContext ctx) {
@@ -488,7 +488,7 @@ class ValidationServiceTest {
         }
         @Override public int priority() { return 0; }
         @Override public ClaimValidatorCode getValidatorCode() {
-          return ClaimValidatorCode.CLAIM_SCHEMA;
+          return ClaimValidatorCode.CLAIM_SCHEMA_VALIDATOR;
         }
       };
 

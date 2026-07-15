@@ -67,6 +67,6 @@ public class ClientDateOfBirthClaimValidator implements ClaimValidator {
 
   @Override
   public ClaimValidatorCode getValidatorCode() {
-    return ClaimValidatorCode.CLAIM_CLIENT_DATE_OF_BIRTH;
+    return ClaimValidatorCode.CLAIM_CLIENT_DATE_OF_BIRTH_VALIDATOR;
   }
 }

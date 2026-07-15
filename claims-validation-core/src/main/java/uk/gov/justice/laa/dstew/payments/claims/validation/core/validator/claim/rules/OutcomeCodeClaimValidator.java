@@ -65,6 +65,6 @@ public class OutcomeCodeClaimValidator implements ClaimValidator {
 
   @Override
   public ClaimValidatorCode getValidatorCode() {
-    return ClaimValidatorCode.CLAIM_OUTCOME_CODE;
+    return ClaimValidatorCode.CLAIM_OUTCOME_CODE_VALIDATOR;
   }
 }

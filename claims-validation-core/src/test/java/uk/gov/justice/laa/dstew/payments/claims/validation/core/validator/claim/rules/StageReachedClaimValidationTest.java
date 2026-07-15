@@ -149,7 +149,7 @@ class StageReachedClaimValidationTest {
   @DisplayName("StageReachedClaimValidator - priority, appliesTo and validator code")
   void stageReachedValidatorMetadata() {
     assertThat(validator.priority()).isEqualTo(100);
-    assertThat(validator.appliesTo(Set.of(ClaimValidatorCode.CLAIM_STAGE_REACHED))).isTrue();
-    assertThat(validator.getValidatorCode()).isEqualTo(ClaimValidatorCode.CLAIM_STAGE_REACHED);
+    assertThat(validator.appliesTo(Set.of(ClaimValidatorCode.CLAIM_STAGE_REACHED_VALIDATOR))).isTrue();
+    assertThat(validator.getValidatorCode()).isEqualTo(ClaimValidatorCode.CLAIM_STAGE_REACHED_VALIDATOR);
   }
 }

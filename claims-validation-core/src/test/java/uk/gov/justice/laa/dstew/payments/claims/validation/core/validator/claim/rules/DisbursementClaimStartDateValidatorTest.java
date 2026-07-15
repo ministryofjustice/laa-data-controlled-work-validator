@@ -149,7 +149,7 @@ class DisbursementClaimStartDateValidatorTest {
   @DisplayName("DisbursementClaimStartDateValidator - priority, appliesTo and validator code")
   void disbursementStartDateValidatorMetadata() {
     assertThat(validator.priority()).isEqualTo(10);
-    assertThat(validator.appliesTo(Set.of(ClaimValidatorCode.CLAIM_DISBURSEMENT_START_DATE))).isTrue();
-    assertThat(validator.getValidatorCode()).isEqualTo(ClaimValidatorCode.CLAIM_DISBURSEMENT_START_DATE);
+    assertThat(validator.appliesTo(Set.of(ClaimValidatorCode.CLAIM_DISBURSEMENT_START_DATE_VALIDATOR))).isTrue();
+    assertThat(validator.getValidatorCode()).isEqualTo(ClaimValidatorCode.CLAIM_DISBURSEMENT_START_DATE_VALIDATOR);
   }
 }

@@ -94,13 +94,13 @@ class ClaimSchemaValidatorTest {
     @Test
     @DisplayName("validator code is CLAIM_SCHEMA")
     void getValidatorCode_returnsClaimSchema() {
-      assertThat(validator.getValidatorCode()).isEqualTo(ClaimValidatorCode.CLAIM_SCHEMA);
+      assertThat(validator.getValidatorCode()).isEqualTo(ClaimValidatorCode.CLAIM_SCHEMA_VALIDATOR);
     }
 
     @Test
     @DisplayName("appliesTo returns true for schema validator")
     void appliesTo_returnsTrue() {
-      assertThat(validator.appliesTo(Set.of(ClaimValidatorCode.CLAIM_SCHEMA))).isTrue();
+      assertThat(validator.appliesTo(Set.of(ClaimValidatorCode.CLAIM_SCHEMA_VALIDATOR))).isTrue();
       assertThat(validator.appliesTo(null)).isTrue();
     }
   }

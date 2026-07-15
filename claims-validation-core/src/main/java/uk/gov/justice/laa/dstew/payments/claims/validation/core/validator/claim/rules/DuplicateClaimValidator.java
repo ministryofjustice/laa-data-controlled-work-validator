@@ -66,6 +66,6 @@ public class DuplicateClaimValidator implements ClaimValidator {
 
   @Override
   public ClaimValidatorCode getValidatorCode() {
-    return ClaimValidatorCode.CLAIM_DUPLICATE_CLAIM;
+    return ClaimValidatorCode.CLAIM_DUPLICATE_VALIDATOR;
   }
 }

@@ -73,6 +73,6 @@ public class MatterTypeClaimValidator implements ClaimValidator {
 
   @Override
   public ClaimValidatorCode getValidatorCode() {
-    return ClaimValidatorCode.CLAIM_MATTER_TYPE;
+    return ClaimValidatorCode.CLAIM_MATTER_TYPE_VALIDATOR;
   }
 }

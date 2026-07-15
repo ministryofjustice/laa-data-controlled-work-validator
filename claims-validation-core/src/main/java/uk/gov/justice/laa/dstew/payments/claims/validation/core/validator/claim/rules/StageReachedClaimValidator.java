@@ -81,6 +81,6 @@ public class StageReachedClaimValidator implements ClaimValidator {
 
   @Override
   public ClaimValidatorCode getValidatorCode() {
-    return ClaimValidatorCode.CLAIM_STAGE_REACHED;
+    return ClaimValidatorCode.CLAIM_STAGE_REACHED_VALIDATOR;
   }
 }

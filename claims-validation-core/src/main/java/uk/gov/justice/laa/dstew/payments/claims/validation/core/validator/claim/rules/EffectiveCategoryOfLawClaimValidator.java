@@ -287,6 +287,6 @@ public class EffectiveCategoryOfLawClaimValidator implements ClaimValidator {
    */
   @Override
   public ClaimValidatorCode getValidatorCode() {
-    return ClaimValidatorCode.CLAIM_CATEGORY_OF_LAW;
+    return ClaimValidatorCode.CLAIM_CATEGORY_OF_LAW_VALIDATOR;
   }
 }

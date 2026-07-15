@@ -111,7 +111,7 @@ class DuplicateClaimValidationTest {
 
   @Test
   void getValidatorCode_returnsDuplicateClaim() {
-    assertThat(validator.getValidatorCode()).isEqualTo(ClaimValidatorCode.CLAIM_DUPLICATE_CLAIM);
+    assertThat(validator.getValidatorCode()).isEqualTo(ClaimValidatorCode.CLAIM_DUPLICATE_VALIDATOR);
   }
 
   @Test
@@ -121,6 +121,6 @@ class DuplicateClaimValidationTest {
 
   @Test
   void appliesTo_returnsTrue() {
-    assertThat(validator.appliesTo(Set.of(ClaimValidatorCode.CLAIM_DUPLICATE_CLAIM))).isTrue();
+    assertThat(validator.appliesTo(Set.of(ClaimValidatorCode.CLAIM_DUPLICATE_VALIDATOR))).isTrue();
   }
 }

@@ -46,6 +46,6 @@ public class ScheduleReferenceClaimValidator implements ClaimValidator {
 
   @Override
   public ClaimValidatorCode getValidatorCode() {
-    return ClaimValidatorCode.CLAIM_SCHEDULE_REFERENCE;
+    return ClaimValidatorCode.CLAIM_SCHEDULE_REFERENCE_VALIDATOR;
   }
 }

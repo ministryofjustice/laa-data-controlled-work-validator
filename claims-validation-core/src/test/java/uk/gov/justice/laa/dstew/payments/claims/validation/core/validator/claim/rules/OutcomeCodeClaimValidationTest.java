@@ -152,7 +152,7 @@ class OutcomeCodeClaimValidationTest {
   @DisplayName("OutcomeCodeClaimValidator - priority, appliesTo and validator code")
   void outcomeCodeValidatorMetadata() {
     assertThat(validator.priority()).isEqualTo(100);
-    assertThat(validator.appliesTo(Set.of(ClaimValidatorCode.CLAIM_OUTCOME_CODE))).isTrue();
-    assertThat(validator.getValidatorCode()).isEqualTo(ClaimValidatorCode.CLAIM_OUTCOME_CODE);
+    assertThat(validator.appliesTo(Set.of(ClaimValidatorCode.CLAIM_OUTCOME_CODE_VALIDATOR))).isTrue();
+    assertThat(validator.getValidatorCode()).isEqualTo(ClaimValidatorCode.CLAIM_OUTCOME_CODE_VALIDATOR);
   }
 }

@@ -95,7 +95,7 @@ class DisbursementsClaimValidationTest {
   @DisplayName("DisbursementsClaimValidator - priority, appliesTo and validator code")
   void disbursementsValidatorMetadata() {
     assertThat(validator.priority()).isEqualTo(100);
-    assertThat(validator.appliesTo(Set.of(ClaimValidatorCode.CLAIM_DISBURSEMENTS))).isTrue();
-    assertThat(validator.getValidatorCode()).isEqualTo(ClaimValidatorCode.CLAIM_DISBURSEMENTS);
+    assertThat(validator.appliesTo(Set.of(ClaimValidatorCode.CLAIM_DISBURSEMENTS_VALIDATOR))).isTrue();
+    assertThat(validator.getValidatorCode()).isEqualTo(ClaimValidatorCode.CLAIM_DISBURSEMENTS_VALIDATOR);
   }
 }
