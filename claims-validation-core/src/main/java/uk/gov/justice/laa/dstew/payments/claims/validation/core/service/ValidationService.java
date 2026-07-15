@@ -7,6 +7,7 @@ import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ClaimValidationResult;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationResult;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidation;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidatorCode;
@@ -70,7 +71,7 @@ public class ValidationService {
    * @param claim the claim to validate; a {@code null} claim produces a {@code MISSING_CLAIM} error
    * @return the validation result containing an {@code isValid} flag and any issues found
    */
-  public ValidationResult validateClaim(Claim claim) {
+  public ClaimValidationResult validateClaim(Claim claim) {
     return validateClaim(claim, null);
   }
 
@@ -83,7 +84,7 @@ public class ValidationService {
    *     scope-agnostic validators
    * @return the validation result containing an {@code isValid} flag and any issues found
    */
-  public ValidationResult validateClaim(Claim claim, Set<ClaimValidatorCode> scope) {
+  public ClaimValidationResult validateClaim(Claim claim, Set<ClaimValidatorCode>  scope) {
     return validateClaim(claim, scope, Collections.emptyList());
   }
 
@@ -98,8 +99,8 @@ public class ValidationService {
    *     validators; must not be {@code null} — pass an empty list if no context is available
    * @return the validation result containing an {@code isValid} flag and any issues found
    */
-  public ValidationResult validateClaim(
-      Claim claim, Set<ClaimValidatorCode> scope, List<Claim> relatedClaims) {
+  public ClaimValidationResult validateClaim(Claim claim, Set<ClaimValidatorCode> scope,
+                                             List<Claim> relatedClaims) {
     return claimValidation.validateClaim(claim, scope, relatedClaims);
   }
 

@@ -16,6 +16,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ClaimValidationResult;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ResolvedClaimData;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationIssue;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationResult;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationSeverity;
@@ -52,8 +54,13 @@ class ValidationServiceTest {
   @BeforeEach
   void setUp() {
     feeSchemeProvider = mock(HttpFeeSchemeProvider.class);
+    // Default test provider returns both feeType and areaOfLaw so the happy-path fee-scheme
+    // resolution succeeds.
     when(feeSchemeProvider.getFeeDetails(anyString()))
-            .thenReturn(Optional.of(FeeDetailsResponseV2.builder().feeType("TEST_FEE_TYPE").build()));
+            .thenReturn(Optional.of(FeeDetailsResponseV2.builder()
+                    .feeType("TEST_FEE_TYPE")
+                    .areaOfLaw("TEST_AREA")
+                    .build()));
 
     testClaim = new Claim();
     testClaim.setAreaOfLaw(AreaOfLaw.LEGAL_HELP);
@@ -91,22 +98,31 @@ class ValidationServiceTest {
     @Test
     @DisplayName("Returns valid result when no validators raise errors")
     void returnsValidResultForValidClaim() {
-      ValidationResult result = withClaims(claimValidation(Collections.emptyList()))
+      ClaimValidationResult result = withClaims(claimValidation(Collections.emptyList()))
           .validateClaim(testClaim);
 
       assertThat(result.isValid()).isTrue();
       assertThat(result.getIssues()).isEmpty();
+      // Resolved data is surfaced with the values resolved from the fee-scheme provider.
+      assertThat(result.getResolvedData()).isNotNull();
+      assertThat(result.getResolvedData().feeCalculationType()).isEqualTo("TEST_FEE_TYPE");
+      assertThat(result.getResolvedData().feeSchemeAreaOfLaw()).isEqualTo("TEST_AREA");
     }
 
     @Test
     @DisplayName("Returns MISSING_CLAIM error when claim is null")
     void returnsMissingClaimWhenClaimIsNull() {
-      ValidationResult result = withClaims(claimValidation(Collections.emptyList()))
+      ClaimValidationResult result = withClaims(claimValidation(Collections.emptyList()))
           .validateClaim(null);
 
       assertThat(result.isValid()).isFalse();
       assertThat(result.getIssues()).hasSize(1);
       assertThat(result.getIssues().getFirst().getCode()).isEqualTo("MISSING_CLAIM");
+      // Resolved data must be non-null (empty) even for a missing claim
+      assertThat(result.getResolvedData()).isEqualTo(ResolvedClaimData.empty());
+      assertThat(result.getResolvedData().feeCalculationType()).isNull();
+      assertThat(result.getResolvedData().feeSchemeAreaOfLaw()).isNull();
+      assertThat(result.getResolvedData().authorisedCategoryOfLawCode()).isNull();
     }
 
     @Test
@@ -130,6 +146,21 @@ class ValidationServiceTest {
       withClaims(claimValidation(List.of(captor))).validateClaim(testClaim);
 
       assertThat(capturedScope.get()).isNull();
+    }
+
+    @Test
+    @DisplayName("Missing areaOfLaw from fee details yields TECHNICAL_ERROR_FEE_SCHEME_API")
+    void missingAreaOfLawIsTechnicalError() {
+      // Override provider to return a response without areaOfLaw
+      when(feeSchemeProvider.getFeeDetails(anyString()))
+              .thenReturn(Optional.of(FeeDetailsResponseV2.builder().feeType("TEST_FEE_TYPE").build()));
+
+      ClaimValidationResult result = withClaims(claimValidation(Collections.emptyList()))
+          .validateClaim(testClaim);
+
+      assertThat(result.isValid()).isFalse();
+      assertThat(result.getIssues()).isNotEmpty();
+      assertThat(result.getIssues().getFirst().getCode()).isEqualTo("TECHNICAL_ERROR_FEE_SCHEME_API");
     }
   }
 
@@ -190,7 +221,7 @@ class ValidationServiceTest {
     @Test
     @DisplayName("Returns MISSING_CLAIM error when claim is null")
     void returnsMissingClaimWhenClaimIsNull() {
-      ValidationResult result = withClaims(claimValidation(Collections.emptyList()))
+      ClaimValidationResult result = withClaims(claimValidation(Collections.emptyList()))
           .validateClaim(null, Set.of(ClaimValidatorCode.CLAIM_SCHEMA_VALIDATOR));
 
       assertThat(result.isValid()).isFalse();
@@ -230,7 +261,7 @@ class ValidationServiceTest {
         @Override public ClaimValidatorCode getValidatorCode() { return ClaimValidatorCode.CLAIM_MATTER_TYPE_VALIDATOR; }
       };
 
-      ValidationResult result = withClaims(claimValidation(List.of(errorValidator)))
+      ClaimValidationResult result = withClaims(claimValidation(List.of(errorValidator)))
           .validateClaim(testClaim, Set.of(ClaimValidatorCode.CLAIM_MATTER_TYPE_VALIDATOR), List.of());
 
       assertThat(result.isValid()).isFalse();
@@ -254,7 +285,7 @@ class ValidationServiceTest {
         @Override public ClaimValidatorCode getValidatorCode() { return ClaimValidatorCode.CLAIM_CASE_DATES_VALIDATOR; }
       };
 
-      ValidationResult result = withClaims(claimValidation(List.of(warningValidator)))
+      ClaimValidationResult result = withClaims(claimValidation(List.of(warningValidator)))
           .validateClaim(testClaim, (Set<ClaimValidatorCode>) null, List.of());
 
       assertThat(result.isValid()).isTrue();
@@ -264,7 +295,7 @@ class ValidationServiceTest {
     @Test
     @DisplayName("Returns MISSING_CLAIM error when claim is null")
     void returnsMissingClaimWhenClaimIsNull() {
-      ValidationResult result = withClaims(claimValidation(Collections.emptyList()))
+      ClaimValidationResult result = withClaims(claimValidation(Collections.emptyList()))
           .validateClaim(null, Set.of(ClaimValidatorCode.CLAIM_SCHEMA_VALIDATOR), List.of());
 
       assertThat(result.isValid()).isFalse();

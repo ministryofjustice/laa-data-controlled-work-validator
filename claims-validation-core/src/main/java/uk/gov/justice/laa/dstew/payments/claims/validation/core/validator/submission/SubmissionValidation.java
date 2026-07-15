@@ -60,8 +60,7 @@ public class SubmissionValidation {
    *      values used to filter applicable validators; {@code null} runs all
    *      scope-agnostic validators
    * @return a {@link ValidationResult} describing whether the submission is valid and listing
-   *     any {@link ValidationIssue}s
-   *     discovered
+   *     any {@link ValidationIssue}s discovered
    */
   public ValidationResult validateSubmission(
       final SubmissionResponse submission, Set<SubmissionValidatorCode> scope) {

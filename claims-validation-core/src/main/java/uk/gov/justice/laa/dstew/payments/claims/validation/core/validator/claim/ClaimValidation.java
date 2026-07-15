@@ -7,6 +7,8 @@ import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ClaimValidationResult;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ResolvedClaimData;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationIssue;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationResult;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationSeverity;
@@ -65,10 +67,10 @@ public class ClaimValidation {
    * @param scope an optional validation scope used to filter applicable validators
    * @param relatedClaims optional related claims; if {@code null} it will be treated as an
    *     empty list
-   * @return a {@link ValidationResult} describing whether the claim is valid and any
+   * @return a {@link ClaimValidationResult} describing whether the claim is valid and any
    *     {@link ValidationIssue}s discovered
    */
-  public ValidationResult validateClaim(
+  public ClaimValidationResult validateClaim(
       Claim claim, Set<ClaimValidatorCode> scope, List<Claim> relatedClaims) {
 
     // Handle missing claim - return validation error, not 400
@@ -111,7 +113,17 @@ public class ClaimValidation {
     log.info("Validation completed. isValid: {}, total issues: {}, total errors: {}",
             isValid, context.getIssueCount(), context.getErrorCount());
 
-    return new ValidationResult().toBuilder().isValid(isValid).issues(finalIssues).build();
+    ResolvedClaimData resolved = new ResolvedClaimData(
+            context.getFeeCalculationType(),
+            context.getFeeSchemeAreaOfLaw(),
+            context.getAuthorisedCategoryOfLawCode()
+    );
+
+    return ClaimValidationResult.builder()
+            .isValid(isValid)
+            .issues(finalIssues)
+            .resolvedData(resolved)
+            .build();
   }
 
   /**
@@ -135,24 +147,21 @@ public class ClaimValidation {
     return context;
   }
 
+
   /**
-   * Fetches the fee calculation type for the given fee code by delegating to the fee scheme
-   * provider.
+   * Resolves fee-scheme details for the supplied fee code and updates the
+   * validation context with the resolved fee calculation type and area of law.
    *
-   * <p>Defensive behaviour:
-   * <ul>
-   *   <li>A {@code null} or blank {@code feeCode} is treated as unresolvable; {@code null} is
-   *       returned immediately with a warning.</li>
-   *   <li>If the provider returns an empty {@link Optional} (e.g. fee code not found / 404),
-   *       {@code null} is returned and a warning is logged. The caller is responsible for
-   *       deciding how to handle an unknown fee type.</li>
-   *   <li>If the provider returns a response whose {@code feeType} is {@code null} or blank,
-   *       {@code null} is returned and a warning is logged so the gap is visible in logs.</li>
-   * </ul>
+   * <p>Any resolution failure is recorded on the context rather than propagated:
+   * missing fee codes, missing fee-scheme data, invalid responses, and technical
+   * provider failures are all mapped to validation issues.
    *
-   * @param feeCode the fee code to resolve; may be {@code null} or blank
-   * @param context the validation context to update with the resolved fee calculation type
-   *     (if found)
+   * <p>Note: the fee calculation type is populated as soon as it is successfully
+   * resolved, even if validation subsequently fails because the area of law is
+   * missing.
+   *
+   * @param feeCode fee code to resolve
+   * @param context validation context to update
    */
   private void fetchFeeCalculationType(String feeCode, ClaimValidationContext context) {
     if (feeCode == null || feeCode.isBlank()) {
@@ -161,7 +170,18 @@ public class ClaimValidation {
       return;
     }
 
-    Optional<FeeDetailsResponseV2> opt = feeSchemeProvider.getFeeDetails(feeCode);
+    Optional<FeeDetailsResponseV2> opt;
+    try {
+      opt = feeSchemeProvider.getFeeDetails(feeCode);
+    } catch (RuntimeException e) {
+      // The provider throws on technical API failure (as opposed to returning an empty Optional
+      // for a 404). Map both to the same technical issue so the failure is surfaced as a
+      // validation outcome rather than propagating out of the pipeline.
+      log.warn("Technical error retrieving fee details for fee code: {}", feeCode, e);
+      context.addValidationIssue(
+              ClaimValidationError.TECHNICAL_ERROR_FEE_SCHEME_API.toValidationIssue());
+      return;
+    }
 
     if (opt.isEmpty()) {
       log.warn("Unable to retrieve fee details for fee code: {} — fee type will be null", feeCode);
@@ -170,7 +190,10 @@ public class ClaimValidation {
       return;
     }
 
-    String feeType = opt.get().getFeeType();
+    FeeDetailsResponseV2 details = opt.get();
+
+    String feeType = details.getFeeType();
+    String feeSchemeAreaOfLaw = details.getAreaOfLaw();
 
     if (feeType == null || feeType.isBlank()) {
       log.warn("Fee details returned for fee code: {} but feeType is null or blank", feeCode);
@@ -178,8 +201,21 @@ public class ClaimValidation {
               ClaimValidationError.TECHNICAL_ERROR_FEE_SCHEME_API.toValidationIssue());
       return;
     }
-    log.debug("Resolved fee calculation type '{}' for fee code '{}'", feeType, feeCode);
+
+    // Surface the fee calculation type we successfully resolved, even if the area of law is
+    // subsequently found to be missing (best-effort partial resolution).
     context.setFeeCalculationType(feeType);
+
+    if (feeSchemeAreaOfLaw == null || feeSchemeAreaOfLaw.isBlank()) {
+      log.warn("Fee details returned for fee code: {} but areaOfLaw is null or blank", feeCode);
+      context.addValidationIssue(
+              ClaimValidationError.TECHNICAL_ERROR_FEE_SCHEME_API.toValidationIssue());
+      return;
+    }
+
+    log.debug("Resolved fee calculation type '{}' and areaOfLaw '{}' for fee code '{}'",
+            feeType, feeSchemeAreaOfLaw, feeCode);
+    context.setFeeSchemeAreaOfLaw(feeSchemeAreaOfLaw);
   }
 
   /**
@@ -187,11 +223,11 @@ public class ClaimValidation {
    *
    * @return validation result with MISSING_CLAIM error
    */
-  private ValidationResult buildMissingClaimResult() {
-    return new ValidationResult()
-            .toBuilder()
+  private ClaimValidationResult buildMissingClaimResult() {
+    return ClaimValidationResult.builder()
             .isValid(false)
             .issues(List.of(ClaimValidationError.MISSING_CLAIM.toValidationIssue()))
+            .resolvedData(ResolvedClaimData.empty())
             .build();
   }
 
