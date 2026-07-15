@@ -11,6 +11,7 @@ import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Validation
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationResult;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationSeverity;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.provider.FeeSchemeProvider;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.ValidatorCode;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.rules.ClaimValidator;
 import uk.gov.justice.laa.fee.scheme.model.FeeDetailsResponseV2;
 
@@ -67,7 +68,8 @@ public class ClaimValidation {
    * @return a {@link ValidationResult} describing whether the claim is valid and any
    *     {@link ValidationIssue}s discovered
    */
-  public ValidationResult validateClaim(Claim claim, Set<String> scope, List<Claim> relatedClaims) {
+  public ValidationResult validateClaim(
+      Claim claim, Set<ClaimValidatorCode> scope, List<Claim> relatedClaims) {
 
     // Handle missing claim - return validation error, not 400
     if (claim == null) {
@@ -120,11 +122,11 @@ public class ClaimValidation {
    * @return the validation context
    */
   private ClaimValidationContext buildValidationContext(
-          Claim claim, Set<String> scope, List<Claim> relatedClaims) {
+          Claim claim, Set<ClaimValidatorCode> scope, List<Claim> relatedClaims) {
     List<Claim> related = relatedClaims != null ? relatedClaims : List.of();
 
     ClaimValidationContext context = ClaimValidationContext.builder()
-            .scope(scope)
+            .scope(scope == null ? null : Set.<ValidatorCode>copyOf(scope))
             .relatedClaims(related)
             .build();
 

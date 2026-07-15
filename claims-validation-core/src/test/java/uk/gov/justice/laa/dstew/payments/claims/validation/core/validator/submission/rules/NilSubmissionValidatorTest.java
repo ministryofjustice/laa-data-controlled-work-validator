@@ -11,6 +11,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.submission.SubmissionValidationContext;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.submission.SubmissionValidationError;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.submission.SubmissionValidatorCode;
 import uk.gov.justice.laa.dstew.payments.claimsdata.model.SubmissionClaim;
 import uk.gov.justice.laa.dstew.payments.claimsdata.model.SubmissionResponse;
 
@@ -23,8 +24,8 @@ class NilSubmissionValidatorTest {
   @Test
   void metadata() {
     assertEquals(10, nilSubmissionValidator.priority());
-    assertTrue(nilSubmissionValidator.appliesTo(Set.of("SUBMISSION_NIL_VALIDATOR")));
-    assertEquals("SUBMISSION_NIL_VALIDATOR", nilSubmissionValidator.getValidatorCode());
+    assertTrue(nilSubmissionValidator.appliesTo(Set.of(SubmissionValidatorCode.SUBMISSION_NIL_VALIDATOR)));
+    assertEquals(SubmissionValidatorCode.SUBMISSION_NIL_VALIDATOR, nilSubmissionValidator.getValidatorCode());
   }
 
   @Test
