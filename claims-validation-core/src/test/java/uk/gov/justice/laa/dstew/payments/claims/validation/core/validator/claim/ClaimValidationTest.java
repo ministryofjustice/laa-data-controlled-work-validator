@@ -24,7 +24,6 @@ import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationIssue;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationSeverity;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.provider.impl.HttpFeeSchemeProvider;
-import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.ValidatorCode;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.rules.ClaimValidator;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.rules.MandatoryFieldClaimValidator;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.rules.UniqueFileNumberClaimValidator;
@@ -447,11 +446,11 @@ class ClaimValidationTest {
     void run(Claim claim, ClaimValidationContext context);
   }
 
-  private static ClaimValidator stub(ValidatorCode code, int priority, ValidatorAction action) {
+  private static ClaimValidator stub(ClaimValidatorCode code, int priority, ValidatorAction action) {
     return new ClaimValidator() {
       @Override public void validate(Claim claim, ClaimValidationContext context) { action.run(claim, context); }
       @Override public int priority() { return priority; }
-      @Override public ValidatorCode getValidatorCode() { return code; }
+      @Override public ClaimValidatorCode getValidatorCode() { return code; }
     };
   }
 

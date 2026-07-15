@@ -138,9 +138,10 @@ used for submission validation and vice versa:
 - `SubmissionValidatorCode` — the built-in submission validator codes.
 
 Both implement the shared `ValidatorCode` interface
-(`claims-validation-core/src/main/java/.../validator/`). The interface is intentionally
-extensible so consuming applications can provide custom validator codes if required. `Validator.getValidatorCode()`
-returns a `ValidatorCode`, and scope filtering operates on `Set<? extends ValidatorCode>`.
+(`claims-validation-core/src/main/java/.../validator/`). To keep claim and submission scopes from
+being mixed, the validator sub-interfaces narrow the code type: `ClaimValidator.getValidatorCode()`
+returns a `ClaimValidatorCode` and `SubmissionValidator.getValidatorCode()` returns a
+`SubmissionValidatorCode`. Scope filtering operates on `Set<? extends ValidatorCode>`.
 
 `ValidationService` accepts scopes typed to the relevant enum:
 

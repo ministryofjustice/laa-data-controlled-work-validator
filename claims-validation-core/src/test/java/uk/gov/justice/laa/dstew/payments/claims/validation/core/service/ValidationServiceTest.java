@@ -124,7 +124,7 @@ class ValidationServiceTest {
           return 0;
         }
 
-        @Override public ValidatorCode getValidatorCode() { return ClaimValidatorCode.CLAIM_SCHEMA; }
+        @Override public ClaimValidatorCode getValidatorCode() { return ClaimValidatorCode.CLAIM_SCHEMA; }
       };
 
       withClaims(claimValidation(List.of(captor))).validateClaim(testClaim);
@@ -156,7 +156,7 @@ class ValidationServiceTest {
           return 0;
         }
 
-        @Override public ValidatorCode getValidatorCode() { return ClaimValidatorCode.CLAIM_SCHEMA; }
+        @Override public ClaimValidatorCode getValidatorCode() { return ClaimValidatorCode.CLAIM_SCHEMA; }
       };
 
       withClaims(claimValidation(List.of(captor))).validateClaim(testClaim, Set.of(ClaimValidatorCode.CLAIM_SCHEMA));
@@ -179,7 +179,7 @@ class ValidationServiceTest {
           return 0;
         }
 
-        @Override public ValidatorCode getValidatorCode() { return ClaimValidatorCode.CLAIM_SCHEMA; }
+        @Override public ClaimValidatorCode getValidatorCode() { return ClaimValidatorCode.CLAIM_SCHEMA; }
       };
 
       withClaims(claimValidation(List.of(captor))).validateClaim(testClaim, Set.of(ClaimValidatorCode.CLAIM_SCHEMA));
@@ -227,7 +227,7 @@ class ValidationServiceTest {
           return 0;
         }
 
-        @Override public ValidatorCode getValidatorCode() { return ClaimValidatorCode.CLAIM_MATTER_TYPE; }
+        @Override public ClaimValidatorCode getValidatorCode() { return ClaimValidatorCode.CLAIM_MATTER_TYPE; }
       };
 
       ValidationResult result = withClaims(claimValidation(List.of(errorValidator)))
@@ -251,7 +251,7 @@ class ValidationServiceTest {
           return 0;
         }
 
-        @Override public ValidatorCode getValidatorCode() { return ClaimValidatorCode.CLAIM_CASE_DATES; }
+        @Override public ClaimValidatorCode getValidatorCode() { return ClaimValidatorCode.CLAIM_CASE_DATES; }
       };
 
       ValidationResult result = withClaims(claimValidation(List.of(warningValidator)))
@@ -300,7 +300,7 @@ class ValidationServiceTest {
         @Override public int priority() { return 0; }
 
         @Override
-        public ValidatorCode getValidatorCode() {
+        public SubmissionValidatorCode getValidatorCode() {
           return SubmissionValidatorCode.SUBMISSION_SCHEMA_VALIDATOR;
         }
       };
@@ -323,7 +323,7 @@ class ValidationServiceTest {
         }
 
         @Override
-        public ValidatorCode getValidatorCode() {
+        public SubmissionValidatorCode getValidatorCode() {
           return SubmissionValidatorCode.SUBMISSION_SCHEMA_VALIDATOR;
         }
 
@@ -357,7 +357,7 @@ class ValidationServiceTest {
         }
 
         @Override
-        public ValidatorCode getValidatorCode() {
+        public SubmissionValidatorCode getValidatorCode() {
           return SubmissionValidatorCode.SUBMISSION_SCHEMA_VALIDATOR;
         }
 
@@ -381,7 +381,7 @@ class ValidationServiceTest {
         @Override public int priority() { return 0; }
 
         @Override
-        public ValidatorCode getValidatorCode() {
+        public SubmissionValidatorCode getValidatorCode() {
           return SubmissionValidatorCode.SUBMISSION_SCHEMA_VALIDATOR;
         }
       };
@@ -414,7 +414,7 @@ class ValidationServiceTest {
           return true;
         }
         @Override public int priority() { return 0; }
-        @Override public ValidatorCode getValidatorCode() {
+        @Override public ClaimValidatorCode getValidatorCode() {
           return ClaimValidatorCode.CLAIM_SCHEMA;
         }
       };
@@ -442,7 +442,7 @@ class ValidationServiceTest {
           return true;
         }
         @Override public int priority() { return 0; }
-        @Override public ValidatorCode getValidatorCode() {
+        @Override public ClaimValidatorCode getValidatorCode() {
           return ClaimValidatorCode.CLAIM_DUPLICATE_CLAIM;
         }
       };
@@ -465,7 +465,7 @@ class ValidationServiceTest {
           capturedScope.set(ctx.getScope());
         }
         @Override public int priority() { return 0; }
-        @Override public ValidatorCode getValidatorCode() {
+        @Override public ClaimValidatorCode getValidatorCode() {
           return ClaimValidatorCode.CLAIM_SCHEMA;
         }
       };
@@ -487,7 +487,7 @@ class ValidationServiceTest {
           capturedScope.set(ctx.getScope());
         }
         @Override public int priority() { return 0; }
-        @Override public ValidatorCode getValidatorCode() {
+        @Override public ClaimValidatorCode getValidatorCode() {
           return ClaimValidatorCode.CLAIM_SCHEMA;
         }
       };
@@ -510,7 +510,7 @@ class ValidationServiceTest {
           capturedScope.set(scope);
           return true;
         }
-        @Override public ValidatorCode getValidatorCode() {
+        @Override public SubmissionValidatorCode getValidatorCode() {
           return SubmissionValidatorCode.SUBMISSION_SCHEMA_VALIDATOR;
         }
         @Override public int priority() { return 0; }

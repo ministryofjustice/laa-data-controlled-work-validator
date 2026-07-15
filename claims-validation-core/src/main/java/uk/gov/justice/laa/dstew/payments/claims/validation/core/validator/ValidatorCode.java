@@ -13,6 +13,9 @@ import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.submis
  * enums — {@link ClaimValidatorCode} and {@link SubmissionValidatorCode} — because a claim code is
  * not meaningful for submission validation and vice versa. Public entry points are typed to the
  * relevant enum (for example {@code Set<ClaimValidatorCode>}) so mismatched codes cannot be passed.
+ * The validator sub-interfaces narrow the return type further: {@code ClaimValidator} returns a
+ * {@link ClaimValidatorCode} and {@code SubmissionValidator} returns a
+ * {@link SubmissionValidatorCode}, so an implementation cannot report a code from the wrong type.
  *
  * <p>{@link #code()} and {@link #fromCode(String)} support the serialization boundary — for example
  * an HTTP adapter deserialising a {@code "scope"} field of string codes into codes, rejecting
