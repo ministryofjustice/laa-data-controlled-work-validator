@@ -3,6 +3,7 @@ package uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Predicate;
 import lombok.extern.slf4j.Slf4j;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationIssue;
@@ -35,13 +36,20 @@ public final class DuplicateClaimCrimeLowerValidationServiceStrategy
     List<Claim> claimsToCompare = filterCurrentClaimWithValidStatus(claim, submissionClaims);
 
     // Check for duplicates within current submission
+    Predicate<Claim> sameSubmissionMatch =
+        claimToCompare ->
+            Objects.equals(claim.getFeeCode(), claimToCompare.getFeeCode())
+                && Objects.equals(
+                    claim.getUniqueFileNumber(), claimToCompare.getUniqueFileNumber());
+
     List<Claim> submissionDuplicateClaims =
-        getDuplicateClaimsInCurrentSubmission(
-            claimsToCompare,
-            claimToCompare ->
-                Objects.equals(claim.getFeeCode(), claimToCompare.getFeeCode())
-                    && Objects.equals(claim.getUniqueFileNumber(),
-                        claimToCompare.getUniqueFileNumber()));
+        getDuplicateClaimsInCurrentSubmission(claimsToCompare, sameSubmissionMatch);
+
+    // Single-claim path: no in-memory siblings supplied, so query the provider for other claims
+    // in this same submission (self excluded by id).
+    if (submissionClaims.isEmpty()) {
+      submissionDuplicateClaims = getDuplicateClaimsInSameSubmission(claim, sameSubmissionMatch);
+    }
 
     // Check for duplicates in previous submissions
     DuplicateCheckResult result =

@@ -2,6 +2,7 @@ package uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Predicate;
 import lombok.extern.slf4j.Slf4j;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
@@ -176,6 +177,64 @@ public abstract class DuplicateClaimValidation {
               .toValidationIssueWithTechnicalMessage("Data Claims API error: " + e.getMessage());
 
       return new DuplicateCheckResult(null, error);
+    }
+  }
+
+  /**
+   * Find duplicates in the claim's <em>own</em> submission by querying the
+   * {@link ClaimsDataProvider}, scoped to {@code currentClaim.getSubmissionId()}.
+   *
+   * <p>Used on the single-claim validation path, where sibling claims are not supplied in-memory
+   * (an empty {@code submissionClaims} list). The current claim is excluded by id so a claim is
+   * never its own duplicate. Any provider failure is swallowed and returns an empty list — the
+   * previous-submission lookup remains responsible for surfacing technical errors.
+   *
+   * @param currentClaim the claim being validated; must contain office code, submission id, and the
+   *     keys used by {@code matchPredicate}
+   * @param matchPredicate area-of-law specific predicate identifying a duplicate (e.g. fee + UFN)
+   * @return the matching same-submission claims, excluding the current claim; never {@code null}
+   */
+  protected List<Claim> getDuplicateClaimsInSameSubmission(
+      Claim currentClaim, Predicate<Claim> matchPredicate) {
+
+    if (currentClaim.getSubmissionId() == null) {
+      return Collections.emptyList();
+    }
+
+    try {
+      ClaimResultSet resultSet =
+          claimsDataProvider.getClaims(
+              currentClaim.getOfficeAccountNumber(),
+              currentClaim.getSubmissionId().toString(), // scope to the claim's own submission
+              SUBMISSION_STATUSES_FOR_DUPLICATE_CHECK,
+              currentClaim.getFeeCode(),
+              currentClaim.getUniqueFileNumber(),
+              currentClaim.getUniqueClientNumber(),
+              null,
+              CLAIM_STATUSES_FOR_DUPLICATE_CHECK,
+              null, // page
+              null, // size
+              null); // sort
+
+      if (resultSet == null || resultSet.getContent() == null) {
+        return Collections.emptyList();
+      }
+
+      return resultSet.getContent().stream()
+          .map(ClaimMapper::fromClaimResponse)
+          // Exclude self by id — a claim must never be its own duplicate.
+          .filter(candidate -> !Objects.equals(candidate.getId(), currentClaim.getId()))
+          // Only VALID / READY_TO_PROCESS claims can be duplicates (VOID/others ignored).
+          .filter(candidate -> candidate.getStatus() == null
+              || LIST_OF_VALID_STATUS.contains(candidate.getStatus()))
+          .filter(matchPredicate)
+          .toList();
+    } catch (Exception e) {
+      log.error(
+          "Unable to check for duplicate claims in the current submission. "
+              + "Data Claims API may be unavailable: {}",
+          e.getMessage());
+      return Collections.emptyList();
     }
   }
 

@@ -72,6 +72,40 @@ class DuplicatePreviousClaimLegalHelpValidationServiceStrategyTest
               ClaimValidationError.INVALID_CLAIM_HAS_DUPLICATE_IN_SAME_SUBMISSION
                   .getDisplayMessage());
     }
+
+    @DisplayName(
+        "No validation error: sibling in the same submission shares Office, UFN and Fee Code but a"
+            + " different UCN")
+    @Test
+    void whenSiblingHasDifferentClient() {
+      var claimTobeProcessed =
+          createClaim(
+              "claimId1",
+              "2Q286D",
+              "submissionId1",
+              "CIV123",
+              "070722/001",
+              "CLI001",
+              ClaimStatus.READY_TO_PROCESS);
+
+      var otherClaim =
+          createClaim(
+              "claimId2",
+              "2Q286D",
+              "submissionId1",
+              "CIV123",
+              "070722/001",
+              "CLI999",
+              ClaimStatus.READY_TO_PROCESS);
+
+      var submissionClaims = List.of(claimTobeProcessed, otherClaim);
+
+      List<ValidationIssue> strategyIssues =
+          duplicateClaimLegalHelpValidation.validateDuplicateClaims(
+              claimTobeProcessed, submissionClaims, "2Q286D", FeeCalculationType.FIXED.toString());
+
+      assertThat(strategyIssues).isEmpty();
+    }
   }
 
   @Nested

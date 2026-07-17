@@ -3,6 +3,7 @@ package uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Predicate;
 import lombok.extern.slf4j.Slf4j;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationIssue;
@@ -27,15 +28,23 @@ public final class DuplicatePreviousClaimLegalHelpValidationServiceStrategy
     List<Claim> otherClaimsWithValidStatus =
         filterCurrentClaimWithValidStatus(currentClaim, submissionClaims);
 
+    Predicate<Claim> sameSubmissionMatch =
+        candidate ->
+            Objects.equals(candidate.getFeeCode(), currentClaim.getFeeCode())
+                && Objects.equals(
+                    candidate.getUniqueFileNumber(), currentClaim.getUniqueFileNumber())
+                && Objects.equals(
+                    candidate.getUniqueClientNumber(), currentClaim.getUniqueClientNumber());
+
     List<Claim> duplicateClaimsInThisSubmission =
-        getDuplicateClaimsInCurrentSubmission(
-            otherClaimsWithValidStatus,
-            candidate ->
-                Objects.equals(candidate.getFeeCode(), currentClaim.getFeeCode())
-                    && Objects.equals(
-                        candidate.getUniqueFileNumber(), currentClaim.getUniqueFileNumber())
-                    && Objects.equals(
-                        candidate.getUniqueClientNumber(), currentClaim.getUniqueClientNumber()));
+        getDuplicateClaimsInCurrentSubmission(otherClaimsWithValidStatus, sameSubmissionMatch);
+
+    // Single-claim path: no in-memory siblings supplied, so query the provider for other claims
+    // in this same submission (self excluded by id).
+    if (submissionClaims.isEmpty()) {
+      duplicateClaimsInThisSubmission =
+          getDuplicateClaimsInSameSubmission(currentClaim, sameSubmissionMatch);
+    }
 
     if (!duplicateClaimsInThisSubmission.isEmpty()) {
       logDuplicates(currentClaim, duplicateClaimsInThisSubmission);
