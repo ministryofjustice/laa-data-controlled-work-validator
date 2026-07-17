@@ -464,8 +464,8 @@ class ClaimSchemaValidatorTest {
     }
 
     @Test
-    @DisplayName("surgery_matters_count uses the 0-99 message for non-LEGAL_HELP discriminators")
-    void validate_usesGlobalMessageMapping_forNonLegalHelpAreas() {
+    @DisplayName("surgery_matters_count uses the ALL fallback message mapping")
+    void validate_usesAllFallbackMessageMapping_forSurgeryMattersCount() {
       Claim claim = createClaimWithRequiredFields();
       claim.setAreaOfLaw(AreaOfLaw.CRIME_LOWER);
       claim.setSurgeryMattersCount(-1);
@@ -538,21 +538,6 @@ class ClaimSchemaValidatorTest {
       Claim claim = createClaimWithRequiredFields();
       claim.setAreaOfLaw(AreaOfLaw.LEGAL_HELP);
       claim.setSurgeryMattersCount(null);
-
-      validator.validate(claim, context);
-
-      List<ValidationIssue> errors =
-          context.getIssues().stream().filter(i -> i.getSeverity() == ValidationSeverity.ERROR).toList();
-
-      assertThat(errors).isEmpty();
-    }
-
-    @Test
-    @DisplayName("omitted surgery_matters_count is valid")
-    void validate_allowsOmittedSurgeryMattersCount() {
-      Claim claim = createClaimWithRequiredFields();
-      claim.setAreaOfLaw(AreaOfLaw.LEGAL_HELP);
-      // Leave surgeryMattersCount unset to represent omitted input.
 
       validator.validate(claim, context);
 
