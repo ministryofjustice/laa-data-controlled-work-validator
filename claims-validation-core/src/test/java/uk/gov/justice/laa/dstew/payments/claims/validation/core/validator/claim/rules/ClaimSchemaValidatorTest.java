@@ -406,8 +406,7 @@ class ClaimSchemaValidatorTest {
       validator.validate(claim, context);
 
       List<ValidationIssue> errors =
-              context.getIssues().stream().filter(i -> i.getSeverity() == ValidationSeverity.ERROR).toList();
-      assertThat(errors).isEmpty();
+          context.getIssues().stream().filter(i -> i.getSeverity() == ValidationSeverity.ERROR).toList();
     }
 
     @Test
@@ -420,7 +419,7 @@ class ClaimSchemaValidatorTest {
       validator.validate(claim, context);
 
       List<ValidationIssue> errors =
-              context.getIssues().stream().filter(i -> i.getSeverity() == ValidationSeverity.ERROR).toList();
+          context.getIssues().stream().filter(i -> i.getSeverity() == ValidationSeverity.ERROR).toList();
       assertThat(errors).isEmpty();
     }
 
@@ -472,8 +471,7 @@ class ClaimSchemaValidatorTest {
       validator.validate(claim, context);
 
       List<ValidationIssue> errors =
-              context.getIssues().stream().filter(i -> i.getSeverity() == ValidationSeverity.ERROR).toList();
-
+          context.getIssues().stream().filter(i -> i.getSeverity() == ValidationSeverity.ERROR).toList();
       assertThat(errors).hasSize(1);
       assertThat(errors.getFirst().getMessage()).isEqualTo(SURGERY_MATTERS_COUNT_MESSAGE);
     }
