@@ -407,7 +407,8 @@ class ClaimSchemaValidatorTest {
 
       List<ValidationIssue> errors =
           context.getIssues().stream().filter(i -> i.getSeverity() == ValidationSeverity.ERROR).toList();
-    }
+
+      assertThat(errors).isEmpty();
 
     @Test
     @DisplayName("surgery_matters_count allows 20 for LEGAL_HELP")
