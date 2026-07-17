@@ -533,7 +533,7 @@ class ClaimSchemaValidatorTest {
     }
 
     @Test
-    @DisplayName("blank surgery_matters_count is valid")
+    @DisplayName("null surgery_matters_count is valid")
     void validate_allowsNullSurgeryMattersCount() {
       Claim claim = createClaimWithRequiredFields();
       claim.setAreaOfLaw(AreaOfLaw.LEGAL_HELP);
