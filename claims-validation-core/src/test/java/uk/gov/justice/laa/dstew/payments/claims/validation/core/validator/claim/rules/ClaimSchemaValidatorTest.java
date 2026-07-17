@@ -33,7 +33,7 @@ class ClaimSchemaValidatorTest {
       "Access Point Code must be in the format AP##### (AP followed by 5 digits)";
   private static final String SURGERY_MATTERS_COUNT_MESSAGE =
       "Surgery Matters Count must be between 0 and 99";
-  private static final String SURGERY_CLIENTS_MESSAGE =
+  private static final String SURGERY_CLIENTS_COUNT_MESSAGE =
       "Surgery Clients Count must be between 1 and 20";
 
   private ClaimSchemaValidator validator;
@@ -60,6 +60,18 @@ class ClaimSchemaValidatorTest {
         .build();
   }
 
+  private List<ValidationIssue> errorIssues() {
+    return context.getIssues().stream()
+        .filter(issue -> issue.getSeverity() == ValidationSeverity.ERROR)
+        .toList();
+  }
+
+  private List<ValidationIssue> warningIssues() {
+    return context.getIssues().stream()
+        .filter(issue -> issue.getSeverity() == ValidationSeverity.WARNING)
+        .toList();
+  }
+
   @Nested
   @DisplayName("Basic validation behaviour")
   class BasicValidation {
@@ -83,8 +95,7 @@ class ClaimSchemaValidatorTest {
       validator.validate(claim, context);
 
       // Filter out schema config warnings
-      List<ValidationIssue> errors =
-          context.getIssues().stream().filter(i -> i.getSeverity() == ValidationSeverity.ERROR).toList();
+      List<ValidationIssue> errors = errorIssues();
 
       assertThat(errors).isEmpty();
     }
@@ -121,8 +132,7 @@ class ClaimSchemaValidatorTest {
 
       validator.validate(claim, context);
 
-      List<ValidationIssue> errors =
-          context.getIssues().stream().filter(i -> i.getSeverity() == ValidationSeverity.ERROR).toList();
+      List<ValidationIssue> errors = errorIssues();
 
       assertThat(errors).hasSize(1);
       assertThat(errors.getFirst().getMessage()).isEqualTo(UFN_CUSTOM_MESSAGE);
@@ -138,8 +148,7 @@ class ClaimSchemaValidatorTest {
 
       validator.validate(claim, context);
 
-      List<ValidationIssue> errors =
-          context.getIssues().stream().filter(i -> i.getSeverity() == ValidationSeverity.ERROR).toList();
+      List<ValidationIssue> errors = errorIssues();
 
       assertThat(errors).hasSize(1);
       assertThat(errors.getFirst().getMessage()).isEqualTo(FEE_CODE_CUSTOM_MESSAGE);
@@ -153,8 +162,7 @@ class ClaimSchemaValidatorTest {
 
       validator.validate(claim, context);
 
-      List<ValidationIssue> errors =
-          context.getIssues().stream().filter(i -> i.getSeverity() == ValidationSeverity.ERROR).toList();
+      List<ValidationIssue> errors = errorIssues();
 
       assertThat(errors).hasSize(1);
       assertThat(errors.getFirst().getMessage()).isEqualTo(PROCUREMENT_AREA_CUSTOM_MESSAGE);
@@ -168,8 +176,7 @@ class ClaimSchemaValidatorTest {
 
       validator.validate(claim, context);
 
-      List<ValidationIssue> errors =
-          context.getIssues().stream().filter(i -> i.getSeverity() == ValidationSeverity.ERROR).toList();
+      List<ValidationIssue> errors = errorIssues();
 
       assertThat(errors).hasSize(1);
       assertThat(errors.getFirst().getMessage()).isEqualTo(CLIENT_2_DOB_CUSTOM_MESSAGE);
@@ -187,8 +194,7 @@ class ClaimSchemaValidatorTest {
 
       validator.validate(claim, context);
 
-      List<ValidationIssue> errors =
-          context.getIssues().stream().filter(i -> i.getSeverity() == ValidationSeverity.ERROR).toList();
+      List<ValidationIssue> errors = errorIssues();
 
       assertThat(errors).hasSize(1);
       assertThat(errors.getFirst().getMessage()).isEqualTo(ACCESS_POINT_CUSTOM_MESSAGE);
@@ -202,8 +208,7 @@ class ClaimSchemaValidatorTest {
 
       validator.validate(claim, context);
 
-      List<ValidationIssue> errors =
-          context.getIssues().stream().filter(i -> i.getSeverity() == ValidationSeverity.ERROR).toList();
+      List<ValidationIssue> errors = errorIssues();
 
       assertThat(errors).hasSize(1);
       assertThat(errors.getFirst().getTechnicalMessage())
@@ -224,8 +229,7 @@ class ClaimSchemaValidatorTest {
 
       validator.validate(claim, context);
 
-      List<ValidationIssue> errors =
-          context.getIssues().stream().filter(i -> i.getSeverity() == ValidationSeverity.ERROR).toList();
+      List<ValidationIssue> errors = errorIssues();
 
       assertThat(errors).hasSize(1);
       assertThat(errors.getFirst().getMessage())
@@ -240,8 +244,7 @@ class ClaimSchemaValidatorTest {
 
       validator.validate(claim, context);
 
-      List<ValidationIssue> errors =
-          context.getIssues().stream().filter(issue -> issue.getSeverity() == ValidationSeverity.ERROR).toList();
+      List<ValidationIssue> errors = errorIssues();
 
       // Should have separate errors for each required field
       assertThat(errors)
@@ -270,8 +273,7 @@ class ClaimSchemaValidatorTest {
 
       validator.validate(claim, context);
 
-      List<ValidationIssue> warnings =
-          context.getIssues().stream().filter(issue -> issue.getSeverity() == ValidationSeverity.WARNING).toList();
+      List<ValidationIssue> warnings = warningIssues();
 
       // If there are warnings, they should be SCHEMA_CONFIG_WARNING
       for (ValidationIssue warning : warnings) {
@@ -290,8 +292,7 @@ class ClaimSchemaValidatorTest {
 
       validator.validate(claim, context);
 
-      List<ValidationIssue> warnings =
-          context.getIssues().stream().filter(i -> i.getSeverity() == ValidationSeverity.WARNING).toList();
+      List<ValidationIssue> warnings = warningIssues();
 
       // There should be at least one schema config warning
       assertThat(warnings).isNotEmpty();
@@ -360,8 +361,7 @@ class ClaimSchemaValidatorTest {
 
       validator.validate(claim, context);
 
-      List<ValidationIssue> errors =
-          context.getIssues().stream().filter(i -> i.getSeverity() == ValidationSeverity.ERROR).toList();
+      List<ValidationIssue> errors = errorIssues();
 
       assertThat(errors).isEmpty();
     }
@@ -375,8 +375,7 @@ class ClaimSchemaValidatorTest {
 
       validator.validate(claim, context);
 
-      List<ValidationIssue> errors =
-          context.getIssues().stream().filter(i -> i.getSeverity() == ValidationSeverity.ERROR).toList();
+      List<ValidationIssue> errors = errorIssues();
 
       assertThat(errors).isEmpty();
     }
@@ -390,8 +389,7 @@ class ClaimSchemaValidatorTest {
 
       validator.validate(claim, context);
 
-      List<ValidationIssue> errors =
-          context.getIssues().stream().filter(i -> i.getSeverity() == ValidationSeverity.ERROR).toList();
+      List<ValidationIssue> errors = errorIssues();
 
       assertThat(errors).isEmpty();
     }
@@ -405,8 +403,7 @@ class ClaimSchemaValidatorTest {
 
       validator.validate(claim, context);
 
-      List<ValidationIssue> errors =
-          context.getIssues().stream().filter(i -> i.getSeverity() == ValidationSeverity.ERROR).toList();
+      List<ValidationIssue> errors = errorIssues();
 
       assertThat(errors).isEmpty();
     }
@@ -420,8 +417,7 @@ class ClaimSchemaValidatorTest {
 
       validator.validate(claim, context);
 
-      List<ValidationIssue> errors =
-          context.getIssues().stream().filter(i -> i.getSeverity() == ValidationSeverity.ERROR).toList();
+      List<ValidationIssue> errors = errorIssues();
       assertThat(errors).isEmpty();
     }
 
@@ -434,8 +430,7 @@ class ClaimSchemaValidatorTest {
 
       validator.validate(claim, context);
 
-      List<ValidationIssue> errors =
-          context.getIssues().stream().filter(i -> i.getSeverity() == ValidationSeverity.ERROR).toList();
+      List<ValidationIssue> errors = errorIssues();
 
       assertThat(errors).hasSize(1);
       assertThat(errors.getFirst().getMessage()).isEqualTo(SURGERY_MATTERS_COUNT_MESSAGE);
@@ -453,8 +448,7 @@ class ClaimSchemaValidatorTest {
 
       validator.validate(claim, context);
 
-      List<ValidationIssue> errors =
-          context.getIssues().stream().filter(i -> i.getSeverity() == ValidationSeverity.ERROR).toList();
+      List<ValidationIssue> errors = errorIssues();
 
       assertThat(errors).hasSize(1);
       assertThat(errors.getFirst().getMessage()).isEqualTo(SURGERY_MATTERS_COUNT_MESSAGE);
@@ -472,8 +466,7 @@ class ClaimSchemaValidatorTest {
 
       validator.validate(claim, context);
 
-      List<ValidationIssue> errors =
-          context.getIssues().stream().filter(i -> i.getSeverity() == ValidationSeverity.ERROR).toList();
+      List<ValidationIssue> errors = errorIssues();
       assertThat(errors).hasSize(1);
       assertThat(errors.getFirst().getMessage()).isEqualTo(SURGERY_MATTERS_COUNT_MESSAGE);
     }
@@ -487,11 +480,10 @@ class ClaimSchemaValidatorTest {
 
       validator.validate(belowMin, context);
 
-      List<ValidationIssue> errors =
-          context.getIssues().stream().filter(i -> i.getSeverity() == ValidationSeverity.ERROR).toList();
+      List<ValidationIssue> errors = errorIssues();
 
       assertThat(errors).hasSize(1);
-      assertThat(errors.getFirst().getMessage()).isEqualTo(SURGERY_CLIENTS_MESSAGE);
+      assertThat(errors.getFirst().getMessage()).isEqualTo(SURGERY_CLIENTS_COUNT_MESSAGE);
     }
 
     @Test
@@ -503,11 +495,10 @@ class ClaimSchemaValidatorTest {
 
       validator.validate(claim, context);
 
-      List<ValidationIssue> errors =
-          context.getIssues().stream().filter(i -> i.getSeverity() == ValidationSeverity.ERROR).toList();
+      List<ValidationIssue> errors = errorIssues();
 
       assertThat(errors).hasSize(1);
-      assertThat(errors.getFirst().getMessage()).isEqualTo(SURGERY_CLIENTS_MESSAGE);
+      assertThat(errors.getFirst().getMessage()).isEqualTo(SURGERY_CLIENTS_COUNT_MESSAGE);
     }
 
     @Test
@@ -519,16 +510,14 @@ class ClaimSchemaValidatorTest {
 
       validator.validate(claim, context);
 
-      List<ValidationIssue> errorsAfterOne =
-          context.getIssues().stream().filter(i -> i.getSeverity() == ValidationSeverity.ERROR).toList();
+      List<ValidationIssue> errorsAfterOne = errorIssues();
       assertThat(errorsAfterOne).isEmpty();
 
       context = ClaimValidationContext.builder().build();
       claim.setSurgeryClientsCount(20);
       validator.validate(claim, context);
 
-      List<ValidationIssue> errorsAfterTwenty =
-          context.getIssues().stream().filter(i -> i.getSeverity() == ValidationSeverity.ERROR).toList();
+      List<ValidationIssue> errorsAfterTwenty = errorIssues();
       assertThat(errorsAfterTwenty).isEmpty();
     }
 
@@ -541,8 +530,7 @@ class ClaimSchemaValidatorTest {
 
       validator.validate(claim, context);
 
-      List<ValidationIssue> errors =
-          context.getIssues().stream().filter(i -> i.getSeverity() == ValidationSeverity.ERROR).toList();
+      List<ValidationIssue> errors = errorIssues();
 
       assertThat(errors).isEmpty();
     }
@@ -556,8 +544,7 @@ class ClaimSchemaValidatorTest {
 
       validator.validate(claim, context);
 
-      List<ValidationIssue> errors =
-          context.getIssues().stream().filter(i -> i.getSeverity() == ValidationSeverity.ERROR).toList();
+      List<ValidationIssue> errors = errorIssues();
 
       assertThat(errors).hasSize(1);
       assertThat(errors.getFirst().getMessage()).isEqualTo(SURGERY_MATTERS_COUNT_MESSAGE);
