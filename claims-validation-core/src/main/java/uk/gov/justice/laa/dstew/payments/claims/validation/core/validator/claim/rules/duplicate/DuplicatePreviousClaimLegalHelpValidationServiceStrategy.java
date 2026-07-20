@@ -25,9 +25,6 @@ public final class DuplicatePreviousClaimLegalHelpValidationServiceStrategy
       Claim currentClaim, List<Claim> submissionClaims, String officeCode, String feeType) {
     List<ValidationIssue> issues = new ArrayList<>();
 
-    List<Claim> otherClaimsWithValidStatus =
-        filterCurrentClaimWithValidStatus(currentClaim, submissionClaims);
-
     Predicate<Claim> sameSubmissionMatch =
         candidate ->
             Objects.equals(candidate.getFeeCode(), currentClaim.getFeeCode())
@@ -36,15 +33,15 @@ public final class DuplicatePreviousClaimLegalHelpValidationServiceStrategy
                 && Objects.equals(
                     candidate.getUniqueClientNumber(), currentClaim.getUniqueClientNumber());
 
-    List<Claim> duplicateClaimsInThisSubmission =
-        getDuplicateClaimsInCurrentSubmission(otherClaimsWithValidStatus, sameSubmissionMatch);
-
-    // Single-claim path: no in-memory siblings supplied, so query the provider for other claims
-    // in this same submission (self excluded by id).
-    if (submissionClaims.isEmpty()) {
-      duplicateClaimsInThisSubmission =
-          getDuplicateClaimsInSameSubmission(currentClaim, sameSubmissionMatch);
+    // Legal Help keys on fee code + UFN + UCN, so the provider-side UCN filter is included.
+    // Fails closed on the single-claim path: a provider failure surfaces the technical error.
+    DuplicateCheckResult sameSubmissionResult =
+        findSameSubmissionDuplicates(currentClaim, submissionClaims, sameSubmissionMatch);
+    if (sameSubmissionResult.hasError()) {
+      issues.add(sameSubmissionResult.error());
+      return issues;
     }
+    List<Claim> duplicateClaimsInThisSubmission = sameSubmissionResult.duplicates();
 
     if (!duplicateClaimsInThisSubmission.isEmpty()) {
       logDuplicates(currentClaim, duplicateClaimsInThisSubmission);

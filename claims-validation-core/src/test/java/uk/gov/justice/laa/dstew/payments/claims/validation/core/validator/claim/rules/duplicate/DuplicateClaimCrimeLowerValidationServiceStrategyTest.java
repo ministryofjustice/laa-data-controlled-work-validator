@@ -2,6 +2,7 @@ package uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.*;
 
 import java.util.List;
@@ -211,9 +212,87 @@ class DuplicateClaimCrimeLowerValidationServiceStrategyTest extends AbstractDupl
     }
 
     @Test
+    @DisplayName(
+        "Crime Lower claims - single-claim path detects a same-submission duplicate that shares fee "
+            + "code + UFN but has a different UCN (UCN is not part of the Crime Lower key)")
+    void crimeLowerSingleClaimDetectsSameSubmissionDuplicateWithDifferentClient() {
+      // Given: no in-memory siblings, so the strategy must query the provider for other claims in
+      // the claim's own submission. The candidate shares fee code + UFN but has a DIFFERENT UCN.
+      Claim claim1 = createClaim("claimId1", OFFICE_CODE, "submissionId", "feeCode", "ufn",
+          "ucnA", ClaimStatus.READY_TO_PROCESS);
+
+      ClaimResponse sameSubmissionDuplicate = createClaimResponse(
+          "claimId2", "submissionId", "feeCode", "ufn", "ucnB", ClaimStatus.VALID);
+
+      ClaimResultSet claimResultSet = new ClaimResultSet();
+      claimResultSet.content(List.of(sameSubmissionDuplicate));
+
+      when(dataClaimsRestClient.getClaims(
+              any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any()))
+          .thenReturn(claimResultSet);
+
+      // When
+      List<ValidationIssue> validationIssues = duplicateClaimValidationService.validateDuplicateClaims(
+          claim1, List.of(), OFFICE_CODE, FeeCalculationType.FIXED.toString());
+
+      // Then: the different UCN must not prevent detection.
+      assertThat(validationIssues)
+          .extracting(ValidationIssue::getMessage)
+          .contains(
+              ClaimValidationError.INVALID_CLAIM_HAS_DUPLICATE_IN_SAME_SUBMISSION
+                  .getDisplayMessage());
+
+      // And: Crime Lower must never constrain the provider query by UCN (both the same-submission
+      // and previous-submission lookups pass null so genuine duplicates are not filtered out).
+      verify(dataClaimsRestClient, times(2))
+          .getClaims(any(), any(), any(), any(), any(), isNull(), any(), any(), any(), any(), any());
+    }
+
+    @Test
+    @DisplayName("Crime Lower claims - previous-submission lookup is not constrained by UCN")
+    void crimeLowerPreviousSubmissionLookupDoesNotFilterByClient() {      Claim claim1 = createClaim("claimId1", OFFICE_CODE, "submissionId", "feeCode", "ufn",
+          "ucnA", ClaimStatus.READY_TO_PROCESS);
+
+      when(dataClaimsRestClient.getClaims(
+              any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any()))
+          .thenReturn(new ClaimResultSet());
+
+      // submissionClaims non-empty, so only the previous-submission lookup queries the provider.
+      duplicateClaimValidationService.validateDuplicateClaims(
+          claim1, List.of(claim1), OFFICE_CODE, FeeCalculationType.FIXED.toString());
+
+      verify(dataClaimsRestClient)
+          .getClaims(any(), any(), any(), any(), any(), isNull(), any(), any(), any(), any(), any());
+    }
+
+    @Test
+    @DisplayName(
+        "Crime Lower claims - single-claim path fails closed: provider failure raises a technical "
+            + "error and does not pass the claim as a non-duplicate")
+    void crimeLowerSingleClaimFailsClosedWhenProviderUnavailable() {
+      Claim claim1 = createClaim("claimId1", OFFICE_CODE, "submissionId", "feeCode", "ufn",
+          "ucnA", ClaimStatus.READY_TO_PROCESS);
+
+      when(dataClaimsRestClient.getClaims(
+              any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any()))
+          .thenThrow(new RuntimeException("Data Claims API unavailable"));
+
+      // Single-claim path (no in-memory siblings): the same-submission lookup queries the provider.
+      List<ValidationIssue> validationIssues = duplicateClaimValidationService.validateDuplicateClaims(
+          claim1, List.of(), OFFICE_CODE, FeeCalculationType.FIXED.toString());
+
+      assertThat(validationIssues)
+          .extracting(ValidationIssue::getMessage)
+          .contains(ClaimValidationError.TECHNICAL_ERROR_DATA_CLAIMS_API.getDisplayMessage())
+          .doesNotContain(
+              ClaimValidationError.INVALID_CLAIM_HAS_DUPLICATE_IN_SAME_SUBMISSION.getDisplayMessage(),
+              ClaimValidationError.INVALID_CLAIM_HAS_DUPLICATE_IN_ANOTHER_SUBMISSION
+                  .getDisplayMessage());
+    }
+
+    @Test
     @DisplayName("Crime Lower claims - does not reprocess submission claims")
-    void crimeLowerClaimDuplicateDoesNotReprocessSubmissionClaims() {
-      // Given
+    void crimeLowerClaimDuplicateDoesNotReprocessSubmissionClaims() {      // Given
       Claim claim1 = createClaim("claimId1", OFFICE_CODE, "submissionId", "feeCode", "ufn",
           null, ClaimStatus.READY_TO_PROCESS);
       Claim claim2 = createClaim("claimId2", OFFICE_CODE, "submissionId", "feeCode", "ufn",

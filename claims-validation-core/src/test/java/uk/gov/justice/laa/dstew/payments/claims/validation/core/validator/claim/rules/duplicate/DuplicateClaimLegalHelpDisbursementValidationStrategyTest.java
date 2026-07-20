@@ -891,5 +891,27 @@ class DuplicateClaimLegalHelpDisbursementValidationStrategyTest
 
       assertThat(strategyIssues).isEmpty();
     }
+
+    @Test
+    @DisplayName(
+        "Fails closed: provider failure raises a technical error rather than passing the "
+            + "disbursement claim through Rule B as a non-duplicate")
+    void failsClosedWhenProviderUnavailable() {
+      var incoming = createClaim("c1", OFFICE_CODE, "s1", FEE_CODE, UFN, UCN,
+          ClaimStatus.READY_TO_PROCESS, "MAY-2025", null, "2025-03-21");
+
+      when(dataClaimsRestClient.getClaims(
+              any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any()))
+          .thenThrow(new RuntimeException("Data Claims API unavailable"));
+
+      List<ValidationIssue> strategyIssues =
+          duplicateClaimValidationService.validateDuplicateClaims(
+              incoming, List.of(incoming), OFFICE_CODE, FeeCalculationType.DISB_ONLY.getValue());
+
+      assertThat(strategyIssues)
+          .extracting(ValidationIssue::getMessage)
+          .containsExactly(
+              ClaimValidationError.TECHNICAL_ERROR_DATA_CLAIMS_API.getDisplayMessage());
+    }
   }
 }

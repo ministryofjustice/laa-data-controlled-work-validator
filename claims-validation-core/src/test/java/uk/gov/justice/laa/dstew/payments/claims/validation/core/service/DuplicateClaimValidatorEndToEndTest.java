@@ -318,6 +318,13 @@ class DuplicateClaimValidatorEndToEndTest {
           .doesNotContain(
               ClaimValidationError.INVALID_CLAIM_HAS_DUPLICATE_IN_SAME_SUBMISSION.name(),
               ClaimValidationError.INVALID_CLAIM_HAS_DUPLICATE_IN_ANOTHER_SUBMISSION.name());
+
+      // Both the same-submission and previous-submission lookups fail closed, but the shared
+      // technical error is de-duplicated by the dispatcher and reported only once.
+      assertThat(result.getIssues())
+          .extracting(ValidationIssue::getCode)
+          .filteredOn(ClaimValidationError.TECHNICAL_ERROR_DATA_CLAIMS_API.name()::equals)
+          .hasSize(1);
     }
   }
 }

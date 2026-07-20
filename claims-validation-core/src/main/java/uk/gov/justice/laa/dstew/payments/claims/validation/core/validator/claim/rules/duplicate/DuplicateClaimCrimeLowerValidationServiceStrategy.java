@@ -33,27 +33,26 @@ public final class DuplicateClaimCrimeLowerValidationServiceStrategy
       return issues;
     }
 
-    List<Claim> claimsToCompare = filterCurrentClaimWithValidStatus(claim, submissionClaims);
-
-    // Check for duplicates within current submission
+    // Check for duplicates within current submission. Crime Lower keys on fee code + UFN only, so
+    // UCN is passed as null to avoid over-filtering the provider query on the single-claim path.
     Predicate<Claim> sameSubmissionMatch =
         claimToCompare ->
             Objects.equals(claim.getFeeCode(), claimToCompare.getFeeCode())
                 && Objects.equals(
                     claim.getUniqueFileNumber(), claimToCompare.getUniqueFileNumber());
 
-    List<Claim> submissionDuplicateClaims =
-        getDuplicateClaimsInCurrentSubmission(claimsToCompare, sameSubmissionMatch);
-
-    // Single-claim path: no in-memory siblings supplied, so query the provider for other claims
-    // in this same submission (self excluded by id).
-    if (submissionClaims.isEmpty()) {
-      submissionDuplicateClaims = getDuplicateClaimsInSameSubmission(claim, sameSubmissionMatch);
+    DuplicateCheckResult sameSubmissionResult =
+        findSameSubmissionDuplicates(claim, submissionClaims, sameSubmissionMatch, null);
+    if (sameSubmissionResult.hasError()) {
+      issues.add(sameSubmissionResult.error());
+      return issues;
     }
+    List<Claim> submissionDuplicateClaims = sameSubmissionResult.duplicates();
 
-    // Check for duplicates in previous submissions
+    // Check for duplicates in previous submissions. UCN is null so the provider is not
+    // over-constrained: Crime Lower duplicates share fee code + UFN regardless of client number.
     DuplicateCheckResult result =
-            getDuplicateClaimsInPreviousSubmission(claim, submissionClaims);
+        getDuplicateClaimsInPreviousSubmission(claim, submissionClaims, null);
 
     if (result.hasError()) {
       issues.add(result.error());

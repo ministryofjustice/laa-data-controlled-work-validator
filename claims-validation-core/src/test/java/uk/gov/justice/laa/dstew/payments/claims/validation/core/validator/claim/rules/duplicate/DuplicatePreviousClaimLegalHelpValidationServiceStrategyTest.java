@@ -1,6 +1,8 @@
 package uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.rules.duplicate;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -105,6 +107,40 @@ class DuplicatePreviousClaimLegalHelpValidationServiceStrategyTest
               claimTobeProcessed, submissionClaims, "2Q286D", FeeCalculationType.FIXED.toString());
 
       assertThat(strategyIssues).isEmpty();
+    }
+  }
+
+  @Nested
+  class ProviderFailure {
+
+    @DisplayName(
+        "Fails closed: on the single-claim path a provider failure raises a technical error rather "
+            + "than passing the claim as a non-duplicate")
+    @Test
+    void whenProviderUnavailableOnSingleClaimPath() {
+      var claimTobeProcessed =
+          createClaim(
+              "claimId1",
+              "2Q286D",
+              "submissionId1",
+              "CIV123",
+              "070722/001",
+              "CLI001",
+              ClaimStatus.READY_TO_PROCESS);
+
+      when(mockDataClaimsRestClient.getClaims(
+              any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any()))
+          .thenThrow(new RuntimeException("Data Claims API unavailable"));
+
+      // Single-claim path: no in-memory siblings, so the same-submission lookup queries the provider.
+      List<ValidationIssue> strategyIssues =
+          duplicateClaimLegalHelpValidation.validateDuplicateClaims(
+              claimTobeProcessed, List.of(), "2Q286D", FeeCalculationType.FIXED.toString());
+
+      assertThat(strategyIssues)
+          .extracting(ValidationIssue::getMessage)
+          .containsExactly(
+              ClaimValidationError.TECHNICAL_ERROR_DATA_CLAIMS_API.getDisplayMessage());
     }
   }
 
