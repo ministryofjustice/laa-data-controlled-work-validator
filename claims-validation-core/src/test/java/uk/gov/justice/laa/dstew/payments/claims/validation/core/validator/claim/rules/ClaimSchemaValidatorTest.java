@@ -31,6 +31,10 @@ class ClaimSchemaValidatorTest {
       "Procurement Area Code must be 2 uppercase letters followed by 5 digits";
   private static final String ACCESS_POINT_CUSTOM_MESSAGE =
       "Access Point Code must be in the format AP##### (AP followed by 5 digits)";
+  private static final String SURGERY_MATTERS_COUNT_MESSAGE =
+      "Surgery Matters Count must be between 0 and 99";
+  private static final String SURGERY_CLIENTS_COUNT_MESSAGE =
+      "Surgery Clients Count must be between 1 and 20";
 
   private ClaimSchemaValidator validator;
   private ClaimValidationContext context;
@@ -56,6 +60,18 @@ class ClaimSchemaValidatorTest {
         .build();
   }
 
+  private List<ValidationIssue> errorIssues() {
+    return context.getIssues().stream()
+        .filter(issue -> issue.getSeverity() == ValidationSeverity.ERROR)
+        .toList();
+  }
+
+  private List<ValidationIssue> warningIssues() {
+    return context.getIssues().stream()
+        .filter(issue -> issue.getSeverity() == ValidationSeverity.WARNING)
+        .toList();
+  }
+
   @Nested
   @DisplayName("Basic validation behaviour")
   class BasicValidation {
@@ -79,8 +95,7 @@ class ClaimSchemaValidatorTest {
       validator.validate(claim, context);
 
       // Filter out schema config warnings
-      List<ValidationIssue> errors =
-          context.getIssues().stream().filter(i -> i.getSeverity() == ValidationSeverity.ERROR).toList();
+      List<ValidationIssue> errors = errorIssues();
 
       assertThat(errors).isEmpty();
     }
@@ -117,8 +132,7 @@ class ClaimSchemaValidatorTest {
 
       validator.validate(claim, context);
 
-      List<ValidationIssue> errors =
-          context.getIssues().stream().filter(i -> i.getSeverity() == ValidationSeverity.ERROR).toList();
+      List<ValidationIssue> errors = errorIssues();
 
       assertThat(errors).hasSize(1);
       assertThat(errors.getFirst().getMessage()).isEqualTo(UFN_CUSTOM_MESSAGE);
@@ -134,8 +148,7 @@ class ClaimSchemaValidatorTest {
 
       validator.validate(claim, context);
 
-      List<ValidationIssue> errors =
-          context.getIssues().stream().filter(i -> i.getSeverity() == ValidationSeverity.ERROR).toList();
+      List<ValidationIssue> errors = errorIssues();
 
       assertThat(errors).hasSize(1);
       assertThat(errors.getFirst().getMessage()).isEqualTo(FEE_CODE_CUSTOM_MESSAGE);
@@ -149,8 +162,7 @@ class ClaimSchemaValidatorTest {
 
       validator.validate(claim, context);
 
-      List<ValidationIssue> errors =
-          context.getIssues().stream().filter(i -> i.getSeverity() == ValidationSeverity.ERROR).toList();
+      List<ValidationIssue> errors = errorIssues();
 
       assertThat(errors).hasSize(1);
       assertThat(errors.getFirst().getMessage()).isEqualTo(PROCUREMENT_AREA_CUSTOM_MESSAGE);
@@ -164,8 +176,7 @@ class ClaimSchemaValidatorTest {
 
       validator.validate(claim, context);
 
-      List<ValidationIssue> errors =
-          context.getIssues().stream().filter(i -> i.getSeverity() == ValidationSeverity.ERROR).toList();
+      List<ValidationIssue> errors = errorIssues();
 
       assertThat(errors).hasSize(1);
       assertThat(errors.getFirst().getMessage()).isEqualTo(CLIENT_2_DOB_CUSTOM_MESSAGE);
@@ -183,8 +194,7 @@ class ClaimSchemaValidatorTest {
 
       validator.validate(claim, context);
 
-      List<ValidationIssue> errors =
-          context.getIssues().stream().filter(i -> i.getSeverity() == ValidationSeverity.ERROR).toList();
+      List<ValidationIssue> errors = errorIssues();
 
       assertThat(errors).hasSize(1);
       assertThat(errors.getFirst().getMessage()).isEqualTo(ACCESS_POINT_CUSTOM_MESSAGE);
@@ -198,8 +208,7 @@ class ClaimSchemaValidatorTest {
 
       validator.validate(claim, context);
 
-      List<ValidationIssue> errors =
-          context.getIssues().stream().filter(i -> i.getSeverity() == ValidationSeverity.ERROR).toList();
+      List<ValidationIssue> errors = errorIssues();
 
       assertThat(errors).hasSize(1);
       assertThat(errors.getFirst().getTechnicalMessage())
@@ -220,8 +229,7 @@ class ClaimSchemaValidatorTest {
 
       validator.validate(claim, context);
 
-      List<ValidationIssue> errors =
-          context.getIssues().stream().filter(i -> i.getSeverity() == ValidationSeverity.ERROR).toList();
+      List<ValidationIssue> errors = errorIssues();
 
       assertThat(errors).hasSize(1);
       assertThat(errors.getFirst().getMessage())
@@ -236,8 +244,7 @@ class ClaimSchemaValidatorTest {
 
       validator.validate(claim, context);
 
-      List<ValidationIssue> errors =
-          context.getIssues().stream().filter(issue -> issue.getSeverity() == ValidationSeverity.ERROR).toList();
+      List<ValidationIssue> errors = errorIssues();
 
       // Should have separate errors for each required field
       assertThat(errors)
@@ -266,8 +273,7 @@ class ClaimSchemaValidatorTest {
 
       validator.validate(claim, context);
 
-      List<ValidationIssue> warnings =
-          context.getIssues().stream().filter(issue -> issue.getSeverity() == ValidationSeverity.WARNING).toList();
+      List<ValidationIssue> warnings = warningIssues();
 
       // If there are warnings, they should be SCHEMA_CONFIG_WARNING
       for (ValidationIssue warning : warnings) {
@@ -286,8 +292,7 @@ class ClaimSchemaValidatorTest {
 
       validator.validate(claim, context);
 
-      List<ValidationIssue> warnings =
-          context.getIssues().stream().filter(i -> i.getSeverity() == ValidationSeverity.WARNING).toList();
+      List<ValidationIssue> warnings = warningIssues();
 
       // There should be at least one schema config warning
       assertThat(warnings).isNotEmpty();
@@ -340,6 +345,210 @@ class ClaimSchemaValidatorTest {
       assertThat(validator.toTitleCase("")).isEmpty();
       assertThat(validator.toTitleCase("camelCaseField")).isEqualTo("Camel Case Field");
       assertThat(validator.toTitleCase("with_underscore_field")).isEqualTo("With Underscore Field");
+    }
+  }
+
+  @Nested
+  @DisplayName("Surgery count schema validations")
+  class SurgeryCountSchemaValidations {
+
+    @Test
+    @DisplayName("surgery_matters_count allows 0 for LEGAL_HELP")
+    void validate_allowsSurgeryMattersCountZero_forLegalHelp() {
+      Claim claim = createClaimWithRequiredFields();
+      claim.setAreaOfLaw(AreaOfLaw.LEGAL_HELP);
+      claim.setSurgeryMattersCount(0);
+
+      validator.validate(claim, context);
+
+      List<ValidationIssue> errors = errorIssues();
+
+      assertThat(errors).isEmpty();
+    }
+
+    @Test
+    @DisplayName("surgery_matters_count allows 99 for LEGAL_HELP")
+    void validate_allowsSurgeryMattersCountUpperBound_forLegalHelp() {
+      Claim claim = createClaimWithRequiredFields();
+      claim.setAreaOfLaw(AreaOfLaw.LEGAL_HELP);
+      claim.setSurgeryMattersCount(99);
+
+      validator.validate(claim, context);
+
+      List<ValidationIssue> errors = errorIssues();
+
+      assertThat(errors).isEmpty();
+    }
+
+    @Test
+    @DisplayName("surgery_matters_count allows 21 for LEGAL_HELP")
+    void validate_allowsSurgeryMattersCountAboveOldUpperBound_forLegalHelp() {
+      Claim claim = createClaimWithRequiredFields();
+      claim.setAreaOfLaw(AreaOfLaw.LEGAL_HELP);
+      claim.setSurgeryMattersCount(21);
+
+      validator.validate(claim, context);
+
+      List<ValidationIssue> errors = errorIssues();
+
+      assertThat(errors).isEmpty();
+    }
+
+    @Test
+    @DisplayName("surgery_matters_count allows 1 for LEGAL_HELP")
+    void validate_allowsSurgeryMattersCountMinimum_forLegalHelp() {
+      Claim claim = createClaimWithRequiredFields();
+      claim.setAreaOfLaw(AreaOfLaw.LEGAL_HELP);
+      claim.setSurgeryMattersCount(1);
+
+      validator.validate(claim, context);
+
+      List<ValidationIssue> errors = errorIssues();
+
+      assertThat(errors).isEmpty();
+    }
+
+    @Test
+    @DisplayName("surgery_matters_count allows 20 for LEGAL_HELP")
+    void validate_allowsSurgeryMattersCountMaximum_forLegalHelp() {
+      Claim claim = createClaimWithRequiredFields();
+      claim.setAreaOfLaw(AreaOfLaw.LEGAL_HELP);
+      claim.setSurgeryMattersCount(20);
+
+      validator.validate(claim, context);
+
+      List<ValidationIssue> errors = errorIssues();
+      assertThat(errors).isEmpty();
+    }
+
+    @Test
+    @DisplayName("surgery_matters_count rejects values below 0 for LEGAL_HELP")
+    void validate_rejectsSurgeryMattersCountBelowZero_forLegalHelp() {
+      Claim claim = createClaimWithRequiredFields();
+      claim.setAreaOfLaw(AreaOfLaw.LEGAL_HELP);
+      claim.setSurgeryMattersCount(-1);
+
+      validator.validate(claim, context);
+
+      List<ValidationIssue> errors = errorIssues();
+
+      assertThat(errors).hasSize(1);
+      assertThat(errors.getFirst().getMessage()).isEqualTo(SURGERY_MATTERS_COUNT_MESSAGE);
+      assertThat(errors.getFirst().getTechnicalMessage())
+          .contains("surgery_matters_count")
+          .contains("-1");
+    }
+
+    @Test
+    @DisplayName("surgery_matters_count rejects values above 99 for LEGAL_HELP")
+    void validate_rejectsSurgeryMattersCountAboveUpperBound_forLegalHelp() {
+      Claim claim = createClaimWithRequiredFields();
+      claim.setAreaOfLaw(AreaOfLaw.LEGAL_HELP);
+      claim.setSurgeryMattersCount(100);
+
+      validator.validate(claim, context);
+
+      List<ValidationIssue> errors = errorIssues();
+
+      assertThat(errors).hasSize(1);
+      assertThat(errors.getFirst().getMessage()).isEqualTo(SURGERY_MATTERS_COUNT_MESSAGE);
+      assertThat(errors.getFirst().getTechnicalMessage())
+          .contains("surgery_matters_count")
+          .contains("100");
+    }
+
+    @Test
+    @DisplayName("surgery_matters_count uses the ALL fallback message mapping")
+    void validate_usesAllFallbackMessageMapping_forSurgeryMattersCount() {
+      Claim claim = createClaimWithRequiredFields();
+      claim.setAreaOfLaw(AreaOfLaw.CRIME_LOWER);
+      claim.setSurgeryMattersCount(-1);
+
+      validator.validate(claim, context);
+
+      List<ValidationIssue> errors = errorIssues();
+      assertThat(errors).hasSize(1);
+      assertThat(errors.getFirst().getMessage()).isEqualTo(SURGERY_MATTERS_COUNT_MESSAGE);
+    }
+
+    @Test
+    @DisplayName("surgery_clients_count remains 1 to 20 inclusive")
+    void validate_keepsSurgeryClientsCountRange() {
+      Claim belowMin = createClaimWithRequiredFields();
+      belowMin.setAreaOfLaw(AreaOfLaw.LEGAL_HELP);
+      belowMin.setSurgeryClientsCount(0);
+
+      validator.validate(belowMin, context);
+
+      List<ValidationIssue> errors = errorIssues();
+
+      assertThat(errors).hasSize(1);
+      assertThat(errors.getFirst().getMessage()).isEqualTo(SURGERY_CLIENTS_COUNT_MESSAGE);
+    }
+
+    @Test
+    @DisplayName("surgery_clients_count rejects values above 20")
+    void validate_rejectsSurgeryClientsCountAboveUpperBound() {
+      Claim claim = createClaimWithRequiredFields();
+      claim.setAreaOfLaw(AreaOfLaw.LEGAL_HELP);
+      claim.setSurgeryClientsCount(21);
+
+      validator.validate(claim, context);
+
+      List<ValidationIssue> errors = errorIssues();
+
+      assertThat(errors).hasSize(1);
+      assertThat(errors.getFirst().getMessage()).isEqualTo(SURGERY_CLIENTS_COUNT_MESSAGE);
+    }
+
+    @Test
+    @DisplayName("surgery_clients_count allows 1 and 20")
+    void validate_allowsSurgeryClientsCountBoundaries() {
+      Claim claim = createClaimWithRequiredFields();
+      claim.setAreaOfLaw(AreaOfLaw.LEGAL_HELP);
+      claim.setSurgeryClientsCount(1);
+
+      validator.validate(claim, context);
+
+      List<ValidationIssue> errorsAfterOne = errorIssues();
+      assertThat(errorsAfterOne).isEmpty();
+
+      context = ClaimValidationContext.builder().build();
+      claim.setSurgeryClientsCount(20);
+      validator.validate(claim, context);
+
+      List<ValidationIssue> errorsAfterTwenty = errorIssues();
+      assertThat(errorsAfterTwenty).isEmpty();
+    }
+
+    @Test
+    @DisplayName("null surgery_matters_count is valid")
+    void validate_allowsNullSurgeryMattersCount() {
+      Claim claim = createClaimWithRequiredFields();
+      claim.setAreaOfLaw(AreaOfLaw.LEGAL_HELP);
+      claim.setSurgeryMattersCount(null);
+
+      validator.validate(claim, context);
+
+      List<ValidationIssue> errors = errorIssues();
+
+      assertThat(errors).isEmpty();
+    }
+
+    @Test
+    @DisplayName("invalid surgery_matters_count message does not reference old 1-20 range")
+    void validate_usesUpdatedWording_forInvalidSurgeryMattersCount() {
+      Claim claim = createClaimWithRequiredFields();
+      claim.setAreaOfLaw(AreaOfLaw.LEGAL_HELP);
+      claim.setSurgeryMattersCount(100);
+
+      validator.validate(claim, context);
+
+      List<ValidationIssue> errors = errorIssues();
+
+      assertThat(errors).hasSize(1);
+      assertThat(errors.getFirst().getMessage()).isEqualTo(SURGERY_MATTERS_COUNT_MESSAGE);
+      assertThat(errors.getFirst().getMessage()).doesNotContain("1 and 20");
     }
   }
 }
