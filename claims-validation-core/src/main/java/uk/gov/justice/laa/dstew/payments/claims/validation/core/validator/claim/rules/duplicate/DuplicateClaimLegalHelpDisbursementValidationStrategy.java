@@ -117,8 +117,16 @@ public class DuplicateClaimLegalHelpDisbursementValidationStrategy extends Dupli
       return issues;
     }
 
-    List<Claim> candidateDuplicateClaim =
-            findEligibleDuplicateClaims(incomingClaim, submissionClaims);
+    // Fails closed: if the previous-submission lookup cannot be completed, surface the technical
+    // error rather than passing the claim through Rule B as a non-duplicate.
+    DuplicateCheckResult eligibleResult =
+        findEligibleDuplicateClaimsResult(incomingClaim, submissionClaims);
+    if (eligibleResult.hasError()) {
+      issues.add(eligibleResult.error());
+      return issues;
+    }
+
+    List<Claim> candidateDuplicateClaim = eligibleResult.duplicates();
     if (candidateDuplicateClaim.isEmpty()) {
       return issues;
     }
@@ -149,19 +157,41 @@ public class DuplicateClaimLegalHelpDisbursementValidationStrategy extends Dupli
    * unique file number, and unique client number as the incoming claim, and that carry a valid Case
    * Concluded Date eligible for Rule B evaluation.
    *
+   * <p>If the previous-submission lookup cannot be completed, an empty list is returned here; use
+   * {@link #findEligibleDuplicateClaimsResult(Claim, List)} when the caller needs to fail closed on
+   * a provider error.
+   *
    * @param incomingClaim the claim currently being validated
    * @param submissionClaims all claims belonging to the current submission
-   * @return a list of eligible candidate claims; empty if none are found
+   * @return a list of eligible candidate claims; empty if none are found or the lookup failed
    */
   protected List<Claim> findEligibleDuplicateClaims(
           Claim incomingClaim, List<Claim> submissionClaims) {
-    var previous = getDuplicateClaimsInPreviousSubmission(incomingClaim, submissionClaims);
+    List<Claim> eligible =
+        findEligibleDuplicateClaimsResult(incomingClaim, submissionClaims).duplicates();
+    return eligible != null ? eligible : List.of();
+  }
 
-    List<Claim> duplicates = (previous == null || previous.duplicates() == null)
-        ? List.of()
-        : previous.duplicates();
+  /**
+   * As {@link #findEligibleDuplicateClaims(Claim, List)} but preserving any technical error raised
+   * by the previous-submission lookup so callers can fail closed. Performs a single provider call.
+   *
+   * @param incomingClaim the claim currently being validated
+   * @param submissionClaims all claims belonging to the current submission
+   * @return a DuplicateCheckResult holding the eligible candidates, or an error if the
+   *     previous-submission lookup could not be completed
+   */
+  private DuplicateCheckResult findEligibleDuplicateClaimsResult(
+          Claim incomingClaim, List<Claim> submissionClaims) {
+    DuplicateCheckResult previous =
+        getDuplicateClaimsInPreviousSubmission(incomingClaim, submissionClaims);
+    if (previous.hasError()) {
+      return previous;
+    }
 
-    return duplicates.stream().filter(c -> parseConcludedDate(c) != null).toList();
+    List<Claim> eligible =
+        previous.duplicates().stream().filter(c -> parseConcludedDate(c) != null).toList();
+    return new DuplicateCheckResult(eligible, null);
   }
 
   /**

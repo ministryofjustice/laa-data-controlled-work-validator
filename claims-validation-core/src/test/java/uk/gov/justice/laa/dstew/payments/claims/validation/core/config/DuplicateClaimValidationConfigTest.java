@@ -11,7 +11,7 @@ import uk.gov.justice.laa.dstew.payments.claims.validation.core.provider.ClaimsD
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.rules.duplicate.DuplicateClaimCrimeLowerValidationServiceStrategy;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.rules.duplicate.DuplicateClaimLegalHelpDisbursementValidationStrategy;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.rules.duplicate.DuplicateClaimLegalHelpValidationServiceStrategy;
-import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.rules.duplicate.DuplicatePreviousClaimLegalHelpValidationServiceStrategy;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.rules.duplicate.DuplicateSameSubmissionLegalHelpValidationServiceStrategy;
 
 /**
  * Tests for duplicate claim validation strategy beans wired in
@@ -122,10 +122,10 @@ class DuplicateClaimValidationConfigTest {
   class PreviousLegalHelpStrategyBean {
 
     @Test
-    @DisplayName("Returns a non-null DuplicatePreviousClaimLegalHelpValidationServiceStrategy")
+    @DisplayName("Returns a non-null DuplicateSameSubmissionLegalHelpValidationServiceStrategy")
     void returnsNonNull() {
       assertThat(
-          config.coreDuplicatePreviousClaimLegalHelpValidationServiceStrategy(claimsDataProvider))
+          config.coreDuplicateSameSubmissionLegalHelpValidationServiceStrategy(claimsDataProvider))
           .isNotNull();
     }
 
@@ -133,17 +133,17 @@ class DuplicateClaimValidationConfigTest {
     @DisplayName("Returns correct strategy type")
     void returnsCorrectType() {
       assertThat(
-          config.coreDuplicatePreviousClaimLegalHelpValidationServiceStrategy(claimsDataProvider))
-          .isInstanceOf(DuplicatePreviousClaimLegalHelpValidationServiceStrategy.class);
+          config.coreDuplicateSameSubmissionLegalHelpValidationServiceStrategy(claimsDataProvider))
+          .isInstanceOf(DuplicateSameSubmissionLegalHelpValidationServiceStrategy.class);
     }
 
     @Test
     @DisplayName("Returns a new instance on each call")
     void returnsNewInstanceEachCall() {
-      DuplicatePreviousClaimLegalHelpValidationServiceStrategy first =
-          config.coreDuplicatePreviousClaimLegalHelpValidationServiceStrategy(claimsDataProvider);
-      DuplicatePreviousClaimLegalHelpValidationServiceStrategy second =
-          config.coreDuplicatePreviousClaimLegalHelpValidationServiceStrategy(claimsDataProvider);
+      DuplicateSameSubmissionLegalHelpValidationServiceStrategy first =
+          config.coreDuplicateSameSubmissionLegalHelpValidationServiceStrategy(claimsDataProvider);
+      DuplicateSameSubmissionLegalHelpValidationServiceStrategy second =
+          config.coreDuplicateSameSubmissionLegalHelpValidationServiceStrategy(claimsDataProvider);
       assertThat(first).isNotSameAs(second);
     }
   }
@@ -196,16 +196,17 @@ class DuplicateClaimValidationConfigTest {
     void eachBeanMethodProducesDifferentConcreteType() {
       Object crimeLower = config.coreDuplicateClaimCrimeLowerValidationServiceStrategy(claimsDataProvider);
       Object legalHelp = config.coreDuplicateClaimLegalHelpValidationServiceStrategy(claimsDataProvider);
-      Object previousLegalHelp = config.coreDuplicatePreviousClaimLegalHelpValidationServiceStrategy(claimsDataProvider);
+      Object sameSubmissionLegalHelp =
+          config.coreDuplicateSameSubmissionLegalHelpValidationServiceStrategy(claimsDataProvider);
       Object disbursement = config.coreDuplicateClaimLegalHelpDisbursementValidationStrategy(claimsDataProvider);
 
       assertThat(crimeLower.getClass())
           .isNotEqualTo(legalHelp.getClass())
-          .isNotEqualTo(previousLegalHelp.getClass())
+          .isNotEqualTo(sameSubmissionLegalHelp.getClass())
           .isNotEqualTo(disbursement.getClass());
 
       assertThat(legalHelp.getClass())
-          .isNotEqualTo(previousLegalHelp.getClass())
+          .isNotEqualTo(sameSubmissionLegalHelp.getClass())
           .isNotEqualTo(disbursement.getClass());
     }
   }

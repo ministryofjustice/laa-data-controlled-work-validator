@@ -3,6 +3,7 @@ package uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Predicate;
 import lombok.extern.slf4j.Slf4j;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationIssue;
@@ -11,10 +12,10 @@ import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.
 
 /** Validation service for Legal Help duplicate claims within the current submission. */
 @Slf4j
-public final class DuplicatePreviousClaimLegalHelpValidationServiceStrategy
+public final class DuplicateSameSubmissionLegalHelpValidationServiceStrategy
     extends DuplicateClaimValidation implements LegalHelpDuplicateClaimValidationStrategy {
 
-  public DuplicatePreviousClaimLegalHelpValidationServiceStrategy(
+  public DuplicateSameSubmissionLegalHelpValidationServiceStrategy(
       ClaimsDataProvider claimsDataProvider) {
     super(claimsDataProvider);
   }
@@ -24,18 +25,23 @@ public final class DuplicatePreviousClaimLegalHelpValidationServiceStrategy
       Claim currentClaim, List<Claim> submissionClaims, String officeCode, String feeType) {
     List<ValidationIssue> issues = new ArrayList<>();
 
-    List<Claim> otherClaimsWithValidStatus =
-        filterCurrentClaimWithValidStatus(currentClaim, submissionClaims);
+    Predicate<Claim> sameSubmissionMatch =
+        candidate ->
+            Objects.equals(candidate.getFeeCode(), currentClaim.getFeeCode())
+                && Objects.equals(
+                    candidate.getUniqueFileNumber(), currentClaim.getUniqueFileNumber())
+                && Objects.equals(
+                    candidate.getUniqueClientNumber(), currentClaim.getUniqueClientNumber());
 
-    List<Claim> duplicateClaimsInThisSubmission =
-        getDuplicateClaimsInCurrentSubmission(
-            otherClaimsWithValidStatus,
-            candidate ->
-                Objects.equals(candidate.getFeeCode(), currentClaim.getFeeCode())
-                    && Objects.equals(
-                        candidate.getUniqueFileNumber(), currentClaim.getUniqueFileNumber())
-                    && Objects.equals(
-                        candidate.getUniqueClientNumber(), currentClaim.getUniqueClientNumber()));
+    // Legal Help keys on fee code + UFN + UCN, so the provider-side UCN filter is included.
+    // Fails closed on the single-claim path: a provider failure surfaces the technical error.
+    DuplicateCheckResult sameSubmissionResult =
+        findSameSubmissionDuplicates(currentClaim, submissionClaims, sameSubmissionMatch);
+    if (sameSubmissionResult.hasError()) {
+      issues.add(sameSubmissionResult.error());
+      return issues;
+    }
+    List<Claim> duplicateClaimsInThisSubmission = sameSubmissionResult.duplicates();
 
     if (!duplicateClaimsInThisSubmission.isEmpty()) {
       logDuplicates(currentClaim, duplicateClaimsInThisSubmission);

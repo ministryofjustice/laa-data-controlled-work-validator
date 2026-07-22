@@ -5,10 +5,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationIssue;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationSeverity;
@@ -352,203 +356,91 @@ class ClaimSchemaValidatorTest {
   @DisplayName("Surgery count schema validations")
   class SurgeryCountSchemaValidations {
 
-    @Test
-    @DisplayName("surgery_matters_count allows 0 for LEGAL_HELP")
-    void validate_allowsSurgeryMattersCountZero_forLegalHelp() {
+    @ParameterizedTest(name = "surgery_matters_count={1} for {0} -> expectError={2}")
+    @MethodSource(
+        "uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.rules"
+            + ".ClaimSchemaValidatorTest#surgeryMattersCountCases")
+    @DisplayName("surgery_matters_count validation")
+    void validate_surgeryMattersCount(
+        AreaOfLaw areaOfLaw,
+        Integer value,
+        boolean expectError,
+        String expectedTechnicalFragment) {
       Claim claim = createClaimWithRequiredFields();
-      claim.setAreaOfLaw(AreaOfLaw.LEGAL_HELP);
-      claim.setSurgeryMattersCount(0);
+      claim.setAreaOfLaw(areaOfLaw);
+      claim.setSurgeryMattersCount(value);
 
       validator.validate(claim, context);
 
       List<ValidationIssue> errors = errorIssues();
 
-      assertThat(errors).isEmpty();
+      if (expectError) {
+        assertThat(errors).hasSize(1);
+        assertThat(errors.getFirst().getMessage())
+            .isEqualTo(SURGERY_MATTERS_COUNT_MESSAGE)
+            .doesNotContain("1 and 20");
+        if (expectedTechnicalFragment != null) {
+          assertThat(errors.getFirst().getTechnicalMessage())
+              .contains("surgery_matters_count")
+              .contains(expectedTechnicalFragment);
+        }
+      } else {
+        assertThat(errors).isEmpty();
+      }
     }
 
-    @Test
-    @DisplayName("surgery_matters_count allows 99 for LEGAL_HELP")
-    void validate_allowsSurgeryMattersCountUpperBound_forLegalHelp() {
+    @ParameterizedTest(name = "surgery_clients_count={1} for {0} -> expectError={2}")
+    @MethodSource(
+        "uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.rules"
+            + ".ClaimSchemaValidatorTest#surgeryClientsCountCases")
+    @DisplayName("surgery_clients_count validation")
+    void validate_surgeryClientsCount(AreaOfLaw areaOfLaw, Integer value, boolean expectError) {
       Claim claim = createClaimWithRequiredFields();
-      claim.setAreaOfLaw(AreaOfLaw.LEGAL_HELP);
-      claim.setSurgeryMattersCount(99);
+      claim.setAreaOfLaw(areaOfLaw);
+      claim.setSurgeryClientsCount(value);
 
       validator.validate(claim, context);
 
       List<ValidationIssue> errors = errorIssues();
 
-      assertThat(errors).isEmpty();
+      if (expectError) {
+        assertThat(errors).hasSize(1);
+        assertThat(errors.getFirst().getMessage()).isEqualTo(SURGERY_CLIENTS_COUNT_MESSAGE);
+      } else {
+        assertThat(errors).isEmpty();
+      }
     }
+  }
 
-    @Test
-    @DisplayName("surgery_matters_count allows 21 for LEGAL_HELP")
-    void validate_allowsSurgeryMattersCountAboveOldUpperBound_forLegalHelp() {
-      Claim claim = createClaimWithRequiredFields();
-      claim.setAreaOfLaw(AreaOfLaw.LEGAL_HELP);
-      claim.setSurgeryMattersCount(21);
+  /**
+   * Cases for surgery_matters_count. Valid range is 0..99 inclusive; null is allowed. The ALL
+   * fallback message mapping is exercised via the CRIME_LOWER area.
+   *
+   * <p>Arguments: areaOfLaw, value, expectError, expectedTechnicalFragment
+   */
+  static Stream<Arguments> surgeryMattersCountCases() {
+    return Stream.of(
+        Arguments.of(AreaOfLaw.LEGAL_HELP, 0, false, null),
+        Arguments.of(AreaOfLaw.LEGAL_HELP, 1, false, null),
+        Arguments.of(AreaOfLaw.LEGAL_HELP, 20, false, null),
+        Arguments.of(AreaOfLaw.LEGAL_HELP, 21, false, null),
+        Arguments.of(AreaOfLaw.LEGAL_HELP, 99, false, null),
+        Arguments.of(AreaOfLaw.LEGAL_HELP, null, false, null),
+        Arguments.of(AreaOfLaw.LEGAL_HELP, -1, true, "-1"),
+        Arguments.of(AreaOfLaw.LEGAL_HELP, 100, true, "100"),
+        Arguments.of(AreaOfLaw.CRIME_LOWER, -1, true, null));
+  }
 
-      validator.validate(claim, context);
-
-      List<ValidationIssue> errors = errorIssues();
-
-      assertThat(errors).isEmpty();
-    }
-
-    @Test
-    @DisplayName("surgery_matters_count allows 1 for LEGAL_HELP")
-    void validate_allowsSurgeryMattersCountMinimum_forLegalHelp() {
-      Claim claim = createClaimWithRequiredFields();
-      claim.setAreaOfLaw(AreaOfLaw.LEGAL_HELP);
-      claim.setSurgeryMattersCount(1);
-
-      validator.validate(claim, context);
-
-      List<ValidationIssue> errors = errorIssues();
-
-      assertThat(errors).isEmpty();
-    }
-
-    @Test
-    @DisplayName("surgery_matters_count allows 20 for LEGAL_HELP")
-    void validate_allowsSurgeryMattersCountMaximum_forLegalHelp() {
-      Claim claim = createClaimWithRequiredFields();
-      claim.setAreaOfLaw(AreaOfLaw.LEGAL_HELP);
-      claim.setSurgeryMattersCount(20);
-
-      validator.validate(claim, context);
-
-      List<ValidationIssue> errors = errorIssues();
-      assertThat(errors).isEmpty();
-    }
-
-    @Test
-    @DisplayName("surgery_matters_count rejects values below 0 for LEGAL_HELP")
-    void validate_rejectsSurgeryMattersCountBelowZero_forLegalHelp() {
-      Claim claim = createClaimWithRequiredFields();
-      claim.setAreaOfLaw(AreaOfLaw.LEGAL_HELP);
-      claim.setSurgeryMattersCount(-1);
-
-      validator.validate(claim, context);
-
-      List<ValidationIssue> errors = errorIssues();
-
-      assertThat(errors).hasSize(1);
-      assertThat(errors.getFirst().getMessage()).isEqualTo(SURGERY_MATTERS_COUNT_MESSAGE);
-      assertThat(errors.getFirst().getTechnicalMessage())
-          .contains("surgery_matters_count")
-          .contains("-1");
-    }
-
-    @Test
-    @DisplayName("surgery_matters_count rejects values above 99 for LEGAL_HELP")
-    void validate_rejectsSurgeryMattersCountAboveUpperBound_forLegalHelp() {
-      Claim claim = createClaimWithRequiredFields();
-      claim.setAreaOfLaw(AreaOfLaw.LEGAL_HELP);
-      claim.setSurgeryMattersCount(100);
-
-      validator.validate(claim, context);
-
-      List<ValidationIssue> errors = errorIssues();
-
-      assertThat(errors).hasSize(1);
-      assertThat(errors.getFirst().getMessage()).isEqualTo(SURGERY_MATTERS_COUNT_MESSAGE);
-      assertThat(errors.getFirst().getTechnicalMessage())
-          .contains("surgery_matters_count")
-          .contains("100");
-    }
-
-    @Test
-    @DisplayName("surgery_matters_count uses the ALL fallback message mapping")
-    void validate_usesAllFallbackMessageMapping_forSurgeryMattersCount() {
-      Claim claim = createClaimWithRequiredFields();
-      claim.setAreaOfLaw(AreaOfLaw.CRIME_LOWER);
-      claim.setSurgeryMattersCount(-1);
-
-      validator.validate(claim, context);
-
-      List<ValidationIssue> errors = errorIssues();
-      assertThat(errors).hasSize(1);
-      assertThat(errors.getFirst().getMessage()).isEqualTo(SURGERY_MATTERS_COUNT_MESSAGE);
-    }
-
-    @Test
-    @DisplayName("surgery_clients_count remains 1 to 20 inclusive")
-    void validate_keepsSurgeryClientsCountRange() {
-      Claim belowMin = createClaimWithRequiredFields();
-      belowMin.setAreaOfLaw(AreaOfLaw.LEGAL_HELP);
-      belowMin.setSurgeryClientsCount(0);
-
-      validator.validate(belowMin, context);
-
-      List<ValidationIssue> errors = errorIssues();
-
-      assertThat(errors).hasSize(1);
-      assertThat(errors.getFirst().getMessage()).isEqualTo(SURGERY_CLIENTS_COUNT_MESSAGE);
-    }
-
-    @Test
-    @DisplayName("surgery_clients_count rejects values above 20")
-    void validate_rejectsSurgeryClientsCountAboveUpperBound() {
-      Claim claim = createClaimWithRequiredFields();
-      claim.setAreaOfLaw(AreaOfLaw.LEGAL_HELP);
-      claim.setSurgeryClientsCount(21);
-
-      validator.validate(claim, context);
-
-      List<ValidationIssue> errors = errorIssues();
-
-      assertThat(errors).hasSize(1);
-      assertThat(errors.getFirst().getMessage()).isEqualTo(SURGERY_CLIENTS_COUNT_MESSAGE);
-    }
-
-    @Test
-    @DisplayName("surgery_clients_count allows 1 and 20")
-    void validate_allowsSurgeryClientsCountBoundaries() {
-      Claim claim = createClaimWithRequiredFields();
-      claim.setAreaOfLaw(AreaOfLaw.LEGAL_HELP);
-      claim.setSurgeryClientsCount(1);
-
-      validator.validate(claim, context);
-
-      List<ValidationIssue> errorsAfterOne = errorIssues();
-      assertThat(errorsAfterOne).isEmpty();
-
-      context = ClaimValidationContext.builder().build();
-      claim.setSurgeryClientsCount(20);
-      validator.validate(claim, context);
-
-      List<ValidationIssue> errorsAfterTwenty = errorIssues();
-      assertThat(errorsAfterTwenty).isEmpty();
-    }
-
-    @Test
-    @DisplayName("null surgery_matters_count is valid")
-    void validate_allowsNullSurgeryMattersCount() {
-      Claim claim = createClaimWithRequiredFields();
-      claim.setAreaOfLaw(AreaOfLaw.LEGAL_HELP);
-      claim.setSurgeryMattersCount(null);
-
-      validator.validate(claim, context);
-
-      List<ValidationIssue> errors = errorIssues();
-
-      assertThat(errors).isEmpty();
-    }
-
-    @Test
-    @DisplayName("invalid surgery_matters_count message does not reference old 1-20 range")
-    void validate_usesUpdatedWording_forInvalidSurgeryMattersCount() {
-      Claim claim = createClaimWithRequiredFields();
-      claim.setAreaOfLaw(AreaOfLaw.LEGAL_HELP);
-      claim.setSurgeryMattersCount(100);
-
-      validator.validate(claim, context);
-
-      List<ValidationIssue> errors = errorIssues();
-
-      assertThat(errors).hasSize(1);
-      assertThat(errors.getFirst().getMessage()).isEqualTo(SURGERY_MATTERS_COUNT_MESSAGE);
-      assertThat(errors.getFirst().getMessage()).doesNotContain("1 and 20");
-    }
+  /**
+   * Cases for surgery_clients_count. Valid range is 1..20 inclusive.
+   *
+   * <p>Arguments: areaOfLaw, value, expectError
+   */
+  static Stream<Arguments> surgeryClientsCountCases() {
+    return Stream.of(
+        Arguments.of(AreaOfLaw.LEGAL_HELP, 0, true),
+        Arguments.of(AreaOfLaw.LEGAL_HELP, 1, false),
+        Arguments.of(AreaOfLaw.LEGAL_HELP, 20, false),
+        Arguments.of(AreaOfLaw.LEGAL_HELP, 21, true));
   }
 }

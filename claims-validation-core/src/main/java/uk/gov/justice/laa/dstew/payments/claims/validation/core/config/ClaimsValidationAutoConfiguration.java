@@ -36,7 +36,7 @@ import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.rules.duplicate.DuplicateClaimLegalHelpDisbursementValidationStrategy;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.rules.duplicate.DuplicateClaimLegalHelpValidationServiceStrategy;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.rules.duplicate.DuplicateClaimValidationStrategy;
-import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.rules.duplicate.DuplicatePreviousClaimLegalHelpValidationServiceStrategy;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.rules.duplicate.DuplicateSameSubmissionLegalHelpValidationServiceStrategy;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.submission.SubmissionValidation;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.submission.rules.DuplicateSubmissionValidator;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.submission.rules.NilSubmissionValidator;
@@ -274,12 +274,12 @@ public class ClaimsValidationAutoConfiguration {
   }
 
   /** Legal Help previous claim duplicate validation strategy. */
-  @Bean("coreDuplicatePreviousClaimLegalHelpValidationServiceStrategy")
-  @ConditionalOnMissingBean(DuplicatePreviousClaimLegalHelpValidationServiceStrategy.class)
-  public DuplicatePreviousClaimLegalHelpValidationServiceStrategy
-      coreDuplicatePreviousClaimLegalHelpValidationServiceStrategy(
+  @Bean("coreDuplicateSameSubmissionLegalHelpValidationServiceStrategy")
+  @ConditionalOnMissingBean(DuplicateSameSubmissionLegalHelpValidationServiceStrategy.class)
+  public DuplicateSameSubmissionLegalHelpValidationServiceStrategy
+      coreDuplicateSameSubmissionLegalHelpValidationServiceStrategy(
           ClaimsDataProvider claimsDataProvider) {
-    return new DuplicatePreviousClaimLegalHelpValidationServiceStrategy(claimsDataProvider);
+    return new DuplicateSameSubmissionLegalHelpValidationServiceStrategy(claimsDataProvider);
   }
 
   /** Legal Help disbursement duplicate claim validation strategy. */

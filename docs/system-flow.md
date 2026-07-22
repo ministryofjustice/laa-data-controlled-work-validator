@@ -24,7 +24,7 @@ flowchart TD
     effCat --> dupCrimeLower["DuplicateClaimCrimeLowerValidationServiceStrategy<br/>(Crime Lower)"]
     dupCrimeLower --> dupLegalHelp["DuplicateClaimLegalHelpValidationServiceStrategy<br/>(Legal Help)"]
     dupLegalHelp --> dupLegalHelpDisb["DuplicateClaimLegalHelpDisbursementValidationStrategy<br/>(Legal Help Disbursement)"]
-    dupLegalHelpDisb --> dupLegalHelpCurrent["DuplicatePreviousClaimLegalHelpValidationServiceStrategy<br/>(Legal Help, Current Submission)"]
+    dupLegalHelpDisb --> dupLegalHelpCurrent["DuplicateSameSubmissionLegalHelpValidationServiceStrategy<br/>(Legal Help, Current Submission)"]
     dupLegalHelpCurrent --> issues["Aggregate ValidationIssue(s)"]
     issues --> validCheck{"Any ERROR severity issues?"}
     validCheck -- Yes --> fail["Return ValidationResult<br/>isValid: false, issues"]
@@ -57,7 +57,7 @@ flowchart TD
 | DuplicateClaimCrimeLowerValidationServiceStrategy | Checks for duplicate Crime Lower claims (current submission and previous submissions) | **DataClaimsClient** (Claims API, for previous submissions) |
 | DuplicateClaimLegalHelpValidationServiceStrategy | Checks for duplicate Legal Help claims (previous submissions) | **DataClaimsClient** (Claims API, for previous submissions) |
 | DuplicateClaimLegalHelpDisbursementValidationStrategy | Checks for duplicate Legal Help disbursement claims (previous submissions) | **DataClaimsClient** (Claims API, for previous submissions) |
-| DuplicatePreviousClaimLegalHelpValidationServiceStrategy | Checks for duplicate Legal Help claims within the current submission | None (in-memory only) |
+| DuplicateSameSubmissionLegalHelpValidationServiceStrategy | Checks for duplicate Legal Help claims within the current submission | None (in-memory only) |
 
 **External API Call Details:**
 - **ProviderDetailsClient.getProviderFirmSchedules**: Calls Provider Details API to get provider's contracted categories of law.
@@ -78,7 +78,7 @@ flowchart TD
 - **DuplicateClaimLegalHelpDisbursementValidationStrategy**
   - Only applies to disbursement claims.
   - Checks for duplicates in previous submissions (via Data Claims API).
-- **DuplicatePreviousClaimLegalHelpValidationServiceStrategy**
+- **DuplicateSameSubmissionLegalHelpValidationServiceStrategy**
   - Checks for duplicates within the current submission (in-memory only).
 
 All other validators are purely in-memory and do not call external services. The only external dependencies in the validation flow are the Provider Details API, Fee Scheme Platform API, and Claims API (for duplicate checks), called by the `EffectiveCategoryOfLawClaimValidator` and the duplicate claim validation strategies listed above.
