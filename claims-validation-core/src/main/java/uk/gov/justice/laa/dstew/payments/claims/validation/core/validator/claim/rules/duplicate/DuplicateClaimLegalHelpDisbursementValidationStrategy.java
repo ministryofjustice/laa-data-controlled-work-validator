@@ -157,13 +157,19 @@ public class DuplicateClaimLegalHelpDisbursementValidationStrategy extends Dupli
    * unique file number, and unique client number as the incoming claim, and that carry a valid Case
    * Concluded Date eligible for Rule B evaluation.
    *
+   * <p>If the previous-submission lookup cannot be completed, an empty list is returned here; use
+   * {@link #findEligibleDuplicateClaimsResult(Claim, List)} when the caller needs to fail closed on
+   * a provider error.
+   *
    * @param incomingClaim the claim currently being validated
    * @param submissionClaims all claims belonging to the current submission
-   * @return a list of eligible candidate claims; empty if none are found
+   * @return a list of eligible candidate claims; empty if none are found or the lookup failed
    */
   protected List<Claim> findEligibleDuplicateClaims(
           Claim incomingClaim, List<Claim> submissionClaims) {
-    return findEligibleDuplicateClaimsResult(incomingClaim, submissionClaims).duplicates();
+    List<Claim> eligible =
+        findEligibleDuplicateClaimsResult(incomingClaim, submissionClaims).duplicates();
+    return eligible != null ? eligible : List.of();
   }
 
   /**

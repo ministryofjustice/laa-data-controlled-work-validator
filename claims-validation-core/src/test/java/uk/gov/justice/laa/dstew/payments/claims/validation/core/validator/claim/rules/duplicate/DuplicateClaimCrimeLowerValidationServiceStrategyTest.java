@@ -292,7 +292,8 @@ class DuplicateClaimCrimeLowerValidationServiceStrategyTest extends AbstractDupl
 
     @Test
     @DisplayName("Crime Lower claims - does not reprocess submission claims")
-    void crimeLowerClaimDuplicateDoesNotReprocessSubmissionClaims() {      // Given
+    void crimeLowerClaimDuplicateDoesNotReprocessSubmissionClaims() {
+      // Given
       Claim claim1 = createClaim("claimId1", OFFICE_CODE, "submissionId", "feeCode", "ufn",
           null, ClaimStatus.READY_TO_PROCESS);
       Claim claim2 = createClaim("claimId2", OFFICE_CODE, "submissionId", "feeCode", "ufn",

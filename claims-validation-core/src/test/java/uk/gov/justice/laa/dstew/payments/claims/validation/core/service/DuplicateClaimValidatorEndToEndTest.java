@@ -31,7 +31,7 @@ import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.rules.duplicate.DuplicateClaimLegalHelpDisbursementValidationStrategy;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.rules.duplicate.DuplicateClaimLegalHelpValidationServiceStrategy;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.rules.duplicate.DuplicateClaimValidationStrategy;
-import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.rules.duplicate.DuplicatePreviousClaimLegalHelpValidationServiceStrategy;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.rules.duplicate.DuplicateSameSubmissionLegalHelpValidationServiceStrategy;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.submission.SubmissionValidation;
 import uk.gov.justice.laa.dstew.payments.claimsdata.model.AreaOfLaw;
 import uk.gov.justice.laa.dstew.payments.claimsdata.model.ClaimResponse;
@@ -85,7 +85,7 @@ class DuplicateClaimValidatorEndToEndTest {
 
     List<DuplicateClaimValidationStrategy> strategies =
         List.of(
-            new DuplicatePreviousClaimLegalHelpValidationServiceStrategy(claimsDataProvider),
+            new DuplicateSameSubmissionLegalHelpValidationServiceStrategy(claimsDataProvider),
             new DuplicateClaimLegalHelpValidationServiceStrategy(claimsDataProvider),
             new DuplicateClaimLegalHelpDisbursementValidationStrategy(claimsDataProvider),
             new DuplicateClaimCrimeLowerValidationServiceStrategy(claimsDataProvider));

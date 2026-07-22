@@ -12,10 +12,10 @@ import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.
 
 /** Validation service for Legal Help duplicate claims within the current submission. */
 @Slf4j
-public final class DuplicatePreviousClaimLegalHelpValidationServiceStrategy
+public final class DuplicateSameSubmissionLegalHelpValidationServiceStrategy
     extends DuplicateClaimValidation implements LegalHelpDuplicateClaimValidationStrategy {
 
-  public DuplicatePreviousClaimLegalHelpValidationServiceStrategy(
+  public DuplicateSameSubmissionLegalHelpValidationServiceStrategy(
       ClaimsDataProvider claimsDataProvider) {
     super(claimsDataProvider);
   }

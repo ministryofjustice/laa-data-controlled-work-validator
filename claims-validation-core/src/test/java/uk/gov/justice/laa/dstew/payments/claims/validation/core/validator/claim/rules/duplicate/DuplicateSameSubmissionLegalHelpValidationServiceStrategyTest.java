@@ -19,18 +19,18 @@ import uk.gov.justice.laa.dstew.payments.claimsdata.model.ClaimStatus;
 import uk.gov.justice.laa.dstew.payments.claimsdata.model.FeeCalculationType;
 
 @ExtendWith(MockitoExtension.class)
-class DuplicatePreviousClaimLegalHelpValidationServiceStrategyTest
+class DuplicateSameSubmissionLegalHelpValidationServiceStrategyTest
     extends AbstractDuplicateClaimValidatorStrategy {
 
   @Mock private ClaimsDataProvider mockDataClaimsRestClient;
 
-  private DuplicatePreviousClaimLegalHelpValidationServiceStrategy
+  private DuplicateSameSubmissionLegalHelpValidationServiceStrategy
       duplicateClaimLegalHelpValidation;
 
   @BeforeEach
   void beforeEach() {
     duplicateClaimLegalHelpValidation =
-        new DuplicatePreviousClaimLegalHelpValidationServiceStrategy(mockDataClaimsRestClient);
+        new DuplicateSameSubmissionLegalHelpValidationServiceStrategy(mockDataClaimsRestClient);
   }
 
   @Nested

@@ -1,7 +1,9 @@
 package uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.rules;
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Predicate;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -52,19 +54,15 @@ public class DuplicateClaimValidator implements ClaimValidator {
     // Run each compatible strategy and collect validation issues. Several strategies can run for
     // the same area of law and independently hit the same downstream API, so identical issues
     // (e.g. a shared TECHNICAL_ERROR_DATA_CLAIMS_API) are de-duplicated to avoid reporting the
-    // same problem twice for one claim.
-    List<ValidationIssue> aggregatedIssues = new ArrayList<>();
+    // same problem twice for one claim. A LinkedHashSet dedups in O(1) per add while preserving
+    // the order in which issues were first raised.
+    Set<ValidationIssue> aggregatedIssues = new LinkedHashSet<>();
     for (DuplicateClaimValidationStrategy strategy : compatibleStrategies) {
       log.debug("Running strategy: {}", strategy.getClass().getSimpleName());
-      List<ValidationIssue> strategyIssues =
-          strategy.validateDuplicateClaims(claim, submissionClaims, officeCode, feeType);
-      for (ValidationIssue issue : strategyIssues) {
-        if (!aggregatedIssues.contains(issue)) {
-          aggregatedIssues.add(issue);
-        }
-      }
+      aggregatedIssues.addAll(
+          strategy.validateDuplicateClaims(claim, submissionClaims, officeCode, feeType));
     }
-    context.addValidationIssues(aggregatedIssues);
+    context.addValidationIssues(new ArrayList<>(aggregatedIssues));
 
     log.debug("Duplicate claim validation completed, found {} issues", context.getIssues().size());
   }

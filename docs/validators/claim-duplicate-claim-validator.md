@@ -230,8 +230,10 @@ the results before matching.
 - **PROD fee code (Crime Lower):** skipped entirely, no API call.
 - **API unavailable (fails closed):** if *any* Data Claims API lookup — same‑submission **or**
   previous‑submission — cannot be completed, the claim is **not** passed. A
-  `TECHNICAL_ERROR_DATA_CLAIMS_API` issue is raised (reported **once** per claim even if several
-  lookups fail), the error is logged with its stack trace, and no duplicate outcome is inferred.
+  `TECHNICAL_ERROR_DATA_CLAIMS_API` issue is raised. This error carries a stable technical message
+  (the underlying exception detail is logged with its stack trace, not attached to the issue), so
+  identical failures from several lookups on the same claim de‑duplicate to a single reported issue.
+  No duplicate outcome is inferred.
 - **Mediation:** no duplicate validation performed.
 
 ---

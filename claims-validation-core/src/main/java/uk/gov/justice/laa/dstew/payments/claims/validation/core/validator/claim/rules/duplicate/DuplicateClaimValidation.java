@@ -148,9 +148,12 @@ public abstract class DuplicateClaimValidation {
     } catch (Exception e) {
       log.error(
           "Unable to check for duplicate claims. Data Claims API may be unavailable.", e);
+      // Use a stable technical message (the exception detail is already logged above with its
+      // stack trace) so that identical failures from several lookups on one claim de-duplicate to
+      // a single reported issue rather than stacking one issue per distinct exception message.
       ValidationIssue error =
           ClaimValidationError.TECHNICAL_ERROR_DATA_CLAIMS_API
-              .toValidationIssueWithTechnicalMessage("Data Claims API error: " + e.getMessage());
+              .toValidationIssueWithTechnicalMessage("Data Claims API error");
       return new DuplicateCheckResult(null, error);
     }
   }
@@ -300,6 +303,13 @@ public abstract class DuplicateClaimValidation {
 
     List<Claim> matches =
         result.duplicates().stream()
+            // Defensive submission scoping: the provider query is scoped by submissionId, but do
+            // not rely on that alone — re-assert it here so rows leaked from another submission
+            // (e.g. by a buggy provider or a loosely-stubbed test) cannot be misclassified as
+            // same-submission duplicates.
+            .filter(
+                candidate ->
+                    Objects.equals(candidate.getSubmissionId(), currentClaim.getSubmissionId()))
             // Exclude self by id — a claim must never be its own duplicate.
             .filter(candidate -> !Objects.equals(candidate.getId(), currentClaim.getId()))
             // Only VALID / READY_TO_PROCESS claims can be duplicates (VOID/others ignored).
