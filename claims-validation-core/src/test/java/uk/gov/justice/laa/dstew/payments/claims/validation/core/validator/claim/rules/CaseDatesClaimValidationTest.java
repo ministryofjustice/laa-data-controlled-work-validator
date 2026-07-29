@@ -295,18 +295,18 @@ class CaseDatesClaimValidationTest {
 
   // ─── Submission period is now null-safe (no uncaught exception) ─────────────
 
-  @ParameterizedTest(name = "[{index}] submissionPeriod=''{0}'' does not throw")
+  @ParameterizedTest(name = "[{index}] submissionPeriod=''{0}'' does not throw but raises derive error")
   @CsvSource({
     "' '",             // whitespace-only, non-null
     "2025-06",         // malformed (not MMM-yyyy)
     "NOPE",            // malformed
   })
-  @DisplayName("Malformed or blank submission period does not throw and yields no concluded-date error")
-  void malformedSubmissionPeriod_doesNotThrow(String submissionPeriod) {
+  @DisplayName("Malformed or blank submission period does not throw and raises an UNABLE_TO_DERIVE error")
+  void malformedSubmissionPeriod_doesNotThrow_raisesDeriveError(String submissionPeriod) {
     Claim claim = Claim.builder()
         .areaOfLaw(AreaOfLaw.LEGAL_HELP)
         .caseStartDate("2025-05-01")
-        .caseConcludedDate("2025-05-15")
+        .caseConcludedDate("2025-05-15")   // otherwise valid — reaches the cutoff derivation
         .submissionPeriod(submissionPeriod)
         .build();
 
@@ -314,7 +314,8 @@ class CaseDatesClaimValidationTest {
 
     assertDoesNotThrow(() -> validator.validate(claim, context));
     assertThat(context.getIssues().stream()
-        .noneMatch(x -> "case_concluded_date".equals(x.getPath())))
+        .anyMatch(x -> "UNABLE_TO_DERIVE_DATE_FROM_SUBMISSION_PERIOD".equals(x.getCode())
+            && "case_concluded_date".equals(x.getPath())))
         .isTrue();
   }
 

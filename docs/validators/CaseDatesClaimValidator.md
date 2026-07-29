@@ -185,13 +185,14 @@ flowchart TD
     CCD_Future -->|No| CCD_Early{before earliest? CRIME_LOWER=2016-04-01 else 2013-04-01}
     CCD_Early -->|Yes| CCD_EarlyFail[[cannot be before earliest  BR-005]]
     CCD_Early -->|No| CCD_PeriodOk{submissionPeriod parseable?}
-    CCD_PeriodOk -->|No / blank / malformed| TD_Guard
+    CCD_PeriodOk -->|No / blank / malformed| CCD_Derive[[Issue UNABLE_TO_DERIVE_DATE_FROM_SUBMISSION_PERIOD  BR-006]]
     CCD_PeriodOk -->|Yes| CCD_Late{after 20th of next month?}
     CCD_Late -->|Yes| CCD_LateFail[[cannot be later than 20th...  BR-006]]
     CCD_Late -->|No| TD_Guard
     CCD_Fmt --> TD_Guard
     CCD_Fut --> TD_Guard
     CCD_EarlyFail --> TD_Guard
+    CCD_Derive --> TD_Guard
     CCD_LateFail --> TD_Guard
 
     %% Transfer Date
@@ -250,8 +251,9 @@ flowchart TD
 - **BR-005** — Case Concluded Date must not be earlier than: `2016-04-01` when
   `areaOfLaw == CRIME_LOWER`, otherwise `2013-04-01` (period-independent).
 - **BR-006** — Case Concluded Date must not be later than the 20th day of the month following the
-  submission period. **Applied only when the submission period parses as `MMM-yyyy`**; otherwise
-  skipped (the submission period's own validity is a submission-scope concern).
+  submission period. This bound requires a parseable submission period: if the submission period is
+  null, blank, or malformed (so the cutoff cannot be derived) an
+  `UNABLE_TO_DERIVE_DATE_FROM_SUBMISSION_PERIOD` error is raised instead of skipping the check.
 - **BR-007** — A non-blank but unparseable Case Concluded Date raises an "invalid date value" error
   (period-independent).
 - **BR-008** — Transfer Date is optional; when non-blank it must be parseable and within
@@ -285,13 +287,14 @@ submission period; `T` = today.
 | any | unparseable | — | Fail | `Invalid date value provided for Case Concluded Date` |
 | any | `d > T` | future | Fail | `Case Concluded Date cannot be a future date` |
 | any | `d ≤ T`, `d < E` | too early | Fail | `Case Concluded Date cannot be before <E dd/MM/yyyy>` |
-| null / blank / malformed | `d ≤ T`, `d ≥ E` | cutoff not checkable | Pass | — |
+| null / blank / malformed | `d ≤ T`, `d ≥ E` | cutoff not derivable | Fail | `Unable to derive date from submission period for Case Concluded Date` (`UNABLE_TO_DERIVE_DATE_FROM_SUBMISSION_PERIOD`) |
 | parseable | `d ≤ T`, `d ≥ E`, `d > C` | too late | Fail | `Case Concluded Date cannot be later than the 20th of the month following the submission period` |
 | parseable | `d ≤ T`, `d ≥ E`, `d ≤ C` | in range | Pass | — |
 
 > The format, future (BR-004) and before-floor (BR-005) checks apply for **any** submission period
-> value (including null/blank/malformed) — they are period-independent. Only the cutoff check
-> (BR-006) requires a parseable submission period.
+> value (including null/blank/malformed) — they are period-independent. The cutoff check (BR-006)
+> requires a parseable submission period; when it cannot be derived, an explicit
+> `UNABLE_TO_DERIVE_DATE_FROM_SUBMISSION_PERIOD` error is raised (rather than silently passing).
 
 ### 10.3 Transfer Date (BR-008) / Representation Order Date (BR-009)
 
@@ -308,7 +311,7 @@ submission period; `T` = today.
 |---|---|---|---|
 | `DateTimeParseException` (concluded date value) | `LocalDate.parse` in `checkDateNotInFutureAndWithinAllowedPeriod` | **Caught** | `INVALID_CASE_CONCLUDED_DATE` "invalid date value" (BR-007) |
 | `DateTimeParseException` (date value) | `parseDate` in `validateDateBetween` | **Caught** (debug-logged, returns `null`) | `INVALID_DATE_FORMAT` |
-| Submission period blank / malformed | `getTwentiethOfNextMonth` → `parseSubmissionPeriod` | **Null-safe** (returns `null`; no throw) | Case Concluded validation skipped |
+| Submission period blank / malformed | `getTwentiethOfNextMonth` → `parseSubmissionPeriod` | **Null-safe** (returns `null`; no throw) | For Case Concluded Date, an `UNABLE_TO_DERIVE_DATE_FROM_SUBMISSION_PERIOD` error is raised (the cutoff cannot be derived) |
 | `NullPointerException` | getters if `claim == null` | Not caught | Propagates (validator does not null-check the claim) — see §12 |
 
 > **Resolved:** the previously-latent uncaught `IllegalArgumentException` / `DateTimeParseException`
@@ -347,9 +350,9 @@ Assume `today = 2026-07-29` unless a fixed clock is stated.
 | SC-07 | Case Start before floor, LEGAL_HELP | start=`1994-12-31` | Fail `INVALID_CASE_START_DATE` | BR-002 |
 | SC-08 | Case Start floor boundary | start=`1995-01-01` | Pass (start) | BR-002 |
 | SC-09 | Case Start future | start=`2999-01-01` | Fail `INVALID_CASE_START_DATE` | BR-002 |
-| SC-10 | Concluded skipped: no period | period=`null`, concluded=`1990-01-01` | Pass (concluded skipped) | BR-003 |
+| SC-10 | Concluded present, no period, before floor | period=`null`, concluded=`1990-01-01` | Fail before `01/04/2013` (BR-005 fires before cutoff) | BR-005 |
 | SC-11 | Concluded skipped: blank value | period=`JUN-2025`, concluded=`""` | Pass (concluded skipped) | BR-003 |
-| SC-12 | **Concluded skipped: blank/malformed period (no throw)** | period=`" "` or `2025-06`, concluded=`2025-05-15` | No throw; no concluded issue | BR-003 |
+| SC-12 | **Concluded present, blank/malformed period (no throw)** | period=`" "` or `2025-06`, concluded=`2025-05-15` | No throw; `UNABLE_TO_DERIVE_DATE_FROM_SUBMISSION_PERIOD` | BR-006 |
 | SC-13 | Concluded future | period=`JUN-2025`, concluded=`2999-01-01` | Fail future | BR-004 |
 | SC-14 | Concluded too early (non-crime) | LEGAL_HELP, period=`JUN-2025`, concluded=`2013-03-31` | Fail before `01/04/2013` | BR-005 |
 | SC-15 | Concluded too early (CRIME_LOWER) | CRIME_LOWER, period=`APR-2016`, concluded=`2016-03-31` | Fail before `01/04/2016` | BR-005 |
@@ -375,14 +378,15 @@ Scenarios SC-02…SC-06, SC-12, SC-19, SC-24, SC-25 are covered by automated tes
   boundary matrix across all areas of law (parameterised).
 - **New:** blank Case Start Date rejected for `LEGAL_HELP`/`MEDIATION`; Case Start Date not
   applicable for `CRIME_LOWER` (blank/out-of-range/unparseable); malformed/blank submission period
-  does not throw; deterministic future-date check via injected `Clock`; **invalid concluded date
+  does not throw and raises `UNABLE_TO_DERIVE_DATE_FROM_SUBMISSION_PERIOD` when a concluded date is
+  present; deterministic future-date check via injected `Clock`; **invalid concluded date
   (future / before-floor / unparseable) still flagged when the submission period is
   absent/malformed** (isolated-scope safety).
 
 **Unit — `DateUtilsTest`**
 - `checkDateNotInFutureAndWithinAllowedPeriod`: **new** period-independent checks fire without a
-  valid submission period (future, before-earliest, unparseable); in-range value with no period
-  returns empty (only the cutoff is skipped); blank/whitespace/malformed period never throws.
+  valid submission period (future, before-earliest, unparseable); an in-range value with a
+  null/blank/malformed period raises `UNABLE_TO_DERIVE_DATE_FROM_SUBMISSION_PERIOD` (never throws).
 - `getTwentiethOfNextMonth`: **updated** — returns `null` instead of throwing for blank/unparseable
   input.
 
@@ -445,11 +449,14 @@ rules:
     path: case_concluded_date
 
   - id: BR-006
-    description: Case Concluded Date must not be after the 20th of the month following the submission period. Applied only when submissionPeriod parses as MMM-yyyy; otherwise skipped.
-    failure_condition: submissionPeriod parseable AND date > submissionPeriodCutoffDate
+    description: Case Concluded Date must not be after the 20th of the month following the submission period. Requires a parseable submission period; if the cutoff cannot be derived an UNABLE_TO_DERIVE error is raised.
+    failure_condition: (submissionPeriod parseable AND date > submissionPeriodCutoffDate) OR (submissionPeriod null/blank/malformed)
     outcome: Reject
-    code: INVALID_CASE_CONCLUDED_DATE
+    codes: [INVALID_CASE_CONCLUDED_DATE, UNABLE_TO_DERIVE_DATE_FROM_SUBMISSION_PERIOD]
     path: case_concluded_date
+    messages:
+      too_late: "Case Concluded Date cannot be later than the 20th of the month following the submission period"
+      not_derivable: "Unable to derive date from submission period for Case Concluded Date"
 
   - id: BR-007
     description: A non-blank Case Concluded Date must be parseable as yyyy-MM-dd.
@@ -484,13 +491,16 @@ related_rules_owned_elsewhere:
     code: DISBURSEMENT_TOO_EARLY
 
 evaluation_order: [BR-001, BR-002, BR-003, BR-004, BR-005, BR-006, BR-007, BR-008, BR-009]
-concluded_date_branch_precedence: [BR-007, BR-004, BR-005, BR-006]   # first match wins (unparseable, future, before-earliest, after-cutoff)
+concluded_date_branch_precedence: [BR-007, BR-004, BR-005, BR-006]   # first match wins (unparseable, future, before-earliest, then cutoff/derive)
 boundary_semantics: inclusive on all floors/ceilings and on the cutoff (== passes)
 submission_period_handling: >
-  null-safe. Concluded-date format/future/before-floor checks are period-independent and always run;
-  only the 20th-of-next-month upper bound requires a parseable submission period. The submission
-  period's own validity (mandatory/format/min-period/not-current-or-future) is owned by the
-  submission-scope validators (SubmissionPeriodValidator + SubmissionSchemaValidator).
+  null-safe. Concluded-date format/future/before-floor checks are period-independent and always run.
+  The 20th-of-next-month upper bound requires a parseable submission period; when the period is
+  null/blank/malformed the cutoff cannot be derived and an
+  UNABLE_TO_DERIVE_DATE_FROM_SUBMISSION_PERIOD error is raised (no silent pass, no throw). The
+  submission period's own validity (mandatory/format/min-period/not-current-or-future) is
+  additionally owned by the submission-scope validators (SubmissionPeriodValidator +
+  SubmissionSchemaValidator).
 ```
 
 ---
@@ -524,6 +534,7 @@ item is the null-claim contract (guarded upstream by `ClaimValidation`).
 | `INVALID_DATE_FORMAT` | ERROR | `case_start_date` / `transfer_date` / `representation_order_date` | Blank/unparseable Case Start (non-CRIME_LOWER); unparseable Transfer/Rep-Order |
 | `INVALID_CASE_START_DATE` | ERROR | `case_start_date` | Case Start out of `[1995-01-01, today]` (non-CRIME_LOWER) |
 | `INVALID_CASE_CONCLUDED_DATE` | ERROR | `case_concluded_date` | Future / too-early / too-late / unparseable concluded date |
+| `UNABLE_TO_DERIVE_DATE_FROM_SUBMISSION_PERIOD` | ERROR | `case_concluded_date` | Concluded date present but submission period null/blank/malformed (cutoff cannot be derived) |
 | `INVALID_TRANSFER_DATE` | ERROR | `transfer_date` | Transfer out of `[1995-01-01, today]` |
 | `INVALID_REPRESENTATION_ORDER_DATE` | ERROR | `representation_order_date` | Rep Order out of `[2016-04-01, today]` |
 
@@ -544,13 +555,14 @@ event-service validator:
    private `getTwentiethOfNextMonth` returns `null` instead of throwing.
 3. **Concluded-date checks decoupled from the submission period (scope-safety fix)** — the
    format, not-future and before-floor checks (BR-004/005/007) now run whenever a concluded-date
-   value is present, regardless of the submission period. Only the "20th of the month following the
-   submission period" upper bound (BR-006) is conditional on a parseable submission period.
-   Previously *all* concluded-date checks were gated behind a valid submission period, meaning an
-   invalid concluded date (future / pre-floor / unparseable) could be silently accepted when the
-   validator ran in an isolated claim scope. The submission period's own validity remains a
-   submission-scope responsibility (`SubmissionPeriodValidator` + `SubmissionSchemaValidator`), by
-   design — a claim-level validator does not re-validate submission-level fields.
+   value is present, regardless of the submission period. The "20th of the month following the
+   submission period" upper bound (BR-006) requires a parseable submission period; when it cannot be
+   derived (null/blank/malformed period), a new **`UNABLE_TO_DERIVE_DATE_FROM_SUBMISSION_PERIOD`**
+   error is raised rather than silently skipping the check. Previously *all* concluded-date checks
+   were gated behind a valid submission period, meaning an invalid or unbounded concluded date could
+   be silently accepted when the validator ran in an isolated claim scope. The submission period's
+   own validity remains a submission-scope responsibility (`SubmissionPeriodValidator` +
+   `SubmissionSchemaValidator`), by design.
 4. **Representation Order Date debug log fixed** — now logs the representation order date (was
    logging the transfer date).
 5. **Clock** — confirmed all "today"/"future" comparisons flow through the injectable

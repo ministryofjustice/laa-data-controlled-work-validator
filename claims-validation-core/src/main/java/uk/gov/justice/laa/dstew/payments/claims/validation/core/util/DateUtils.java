@@ -306,12 +306,16 @@ public final class DateUtils {
    * </ul>
    *
    * <p>The <strong>period-dependent</strong> upper bound — the date must not be after the 20th of
-   * the month following the submission period — is only applied when the claim's submission period
-   * is present and parseable as {@code MMM-yyyy}. The submission period's own validity (mandatory,
-   * format, minimum-period, not current/future) is enforced separately by the submission-scope
+   * the month following the submission period — requires the claim's submission period to be
+   * present and parseable as {@code MMM-yyyy}. If the submission period is null, blank, or
+   * malformed (so the cutoff cannot be derived) an {@link ClaimValidationError
+   * #UNABLE_TO_DERIVE_DATE_FROM_SUBMISSION_PERIOD} error is raised rather
+   * than silently skipping the check. The submission period's own validity (mandatory, format,
+   * minimum-period, not current/future) is additionally enforced by the submission-scope
    * validators. This method never throws for a null, blank, or malformed submission period.
    *
-   * <p>Precedence (first match wins): unparseable → future → before-earliest → after-cutoff.
+   * <p>Precedence (first match wins): unparseable → future → before-earliest → (cutoff not
+   * derivable) → after-cutoff.
    *
    * @param claim the claim whose submission period determines the upper bound
    * @param fieldName the name of the field being validated
@@ -355,10 +359,19 @@ public final class DateUtils {
       return issues;
     }
 
-    // Period-dependent upper bound: only enforceable when the submission period is present and
-    // parseable. The submission period's own validity is a submission-scope concern.
+    // Period-dependent upper bound. When the submission period cannot be parsed we cannot derive
+    // the allowed cutoff for the date, so we surface an explicit error rather than silently
+    // skipping the check (which would let an unbounded date pass in an isolated scope). The
+    // submission period's own validity is additionally enforced by the submission-scope validators.
     LocalDate twentiethOfNextMonth = getTwentiethOfNextMonth(claim.getSubmissionPeriod());
-    if (twentiethOfNextMonth != null && date.isAfter(twentiethOfNextMonth)) {
+    if (twentiethOfNextMonth == null) {
+      ValidationIssue issue =
+          ClaimValidationError.UNABLE_TO_DERIVE_DATE_FROM_SUBMISSION_PERIOD.toValidationIssue(
+              fieldName);
+      issue.setTechnicalMessage(issue.getMessage());
+      issue.setPath(StringCaseUtil.toSnakeCase(fieldName));
+      issues.add(issue);
+    } else if (date.isAfter(twentiethOfNextMonth)) {
       String msg =
           String.format(
               "%s cannot be later than the 20th of the month following the submission period",

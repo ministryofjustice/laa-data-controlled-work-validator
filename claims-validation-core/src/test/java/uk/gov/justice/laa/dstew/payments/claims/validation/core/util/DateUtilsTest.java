@@ -140,14 +140,19 @@ class DateUtilsTest {
     private static final LocalDate EARLIEST = LocalDate.of(1900, 1, 1);
 
     @Test
-    @DisplayName("Returns empty for an in-range date when claim has no submission period")
-    void returnsEmptyForInRangeDateWhenNoSubmissionPeriod() {
+    @DisplayName("Raises UNABLE_TO_DERIVE for an in-range date when claim has no submission period")
+    void raisesDeriveErrorForInRangeDateWhenNoSubmissionPeriod() {
       Claim claim = Claim.builder().submissionPeriod(null).build();
       String inRange = LocalDate.of(2020, 1, 15).format(DateUtils.DATE_FORMATTER_YYYY_MM_DD);
 
-      // Only the period-dependent upper bound is skipped when there is no submission period.
-      assertThat(DateUtils.checkDateNotInFutureAndWithinAllowedPeriod(
-          claim, "Case Start Date", inRange, EARLIEST)).isEmpty();
+      List<ValidationIssue> issues = DateUtils.checkDateNotInFutureAndWithinAllowedPeriod(
+          claim, "Case Concluded Date", inRange, EARLIEST);
+
+      assertThat(issues).hasSize(1);
+      assertThat(issues.getFirst().getCode())
+          .isEqualTo("UNABLE_TO_DERIVE_DATE_FROM_SUBMISSION_PERIOD");
+      assertThat(issues.getFirst().getMessage())
+          .isEqualTo("Unable to derive date from submission period for Case Concluded Date");
     }
 
     @Test
@@ -189,26 +194,34 @@ class DateUtilsTest {
           .isEqualTo("Invalid date value provided for Case Concluded Date");
     }
 
-    @ParameterizedTest(name = "Returns empty (no throw) for blank submission period [{0}]")
+    @ParameterizedTest(name = "Raises UNABLE_TO_DERIVE (no throw) for blank submission period [{0}]")
     @NullAndEmptySource
     @ValueSource(strings = {"   "})
-    @DisplayName("Returns empty instead of throwing for a blank or whitespace submission period")
-    void returnsEmptyForBlankSubmissionPeriod(String submissionPeriod) {
+    @DisplayName("Raises UNABLE_TO_DERIVE instead of throwing for a blank or whitespace submission period")
+    void raisesDeriveErrorForBlankSubmissionPeriod(String submissionPeriod) {
       Claim claim = Claim.builder().submissionPeriod(submissionPeriod).build();
       String date = LocalDate.of(2020, 5, 30).format(DateUtils.DATE_FORMATTER_YYYY_MM_DD);
 
-      assertThat(DateUtils.checkDateNotInFutureAndWithinAllowedPeriod(
-          claim, "Case Concluded Date", date, EARLIEST)).isEmpty();
+      List<ValidationIssue> issues = DateUtils.checkDateNotInFutureAndWithinAllowedPeriod(
+          claim, "Case Concluded Date", date, EARLIEST);
+
+      assertThat(issues).hasSize(1);
+      assertThat(issues.getFirst().getCode())
+          .isEqualTo("UNABLE_TO_DERIVE_DATE_FROM_SUBMISSION_PERIOD");
     }
 
     @Test
-    @DisplayName("Returns empty instead of throwing for a malformed submission period")
-    void returnsEmptyForMalformedSubmissionPeriod() {
+    @DisplayName("Raises UNABLE_TO_DERIVE instead of throwing for a malformed submission period")
+    void raisesDeriveErrorForMalformedSubmissionPeriod() {
       Claim claim = Claim.builder().submissionPeriod("2020-05").build();
       String date = LocalDate.of(2020, 5, 30).format(DateUtils.DATE_FORMATTER_YYYY_MM_DD);
 
-      assertThat(DateUtils.checkDateNotInFutureAndWithinAllowedPeriod(
-          claim, "Case Concluded Date", date, EARLIEST)).isEmpty();
+      List<ValidationIssue> issues = DateUtils.checkDateNotInFutureAndWithinAllowedPeriod(
+          claim, "Case Concluded Date", date, EARLIEST);
+
+      assertThat(issues).hasSize(1);
+      assertThat(issues.getFirst().getCode())
+          .isEqualTo("UNABLE_TO_DERIVE_DATE_FROM_SUBMISSION_PERIOD");
     }
 
     @Test
