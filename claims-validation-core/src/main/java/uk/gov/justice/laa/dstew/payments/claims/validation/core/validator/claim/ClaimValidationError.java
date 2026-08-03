@@ -83,6 +83,13 @@ public enum ClaimValidationError implements ValidationError {
       null  // dynamic — applies to whichever date field was being validated
   ),
 
+  UNABLE_TO_DERIVE_DATE_FROM_SUBMISSION_PERIOD(
+      "Unable to derive date from submission period for %s",
+      null,
+      ValidationSeverity.ERROR,
+      null  // dynamic — applies to whichever date field was being validated
+  ),
+
   // Unique File Number (UFN) errors
   INVALID_UNIQUE_FILE_NUMBER_FORMAT(
       "Unique File Number (UFN) must be in the format DDMMYY/NNN",

@@ -2,7 +2,6 @@ package uk.gov.justice.laa.dstew.payments.claims.validation.core.util;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.time.LocalDate;
 import java.time.YearMonth;
@@ -141,13 +140,88 @@ class DateUtilsTest {
     private static final LocalDate EARLIEST = LocalDate.of(1900, 1, 1);
 
     @Test
-    @DisplayName("Returns empty when claim has no submission period — no-op")
-    void returnsEmptyWhenNoSubmissionPeriod() {
+    @DisplayName("Raises UNABLE_TO_DERIVE for an in-range date when claim has no submission period")
+    void raisesDeriveErrorForInRangeDateWhenNoSubmissionPeriod() {
+      Claim claim = Claim.builder().submissionPeriod(null).build();
+      String inRange = LocalDate.of(2020, 1, 15).format(DateUtils.DATE_FORMATTER_YYYY_MM_DD);
+
+      List<ValidationIssue> issues = DateUtils.checkDateNotInFutureAndWithinAllowedPeriod(
+          claim, "Case Concluded Date", inRange, EARLIEST);
+
+      assertThat(issues).hasSize(1);
+      assertThat(issues.getFirst().getCode())
+          .isEqualTo("UNABLE_TO_DERIVE_DATE_FROM_SUBMISSION_PERIOD");
+      assertThat(issues.getFirst().getMessage())
+          .isEqualTo("Unable to derive date from submission period for Case Concluded Date");
+    }
+
+    @Test
+    @DisplayName("Flags a future date even when the claim has no submission period (period-independent)")
+    void flagsFutureDateWhenNoSubmissionPeriod() {
       Claim claim = Claim.builder().submissionPeriod(null).build();
       String future = LocalDate.now().plusDays(10).format(DateUtils.DATE_FORMATTER_YYYY_MM_DD);
 
-      assertThat(DateUtils.checkDateNotInFutureAndWithinAllowedPeriod(
-          claim, "Case Start Date", future, EARLIEST)).isEmpty();
+      List<ValidationIssue> issues = DateUtils.checkDateNotInFutureAndWithinAllowedPeriod(
+          claim, "Case Start Date", future, EARLIEST);
+
+      assertThat(issues).hasSize(1);
+      assertThat(issues.getFirst().getTechnicalMessage()).contains("cannot be a future date");
+    }
+
+    @Test
+    @DisplayName("Flags a date before the earliest allowed even with a blank/malformed submission period")
+    void flagsBeforeEarliestWhenSubmissionPeriodMalformed() {
+      Claim claim = Claim.builder().submissionPeriod("2020-05").build();
+      String early = EARLIEST.minusDays(1).format(DateUtils.DATE_FORMATTER_YYYY_MM_DD);
+
+      List<ValidationIssue> issues = DateUtils.checkDateNotInFutureAndWithinAllowedPeriod(
+          claim, "Case Start Date", early, EARLIEST);
+
+      assertThat(issues).hasSize(1);
+      assertThat(issues.getFirst().getTechnicalMessage()).contains("cannot be before");
+    }
+
+    @Test
+    @DisplayName("Flags an unparseable date even when the claim has no submission period")
+    void flagsUnparseableDateWhenNoSubmissionPeriod() {
+      Claim claim = Claim.builder().submissionPeriod(null).build();
+
+      List<ValidationIssue> issues = DateUtils.checkDateNotInFutureAndWithinAllowedPeriod(
+          claim, "Case Concluded Date", "not-a-date", EARLIEST);
+
+      assertThat(issues).hasSize(1);
+      assertThat(issues.getFirst().getMessage())
+          .isEqualTo("Invalid date value provided for Case Concluded Date");
+    }
+
+    @ParameterizedTest(name = "Raises UNABLE_TO_DERIVE (no throw) for blank submission period [{0}]")
+    @NullAndEmptySource
+    @ValueSource(strings = {"   "})
+    @DisplayName("Raises UNABLE_TO_DERIVE instead of throwing for a blank or whitespace submission period")
+    void raisesDeriveErrorForBlankSubmissionPeriod(String submissionPeriod) {
+      Claim claim = Claim.builder().submissionPeriod(submissionPeriod).build();
+      String date = LocalDate.of(2020, 5, 30).format(DateUtils.DATE_FORMATTER_YYYY_MM_DD);
+
+      List<ValidationIssue> issues = DateUtils.checkDateNotInFutureAndWithinAllowedPeriod(
+          claim, "Case Concluded Date", date, EARLIEST);
+
+      assertThat(issues).hasSize(1);
+      assertThat(issues.getFirst().getCode())
+          .isEqualTo("UNABLE_TO_DERIVE_DATE_FROM_SUBMISSION_PERIOD");
+    }
+
+    @Test
+    @DisplayName("Raises UNABLE_TO_DERIVE instead of throwing for a malformed submission period")
+    void raisesDeriveErrorForMalformedSubmissionPeriod() {
+      Claim claim = Claim.builder().submissionPeriod("2020-05").build();
+      String date = LocalDate.of(2020, 5, 30).format(DateUtils.DATE_FORMATTER_YYYY_MM_DD);
+
+      List<ValidationIssue> issues = DateUtils.checkDateNotInFutureAndWithinAllowedPeriod(
+          claim, "Case Concluded Date", date, EARLIEST);
+
+      assertThat(issues).hasSize(1);
+      assertThat(issues.getFirst().getCode())
+          .isEqualTo("UNABLE_TO_DERIVE_DATE_FROM_SUBMISSION_PERIOD");
     }
 
     @Test
@@ -363,17 +437,17 @@ class DateUtilsTest {
       assertThat(invoke("Jan-2026")).isEqualTo(LocalDate.of(2026, 2, 20));
     }
 
-    @ParameterizedTest(name = "Throws IllegalArgumentException for blank input [{0}]")
+    @ParameterizedTest(name = "Returns null (no throw) for blank input [{0}]")
     @NullAndEmptySource
-    @DisplayName("Throws IllegalArgumentException for null or empty input")
-    void throwsForBlankInput(String input) throws Exception {
-      Method m = DateUtils.class.getDeclaredMethod("getTwentiethOfNextMonth", String.class);
-      m.setAccessible(true);
-      try {
-        m.invoke(null, input);
-      } catch (InvocationTargetException ite) {
-        assertThat(ite.getCause()).isInstanceOf(IllegalArgumentException.class);
-      }
+    @DisplayName("Returns null instead of throwing for null or empty input")
+    void returnsNullForBlankInput(String input) throws Exception {
+      assertThat(invoke(input)).isNull();
+    }
+
+    @Test
+    @DisplayName("Returns null instead of throwing for an unparseable submission period")
+    void returnsNullForUnparseableInput() throws Exception {
+      assertThat(invoke("2026-01")).isNull();
     }
   }
 }

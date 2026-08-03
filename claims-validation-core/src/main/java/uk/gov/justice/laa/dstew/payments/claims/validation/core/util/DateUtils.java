@@ -265,16 +265,12 @@ public final class DateUtils {
    * {@code 2026-02-20}.
    *
    * @param submissionPeriod the submission period in format {@code "MMM-yyyy"} (e.g. "JAN-2026")
-   * @return the twentieth day of the following month as a {@link LocalDate}
-   * @throws IllegalArgumentException if the submission period is blank
-   * @throws DateTimeParseException if the submission period string cannot be parsed
+   * @return the twentieth day of the following month as a {@link LocalDate}, or {@code null} if the
+   *     submission period is blank or cannot be parsed
    */
   private static LocalDate getTwentiethOfNextMonth(String submissionPeriod) {
-    if (!StringUtils.hasText(submissionPeriod)) {
-      throw new IllegalArgumentException("Submission period cannot be null or empty");
-    }
-    YearMonth yearMonth = YearMonth.parse(submissionPeriod, SUBMISSION_PERIOD_FORMATTER);
-    return yearMonth.plusMonths(1).atDay(20);
+    YearMonth yearMonth = parseSubmissionPeriod(submissionPeriod);
+    return yearMonth == null ? null : submissionPeriodCutoffDate(yearMonth);
   }
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -297,18 +293,31 @@ public final class DateUtils {
 
   /**
    * Validates a date string against rules tied to a claim's submission period. When the claim has a
-   * submission period and the date string is not blank, this method:
+   * date string that is not blank, this method:
+   *
+   * <p>When the date string is not blank, this method always applies the
+   * <strong>period-independent</strong> checks (so an invalid value is never silently accepted,
+   * even when the validator runs in an isolated scope):
    *
    * <ul>
-   *   <li>Parses the value as a {@code yyyy-MM-dd} date.
+   *   <li>Reports an error if the value cannot be parsed as a {@code yyyy-MM-dd} date.
    *   <li>Reports an error if the date is in the future.
    *   <li>Reports an error if the date is before {@code earliestDateAllowed}.
-   *   <li>Reports an error if the date is after the 20th of the month following the submission
-   *       period.
-   *   <li>Reports an error if the date cannot be parsed.
    * </ul>
    *
-   * @param claim the claim whose submission period determines the valid date range
+   * <p>The <strong>period-dependent</strong> upper bound — the date must not be after the 20th of
+   * the month following the submission period — requires the claim's submission period to be
+   * present and parseable as {@code MMM-yyyy}. If the submission period is null, blank, or
+   * malformed (so the cutoff cannot be derived) an {@link ClaimValidationError
+   * #UNABLE_TO_DERIVE_DATE_FROM_SUBMISSION_PERIOD} error is raised rather
+   * than silently skipping the check. The submission period's own validity (mandatory, format,
+   * minimum-period, not current/future) is additionally enforced by the submission-scope
+   * validators.
+   *
+   * <p>Precedence (first match wins): unparseable → future → before-earliest → (cutoff not
+   * derivable) → after-cutoff.
+   *
+   * @param claim the claim whose submission period determines the upper bound
    * @param fieldName the name of the field being validated
    * @param dateValueToCheck the date value to validate, in {@code yyyy-MM-dd} format
    * @param earliestDateAllowed the earliest date permitted
@@ -318,48 +327,71 @@ public final class DateUtils {
       Claim claim, String fieldName, String dateValueToCheck, LocalDate earliestDateAllowed) {
     List<ValidationIssue> issues = new ArrayList<>();
 
-    if (claim.getSubmissionPeriod() != null) {
-      LocalDate twentiethOfNextMonth = getTwentiethOfNextMonth(claim.getSubmissionPeriod());
+    if (!StringUtils.hasText(dateValueToCheck)) {
+      return issues;
+    }
 
-      if (StringUtils.hasText(dateValueToCheck)) {
-        try {
-          LocalDate date = LocalDate.parse(dateValueToCheck, DATE_FORMATTER_YYYY_MM_DD);
+    final LocalDate date;
+    try {
+      date = LocalDate.parse(dateValueToCheck, DATE_FORMATTER_YYYY_MM_DD);
+    } catch (DateTimeParseException e) {
+      issues.add(
+          createDateIssue(
+              fieldName, String.format("Invalid date value provided for %s", fieldName)));
+      return issues;
+    }
 
-          if (date.isAfter(now())) {
-            ClaimValidationError error = getDateError(fieldName);
-            ValidationIssue issue =  error.toValidationIssueWithTechnicalMessage(
-                    String.format("%s cannot be a future date", fieldName),
-                    String.format("%s cannot be a future date", fieldName));
-            issue.setPath(StringCaseUtil.toSnakeCase(fieldName));
-            issues.add(issue);
-          } else if (date.isBefore(earliestDateAllowed)) {
-            ClaimValidationError error = getDateError(fieldName);
-            String msg =
-                String.format(
-                    "%s cannot be before %s",
-                    fieldName, earliestDateAllowed.format(DATE_FORMATTER_FOR_DISPLAY_MESSAGE));
-            ValidationIssue issue = error.toValidationIssueWithTechnicalMessage(msg, msg);
-            issue.setPath(StringCaseUtil.toSnakeCase(fieldName));
-            issues.add(issue);
-          } else if (date.isAfter(twentiethOfNextMonth)) {
-            ClaimValidationError error = getDateError(fieldName);
-            String msg =
-                String.format(
-                    "%s cannot be later than the 20th of the month following the submission period",
-                    fieldName);
-            ValidationIssue issue = error.toValidationIssueWithTechnicalMessage(msg, msg);
-            issue.setPath(StringCaseUtil.toSnakeCase(fieldName));
-            issues.add(issue);
-          }
-        } catch (DateTimeParseException e) {
-          issues.add(
-              createDateIssue(
-                  fieldName, String.format("Invalid date value provided for %s", fieldName)));
-        }
-      }
+    // Period-independent checks: always applied when a value is present, so an invalid date is
+    // never silently accepted — even when this validator runs in an isolated scope without the
+    // submission-period validators.
+    if (date.isAfter(now())) {
+      String msg = String.format("%s cannot be a future date", fieldName);
+      issues.add(dateIssueWithMessage(fieldName, msg));
+      return issues;
+    }
+
+    if (date.isBefore(earliestDateAllowed)) {
+      String msg =
+          String.format(
+              "%s cannot be before %s",
+              fieldName, earliestDateAllowed.format(DATE_FORMATTER_FOR_DISPLAY_MESSAGE));
+      issues.add(dateIssueWithMessage(fieldName, msg));
+      return issues;
+    }
+
+    // Period-dependent upper bound. When the submission period cannot be parsed we cannot derive
+    // the allowed cutoff for the date, so we surface an explicit error rather than silently
+    // skipping the check (which would let an unbounded date pass in an isolated scope). The
+    // submission period's own validity is additionally enforced by the submission-scope validators.
+    LocalDate twentiethOfNextMonth = getTwentiethOfNextMonth(claim.getSubmissionPeriod());
+    if (twentiethOfNextMonth == null) {
+      ValidationIssue issue =
+          ClaimValidationError.UNABLE_TO_DERIVE_DATE_FROM_SUBMISSION_PERIOD.toValidationIssue(
+              fieldName);
+      issue.setTechnicalMessage(issue.getMessage());
+      issue.setPath(StringCaseUtil.toSnakeCase(fieldName));
+      issues.add(issue);
+    } else if (date.isAfter(twentiethOfNextMonth)) {
+      String msg =
+          String.format(
+              "%s cannot be later than the 20th of the month following the submission period",
+              fieldName);
+      issues.add(dateIssueWithMessage(fieldName, msg));
     }
 
     return issues;
+  }
+
+  /**
+   * Builds a date {@link ValidationIssue} whose display and technical messages are both
+   * {@code msg}, with the code resolved from {@code fieldName} and the path set to its
+   * snake_case form.
+   */
+  private static ValidationIssue dateIssueWithMessage(String fieldName, String msg) {
+    ValidationIssue issue =
+        getDateError(fieldName).toValidationIssueWithTechnicalMessage(msg, msg);
+    issue.setPath(StringCaseUtil.toSnakeCase(fieldName));
+    return issue;
   }
 
   /**
