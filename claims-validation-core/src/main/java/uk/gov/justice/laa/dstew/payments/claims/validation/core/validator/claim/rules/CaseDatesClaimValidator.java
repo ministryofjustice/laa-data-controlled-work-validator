@@ -75,11 +75,12 @@ public class CaseDatesClaimValidator implements ClaimValidator {
     }
 
     // Representation Order Date - must be in the past and after 2016
-    if (StringUtils.hasText(claim.getRepresentationOrderDate())) {
-      log.debug("Validating representation order date: {}", claim.getRepresentationOrderDate());
+    String repOrderDate = claim.getRepresentationOrderDate();
+    if (StringUtils.hasText(repOrderDate)) {
+      log.debug("Validating representation order date: {}", repOrderDate);
       context.addValidationIssues(
           validateDateInPast(
-              "Representation Order Date", claim.getRepresentationOrderDate(), MIN_REP_ORDER_DATE));
+              "Representation Order Date", repOrderDate, MIN_REP_ORDER_DATE));
     }
 
     log.debug("Case dates validation completed, found {} issues", context.getIssues().size());

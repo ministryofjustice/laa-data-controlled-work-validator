@@ -55,7 +55,7 @@ class CaseStartDateRuleIntegrationTest {
         runPipeline(claim, ClaimValidationContext.builder().build());
 
     assertThat(context.hasErrors()).isTrue();
-    // The mandatory-field validator (priority 10) owns the "required" message for the field.
+    // MandatoryFieldClaimValidator owns the "required" message for the field.
     assertThat(context.getAllIssues().stream()
             .anyMatch(i -> "MISSING_MANDATORY_FIELD".equals(i.getCode())
                 && "case_start_date".equals(i.getPath())))

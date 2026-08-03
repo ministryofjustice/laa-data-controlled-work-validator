@@ -293,7 +293,7 @@ public final class DateUtils {
 
   /**
    * Validates a date string against rules tied to a claim's submission period. When the claim has a
-   * submission period and the date string is not blank, this method:
+   * date string that is not blank, this method:
    *
    * <p>When the date string is not blank, this method always applies the
    * <strong>period-independent</strong> checks (so an invalid value is never silently accepted,
@@ -312,7 +312,7 @@ public final class DateUtils {
    * #UNABLE_TO_DERIVE_DATE_FROM_SUBMISSION_PERIOD} error is raised rather
    * than silently skipping the check. The submission period's own validity (mandatory, format,
    * minimum-period, not current/future) is additionally enforced by the submission-scope
-   * validators. This method never throws for a null, blank, or malformed submission period.
+   * validators.
    *
    * <p>Precedence (first match wins): unparseable → future → before-earliest → (cutoff not
    * derivable) → after-cutoff.
