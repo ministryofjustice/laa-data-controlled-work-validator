@@ -289,10 +289,12 @@ class ClaimSchemaValidatorTest {
     @Test
     @DisplayName("buildAdditionalPropertiesWarning produces a SCHEMA_CONFIG_WARNING issue")
     void buildAdditionalPropertiesWarning_producesWarningIssue() {
-      // Create a claim with required fields set, and set a property not defined in schema
-      Claim claim = createClaimWithRequiredFields();
-      // 'isamended' is not defined in the JSON schema and should trigger additionalProperties
-      claim.setIsAmended(true);
+      ClaimWithExtraSchemaField claim = new ClaimWithExtraSchemaField();
+      claim.setStatus(ClaimStatus.READY_TO_PROCESS);
+      claim.setLineNumber(1);
+      claim.setNetDisbursementAmount(BigDecimal.ZERO);
+      claim.setDisbursementsVatAmount(BigDecimal.ZERO);
+      claim.setFeeCode("ABC123");
 
       validator.validate(claim, context);
 
@@ -442,5 +444,11 @@ class ClaimSchemaValidatorTest {
         Arguments.of(AreaOfLaw.LEGAL_HELP, 1, false),
         Arguments.of(AreaOfLaw.LEGAL_HELP, 20, false),
         Arguments.of(AreaOfLaw.LEGAL_HELP, 21, true));
+  }
+
+  static final class ClaimWithExtraSchemaField extends Claim {
+    public Boolean getNonSchemaField() {
+      return true;
+    }
   }
 }
