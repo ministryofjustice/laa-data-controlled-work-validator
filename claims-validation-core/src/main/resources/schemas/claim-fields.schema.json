@@ -1071,6 +1071,7 @@
       "type": "string"
     },
     "has_assessment": {},
+    "is_amended": {},
     "version": {}
   },
   "additionalProperties": false,
