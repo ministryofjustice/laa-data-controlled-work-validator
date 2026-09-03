@@ -36,6 +36,9 @@ public class ClaimValidationContext extends AbstractValidationContext {
   @Setter
   private String authorisedCategoryOfLawCode;
 
+  @Setter
+  private String feeCodeDescription;
+
   /** Other claims in the same submission (for duplicate checking). */
   @lombok.Builder.Default
   private final List<Claim> relatedClaims = List.of();

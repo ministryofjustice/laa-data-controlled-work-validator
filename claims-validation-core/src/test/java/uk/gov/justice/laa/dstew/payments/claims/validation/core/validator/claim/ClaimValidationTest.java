@@ -50,6 +50,7 @@ class ClaimValidationTest {
             .thenReturn(Optional.of(FeeDetailsResponseV2.builder()
                     .feeType("TEST_FEE_TYPE")
                     .areaOfLaw("TEST_AREA")
+                    .feeCodeDescription("TEST_FEE_CODE_DESCRIPTION")
                     .build()));
   }
 
@@ -305,8 +306,7 @@ class ClaimValidationTest {
     @Test
     @DisplayName("Populates resolvedData with values resolved during validation")
     void populatesResolvedDataWithResolvedValues() {
-      // The default provider (setUpProvider) returns feeType TEST_FEE_TYPE and areaOfLaw TEST_AREA.
-      // A validator contributes the authorised category of law code.
+      // The default provider (setUpProvider) returns feeType TEST_FEE_TYPE and areaOfLaw TEST_AREA and feeCodeDescription TEST_FEE_CODE_DESCRIPTION. A validator contributes the authorized category of law code.
       ClaimValidator categorySetter = stub(ClaimValidatorCode.CLAIM_SCHEMA_VALIDATOR, 0,
           (c, ctx) -> ctx.setAuthorisedCategoryOfLawCode("CAT_CODE"));
 
@@ -317,6 +317,7 @@ class ClaimValidationTest {
       assertThat(result.getResolvedData().feeCalculationType()).isEqualTo("TEST_FEE_TYPE");
       assertThat(result.getResolvedData().feeSchemeAreaOfLaw()).isEqualTo("TEST_AREA");
       assertThat(result.getResolvedData().authorisedCategoryOfLawCode()).isEqualTo("CAT_CODE");
+      assertThat(result.getResolvedData().feeCodeDescription()).isEqualTo("TEST_FEE_CODE_DESCRIPTION");
     }
 
     @Test
