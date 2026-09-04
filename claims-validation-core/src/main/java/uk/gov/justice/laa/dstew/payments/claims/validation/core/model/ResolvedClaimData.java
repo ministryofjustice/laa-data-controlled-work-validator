@@ -15,11 +15,13 @@ import java.io.Serializable;
  *     This is distinct from {@link Claim#getAreaOfLaw()}, which is the area of law declared on the
  *     claim itself; this value is the one held against the fee code in the fee-scheme platform.
  * @param authorisedCategoryOfLawCode the authorised category of law code resolved during validation
+ * @param feeCodeDescription the fee code description resolved during validation
  */
 public record ResolvedClaimData(
     String feeCalculationType,
     String feeSchemeAreaOfLaw,
-    String authorisedCategoryOfLawCode) implements Serializable {
+    String authorisedCategoryOfLawCode,
+    String feeCodeDescription) implements Serializable {
 
   @Serial
   private static final long serialVersionUID = 1L;
@@ -29,6 +31,6 @@ public record ResolvedClaimData(
    * performed or when a missing claim result is returned.
    */
   public static ResolvedClaimData empty() {
-    return new ResolvedClaimData(null, null, null);
+    return new ResolvedClaimData(null, null, null, null);
   }
 }

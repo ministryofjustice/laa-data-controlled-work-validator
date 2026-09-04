@@ -116,7 +116,8 @@ public class ClaimValidation {
     ResolvedClaimData resolved = new ResolvedClaimData(
             context.getFeeCalculationType(),
             context.getFeeSchemeAreaOfLaw(),
-            context.getAuthorisedCategoryOfLawCode()
+            context.getAuthorisedCategoryOfLawCode(),
+            context.getFeeCodeDescription()
     );
 
     return ClaimValidationResult.builder()
@@ -146,7 +147,6 @@ public class ClaimValidation {
 
     return context;
   }
-
 
   /**
    * Resolves fee-scheme details for the supplied fee code and updates the
@@ -190,10 +190,11 @@ public class ClaimValidation {
       return;
     }
 
-    FeeDetailsResponseV2 details = opt.get();
+    final FeeDetailsResponseV2 details = opt.get();
 
-    String feeType = details.getFeeType();
-    String feeSchemeAreaOfLaw = details.getAreaOfLaw();
+    final String feeType = details.getFeeType();
+    final String feeSchemeAreaOfLaw = details.getAreaOfLaw();
+    final String feeCodeDescription = details.getFeeCodeDescription();
 
     if (feeType == null || feeType.isBlank()) {
       log.warn("Fee details returned for fee code: {} but feeType is null or blank", feeCode);
@@ -205,6 +206,7 @@ public class ClaimValidation {
     // Surface the fee calculation type we successfully resolved, even if the area of law is
     // subsequently found to be missing (best-effort partial resolution).
     context.setFeeCalculationType(feeType);
+    context.setFeeCodeDescription(feeCodeDescription);
 
     if (feeSchemeAreaOfLaw == null || feeSchemeAreaOfLaw.isBlank()) {
       log.warn("Fee details returned for fee code: {} but areaOfLaw is null or blank", feeCode);
