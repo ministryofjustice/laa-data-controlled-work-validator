@@ -320,13 +320,79 @@ class ClaimSchemaValidatorTest {
   }
 
   @Nested
+  @DisplayName("case_stage_code schema validation")
+  class CaseStageCodeSchemaValidation {
+
+    /**
+     * Valid and invalid case_stage_code values according to schema pattern.
+     */
+    static Stream<Arguments> validCaseStageCodes() {
+      return Stream.of(
+              Arguments.of("FPL01"),
+              Arguments.of("FPL10"),
+              Arguments.of("FPL20"),
+              Arguments.of("FPL21"),
+              Arguments.of("FPC01"),
+              Arguments.of("FPC03"),
+              Arguments.of("MHL01"),
+              Arguments.of("MHL16")
+      );
+    }
+
+    @ParameterizedTest(name = "valid case_stage_code={0}")
+    @MethodSource("validCaseStageCodes")
+    @DisplayName("accepts valid case_stage_code values")
+    void validate_acceptsValidCaseStageCodes(String caseStageCode) {
+      Claim claim = createClaimWithRequiredFields();
+      claim.setCaseStageCode(caseStageCode);
+
+      validator.validate(claim, context);
+
+      List<ValidationIssue> errors = errorIssues();
+      assertThat(errors).isEmpty();
+    }
+
+    static Stream<Arguments> invalidCaseStageCodes() {
+      return Stream.of(
+              Arguments.of("FPL00"), // out of allowed range
+              Arguments.of("FPL22"), // out of allowed range
+              Arguments.of("FPC04"), // out of allowed range
+              Arguments.of("MHL17"), // out of allowed range
+              Arguments.of("FPL1"),  // wrong length
+              Arguments.of("ABCDE")  // completely invalid
+      );
+    }
+
+    @ParameterizedTest(name = "invalid case_stage_code={0}")
+    @MethodSource("invalidCaseStageCodes")
+    @DisplayName("rejects invalid case_stage_code values")
+    void validate_rejectsInvalidCaseStageCodes(String caseStageCode) {
+      Claim claim = createClaimWithRequiredFields();
+      claim.setCaseStageCode(caseStageCode);
+
+      validator.validate(claim, context);
+
+      List<ValidationIssue> errors = errorIssues();
+
+      assertThat(errors).hasSize(1);
+      ValidationIssue issue = errors.getFirst();
+      assertThat(issue.getMessage()).isEqualTo("Case Stage/Level Code must be valid");
+      assertThat(issue.getCode()).isEqualTo("SCHEMA_VALIDATION_ERROR");
+      assertThat(issue.getTechnicalMessage()).contains("case_stage_code").contains(caseStageCode);
+    }
+  }
+
+  @Nested
   @DisplayName("fee_calculation_response schema acceptance")
   class FeeCalculationResponseAcceptance {
 
+    /** Test cases for fee_calculation_response acceptance. Arguments: value */
+    static Stream<Arguments> feeCalculationResponseCases() {
+      return Stream.of(Arguments.of((Object) null), Arguments.of(""), Arguments.of("basic-value"));
+    }
+
     @ParameterizedTest
-    @MethodSource(
-        "uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.rules"
-            + ".ClaimSchemaValidatorTest#feeCalculationResponseCases")
+    @MethodSource("feeCalculationResponseCases")
     @DisplayName("accepts null, empty and basic values without errors or warnings")
     void validate_feeCalculationResponse_acceptsValues(Object value) {
       ClaimWithFeeCalculationResponse claim = new ClaimWithFeeCalculationResponse();
@@ -391,10 +457,27 @@ class ClaimSchemaValidatorTest {
   @DisplayName("Surgery count schema validations")
   class SurgeryCountSchemaValidations {
 
+    /**
+     * Cases for surgery_matters_count. Valid range is 0..99 inclusive; null is allowed. The ALL
+     * fallback message mapping is exercised via the CRIME_LOWER area.
+     *
+     * <p>Arguments: areaOfLaw, value, expectError, expectedTechnicalFragment
+     */
+    static Stream<Arguments> surgeryMattersCountCases() {
+      return Stream.of(
+              Arguments.of(AreaOfLaw.LEGAL_HELP, 0, false, null),
+              Arguments.of(AreaOfLaw.LEGAL_HELP, 1, false, null),
+              Arguments.of(AreaOfLaw.LEGAL_HELP, 20, false, null),
+              Arguments.of(AreaOfLaw.LEGAL_HELP, 21, false, null),
+              Arguments.of(AreaOfLaw.LEGAL_HELP, 99, false, null),
+              Arguments.of(AreaOfLaw.LEGAL_HELP, null, false, null),
+              Arguments.of(AreaOfLaw.LEGAL_HELP, -1, true, "-1"),
+              Arguments.of(AreaOfLaw.LEGAL_HELP, 100, true, "100"),
+              Arguments.of(AreaOfLaw.CRIME_LOWER, -1, true, null));
+    }
+
     @ParameterizedTest(name = "surgery_matters_count={1} for {0} -> expectError={2}")
-    @MethodSource(
-        "uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.rules"
-            + ".ClaimSchemaValidatorTest#surgeryMattersCountCases")
+    @MethodSource("surgeryMattersCountCases")
     @DisplayName("surgery_matters_count validation")
     void validate_surgeryMattersCount(
         AreaOfLaw areaOfLaw,
@@ -424,10 +507,21 @@ class ClaimSchemaValidatorTest {
       }
     }
 
+    /**
+     * Cases for surgery_clients_count. Valid range is 1..20 inclusive.
+     *
+     * <p>Arguments: areaOfLaw, value, expectError
+     */
+    static Stream<Arguments> surgeryClientsCountCases() {
+      return Stream.of(
+              Arguments.of(AreaOfLaw.LEGAL_HELP, 0, true),
+              Arguments.of(AreaOfLaw.LEGAL_HELP, 1, false),
+              Arguments.of(AreaOfLaw.LEGAL_HELP, 20, false),
+              Arguments.of(AreaOfLaw.LEGAL_HELP, 21, true));
+    }
+
     @ParameterizedTest(name = "surgery_clients_count={1} for {0} -> expectError={2}")
-    @MethodSource(
-        "uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.rules"
-            + ".ClaimSchemaValidatorTest#surgeryClientsCountCases")
+    @MethodSource("surgeryClientsCountCases")
     @DisplayName("surgery_clients_count validation")
     void validate_surgeryClientsCount(AreaOfLaw areaOfLaw, Integer value, boolean expectError) {
       Claim claim = createClaimWithRequiredFields();
@@ -447,42 +541,9 @@ class ClaimSchemaValidatorTest {
     }
   }
 
-  /**
-   * Cases for surgery_matters_count. Valid range is 0..99 inclusive; null is allowed. The ALL
-   * fallback message mapping is exercised via the CRIME_LOWER area.
-   *
-   * <p>Arguments: areaOfLaw, value, expectError, expectedTechnicalFragment
-   */
-  static Stream<Arguments> surgeryMattersCountCases() {
-    return Stream.of(
-        Arguments.of(AreaOfLaw.LEGAL_HELP, 0, false, null),
-        Arguments.of(AreaOfLaw.LEGAL_HELP, 1, false, null),
-        Arguments.of(AreaOfLaw.LEGAL_HELP, 20, false, null),
-        Arguments.of(AreaOfLaw.LEGAL_HELP, 21, false, null),
-        Arguments.of(AreaOfLaw.LEGAL_HELP, 99, false, null),
-        Arguments.of(AreaOfLaw.LEGAL_HELP, null, false, null),
-        Arguments.of(AreaOfLaw.LEGAL_HELP, -1, true, "-1"),
-        Arguments.of(AreaOfLaw.LEGAL_HELP, 100, true, "100"),
-        Arguments.of(AreaOfLaw.CRIME_LOWER, -1, true, null));
-  }
 
-  /**
-   * Cases for surgery_clients_count. Valid range is 1..20 inclusive.
-   *
-   * <p>Arguments: areaOfLaw, value, expectError
-   */
-  static Stream<Arguments> surgeryClientsCountCases() {
-    return Stream.of(
-        Arguments.of(AreaOfLaw.LEGAL_HELP, 0, true),
-        Arguments.of(AreaOfLaw.LEGAL_HELP, 1, false),
-        Arguments.of(AreaOfLaw.LEGAL_HELP, 20, false),
-        Arguments.of(AreaOfLaw.LEGAL_HELP, 21, true));
-  }
 
-  /** Test cases for fee_calculation_response acceptance. Arguments: value */
-  static Stream<Arguments> feeCalculationResponseCases() {
-    return Stream.of(Arguments.of((Object) null), Arguments.of((Object) ""), Arguments.of((Object) "basic-value"));
-  }
+
 
   static final class ClaimWithExtraSchemaField extends Claim {
     public Boolean getNonSchemaField() {
