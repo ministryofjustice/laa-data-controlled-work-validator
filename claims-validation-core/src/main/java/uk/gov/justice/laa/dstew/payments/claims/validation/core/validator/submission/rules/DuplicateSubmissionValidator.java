@@ -36,13 +36,28 @@ public class DuplicateSubmissionValidator implements SubmissionValidator {
 
     log.debug("Validating duplicate submissions for submission {}", submission.getSubmissionId());
 
-    if (isDuplicateSubmission(submission)) {
+    final List<SubmissionBase> blockingDuplicates = findBlockingDuplicates(submission);
+
+    if (!blockingDuplicates.isEmpty()) {
+      // Distinguish between a duplicate that has merely passed initial validation and is being
+      // held for the provider's final approval (VALIDATED_PENDING_APPROVAL) and one that is
+      // otherwise live (e.g. already accepted). This lets the front-end show a more accurate
+      // message and lets the provider know their earlier upload is awaiting approval.
+      boolean awaitingFinalApproval =
+          blockingDuplicates.stream()
+              .anyMatch(
+                  candidate -> candidate.getStatus() == SubmissionStatus.VALIDATED_PENDING_APPROVAL);
+
+      SubmissionValidationError error =
+          awaitingFinalApproval
+              ? SubmissionValidationError.SUBMISSION_AWAITING_FINAL_APPROVAL
+              : SubmissionValidationError.SUBMISSION_ALREADY_EXISTS;
+
       context.addValidationIssue(
-          SubmissionValidationError.SUBMISSION_ALREADY_EXISTS.toValidationIssue(
-                  submission.getOfficeAccountNumber(),
-                  submission.getAreaOfLaw(),
-                  submission.getSubmissionPeriod())
-      );
+          error.toValidationIssue(
+              submission.getOfficeAccountNumber(),
+              submission.getAreaOfLaw(),
+              submission.getSubmissionPeriod()));
     }
 
     log.debug("Duplicate submissions check completed for submission {}",
@@ -59,7 +74,7 @@ public class DuplicateSubmissionValidator implements SubmissionValidator {
     return SubmissionValidatorCode.SUBMISSION_DUPLICATE_VALIDATOR;
   }
 
-  private boolean isDuplicateSubmission(SubmissionResponse submission) {
+  private List<SubmissionBase> findBlockingDuplicates(SubmissionResponse submission) {
 
     final List<SubmissionBase> duplicates =
         claimsDataProvider
@@ -75,7 +90,7 @@ public class DuplicateSubmissionValidator implements SubmissionValidator {
 
     log.debug("Found {} duplicates for submission {}", duplicates.size(), submission);
 
-    return !duplicates.isEmpty();
+    return duplicates;
   }
 
   private boolean isDifferentSubmission(SubmissionBase candidate, SubmissionResponse submission) {

@@ -93,6 +93,29 @@ class DuplicateSubmissionValidatorTest {
   class Validate {
 
     @DisplayName(
+        "Should reject a submission with SUBMISSION_AWAITING_FINAL_APPROVAL when the older live"
+            + " duplicate has passed validation and is awaiting final approval")
+    @Test
+    void shouldRejectWithAwaitingFinalSubmitWhenDuplicateIsReadyForSubmission() {
+      var previousExistingSubmission =
+          existingSubmission(UUID.randomUUID(), SubmissionStatus.VALIDATED_PENDING_APPROVAL, EARLIER);
+      when(mockClaimsDataProvider.getSubmissions(any(), any(), any()))
+          .thenReturn(List.of(previousExistingSubmission));
+
+      var submissionValidationContext = SubmissionValidationContext.create();
+      SubmissionResponse submissionResponse =
+          submissionUnderValidation(UUID.randomUUID(), LATER);
+
+      validator.validate(submissionResponse, submissionValidationContext);
+
+      assertThat(submissionValidationContext.hasErrors()).isTrue();
+      assertContextClaimError(
+          submissionValidationContext.getIssues(),
+          SubmissionValidationError.SUBMISSION_AWAITING_FINAL_APPROVAL.toValidationIssue(
+              OFFICE_CODE, AREA_OF_LAW, SUBMISSION_PERIOD));
+    }
+
+    @DisplayName(
         "Should accept a submission when there is no previous submission with the same combination"
             + " of Office, Area of law and Submission period")
     @Test
