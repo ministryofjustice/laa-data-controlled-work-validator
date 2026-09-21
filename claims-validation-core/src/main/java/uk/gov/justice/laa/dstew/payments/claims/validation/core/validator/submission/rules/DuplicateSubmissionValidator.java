@@ -46,7 +46,8 @@ public class DuplicateSubmissionValidator implements SubmissionValidator {
       boolean awaitingFinalApproval =
           blockingDuplicates.stream()
               .anyMatch(
-                  candidate -> candidate.getStatus() == SubmissionStatus.VALIDATED_PENDING_APPROVAL);
+                  candidate -> candidate.getStatus()
+                      == SubmissionStatus.VALIDATED_PENDING_APPROVAL);
 
       SubmissionValidationError error =
           awaitingFinalApproval
