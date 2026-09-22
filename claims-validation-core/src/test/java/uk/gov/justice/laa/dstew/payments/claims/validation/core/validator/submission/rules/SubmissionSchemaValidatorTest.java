@@ -86,6 +86,15 @@ class SubmissionSchemaValidatorTest {
     assertFalse(submissionValidationContext.hasErrors());
   }
 
+  @Test
+  @DisplayName("Should accept a submission awaiting approval")
+  void shouldAcceptValidatedPendingApprovalStatus() {
+    SubmissionValidationContext submissionValidationContext =
+        validate(baseBuilder().status(SubmissionStatus.VALIDATED_PENDING_APPROVAL).build());
+
+    assertThat(errors(submissionValidationContext)).isEmpty();
+  }
+
   @ParameterizedTest
   @EnumSource(AreaOfLaw.class)
   @DisplayName("Should have errors if json schema validator returns errors")

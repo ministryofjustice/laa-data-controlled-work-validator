@@ -26,18 +26,19 @@ import uk.gov.justice.laa.dstew.payments.claimsdata.model.SubmissionStatus;
 @Slf4j
 public abstract class DuplicateClaimValidation {
 
-  protected static final List<ClaimStatus> LIST_OF_VALID_STATUS =
-      List.of(ClaimStatus.READY_TO_PROCESS, ClaimStatus.VALID);
-
   protected static final List<SubmissionStatus> SUBMISSION_STATUSES_FOR_DUPLICATE_CHECK =
       List.of(
           SubmissionStatus.CREATED,
           SubmissionStatus.VALIDATION_IN_PROGRESS,
           SubmissionStatus.READY_FOR_VALIDATION,
-          SubmissionStatus.VALIDATION_SUCCEEDED);
+          SubmissionStatus.VALIDATION_SUCCEEDED,
+          SubmissionStatus.VALIDATED_PENDING_APPROVAL);
 
   protected static final List<ClaimStatus> CLAIM_STATUSES_FOR_DUPLICATE_CHECK =
-      List.of(ClaimStatus.READY_TO_PROCESS, ClaimStatus.VALID);
+      List.of(
+          ClaimStatus.READY_TO_PROCESS,
+          ClaimStatus.VALID,
+          ClaimStatus.VALIDATED_PENDING_APPROVAL);
 
   protected final ClaimsDataProvider claimsDataProvider;
 
@@ -47,23 +48,23 @@ public abstract class DuplicateClaimValidation {
 
   /**
    * Filter the claims in the submission to contain all claims except the one currently under
-   * validation, and only include claims with valid status.
+   * validation, and only include claims with an eligible status.
    *
    * @param currentClaim the claim to filter out
    * @param submissionClaims the list of claims in the submission
    * @return a filtered list of claims in the submission, excluding the given claim
    */
-  protected List<Claim> filterCurrentClaimWithValidStatus(
+  protected List<Claim> filterCurrentClaimWithEligibleStatus(
       Claim currentClaim, List<Claim> submissionClaims) {
     return submissionClaims.stream()
         .filter(submissionClaim -> !submissionClaim.equals(currentClaim))
         .filter(
             submissionClaim ->
                 submissionClaim.getStatus() == null
-                    || LIST_OF_VALID_STATUS.stream()
+                    || CLAIM_STATUSES_FOR_DUPLICATE_CHECK.stream()
                         .anyMatch(
-                            validStatus ->
-                                validStatus.name().equals(submissionClaim.getStatus().name())))
+                            eligibleStatus ->
+                                eligibleStatus.name().equals(submissionClaim.getStatus().name())))
         .toList();
   }
 
@@ -312,9 +313,9 @@ public abstract class DuplicateClaimValidation {
                     Objects.equals(candidate.getSubmissionId(), currentClaim.getSubmissionId()))
             // Exclude self by id — a claim must never be its own duplicate.
             .filter(candidate -> !Objects.equals(candidate.getId(), currentClaim.getId()))
-            // Only VALID / READY_TO_PROCESS claims can be duplicates (VOID/others ignored).
+            // Only live claims can be duplicates (VOID/others ignored).
             .filter(candidate -> candidate.getStatus() == null
-                || LIST_OF_VALID_STATUS.contains(candidate.getStatus()))
+                || CLAIM_STATUSES_FOR_DUPLICATE_CHECK.contains(candidate.getStatus()))
             .filter(matchPredicate)
             .toList();
     return new DuplicateCheckResult(matches, null);
@@ -354,7 +355,7 @@ public abstract class DuplicateClaimValidation {
       return getDuplicateClaimsInSameSubmission(currentClaim, matchPredicate, uniqueClientNumber);
     }
 
-    List<Claim> siblings = filterCurrentClaimWithValidStatus(currentClaim, submissionClaims);
+    List<Claim> siblings = filterCurrentClaimWithEligibleStatus(currentClaim, submissionClaims);
     List<Claim> matches = getDuplicateClaimsInCurrentSubmission(siblings, matchPredicate);
     return new DuplicateCheckResult(matches, null);
   }

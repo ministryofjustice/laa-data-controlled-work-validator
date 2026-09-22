@@ -75,6 +75,43 @@ class DuplicateSameSubmissionLegalHelpValidationServiceStrategyTest
                   .getDisplayMessage());
     }
 
+    @DisplayName("Validation error: pending-approval sibling is treated as a live duplicate")
+    @Test
+    void whenPendingApprovalSiblingExists() {
+      var claimToBeProcessed =
+              createClaim(
+                  "claimId1",
+                  "2Q286D",
+                  "submissionId1",
+                  "CIV123",
+                  "070722/001",
+                  "CLI001",
+                  ClaimStatus.READY_TO_PROCESS);
+
+      var pendingApprovalSibling =
+              createClaim(
+                  "claimId2",
+                  "2Q286D",
+                  "submissionId1",
+                  "CIV123",
+                  "070722/001",
+                  "CLI001",
+                  ClaimStatus.VALIDATED_PENDING_APPROVAL);
+
+      List<ValidationIssue> strategyIssues =
+              duplicateClaimLegalHelpValidation.validateDuplicateClaims(
+                  claimToBeProcessed,
+                  List.of(claimToBeProcessed, pendingApprovalSibling),
+                  "2Q286D",
+                  FeeCalculationType.FIXED.toString());
+
+      assertThat(strategyIssues)
+              .extracting(ValidationIssue::getMessage)
+              .containsExactly(
+                  ClaimValidationError.INVALID_CLAIM_HAS_DUPLICATE_IN_SAME_SUBMISSION
+                      .getDisplayMessage());
+    }
+
     @DisplayName(
         "No validation error: sibling in the same submission shares Office, UFN and Fee Code but a"
             + " different UCN")

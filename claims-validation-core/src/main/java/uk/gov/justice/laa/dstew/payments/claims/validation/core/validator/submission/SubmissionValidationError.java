@@ -85,6 +85,14 @@ public enum SubmissionValidationError implements ValidationError {
           null,
           ValidationSeverity.ERROR,
           null
+  ),
+
+  SUBMISSION_AWAITING_FINAL_APPROVAL(
+          "A submission for Office (%s), Area of Law (%s), Period (%s) has passed validation "
+                  + "and is awaiting final approval",
+          null,
+          ValidationSeverity.ERROR,
+          null
   );
   
   private final String displayMessage;
