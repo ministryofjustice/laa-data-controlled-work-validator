@@ -156,7 +156,7 @@ class DuplicateClaimValidatorEndToEndTest {
       ClaimValidationResult result = validate(legalHelpClaimUnderValidation());
 
       assertThat(result.getIssues())
-          .extracting(i -> i.getCode())
+          .extracting(ValidationIssue::getCode)
           .contains(ClaimValidationError.INVALID_CLAIM_HAS_DUPLICATE_IN_ANOTHER_SUBMISSION.name());
     }
 
@@ -168,7 +168,7 @@ class DuplicateClaimValidatorEndToEndTest {
       ClaimValidationResult result = validate(legalHelpClaimUnderValidation());
 
       assertThat(result.getIssues())
-          .extracting(i -> i.getCode())
+          .extracting(ValidationIssue::getCode)
           .doesNotContain(
               ClaimValidationError.INVALID_CLAIM_HAS_DUPLICATE_IN_SAME_SUBMISSION.name(),
               ClaimValidationError.INVALID_CLAIM_HAS_DUPLICATE_IN_ANOTHER_SUBMISSION.name());
@@ -198,7 +198,7 @@ class DuplicateClaimValidatorEndToEndTest {
               List.of(sibling));
 
       assertThat(result.getIssues())
-          .extracting(i -> i.getCode())
+          .extracting(ValidationIssue::getCode)
           .contains(ClaimValidationError.INVALID_CLAIM_HAS_DUPLICATE_IN_SAME_SUBMISSION.name());
     }
 
@@ -211,7 +211,7 @@ class DuplicateClaimValidatorEndToEndTest {
       ClaimValidationResult result = validate(mediationClaim);
 
       assertThat(result.getIssues())
-          .extracting(i -> i.getCode())
+          .extracting(ValidationIssue::getCode)
           .doesNotContain(
               ClaimValidationError.INVALID_CLAIM_HAS_DUPLICATE_IN_SAME_SUBMISSION.name(),
               ClaimValidationError.INVALID_CLAIM_HAS_DUPLICATE_IN_ANOTHER_SUBMISSION.name());
@@ -232,7 +232,7 @@ class DuplicateClaimValidatorEndToEndTest {
       ClaimValidationResult result = validate(legalHelpClaimUnderValidation());
 
       assertThat(result.getIssues())
-          .extracting(i -> i.getCode())
+          .extracting(ValidationIssue::getCode)
           .contains(ClaimValidationError.INVALID_CLAIM_HAS_DUPLICATE_IN_SAME_SUBMISSION.name());
     }
 
@@ -246,7 +246,7 @@ class DuplicateClaimValidatorEndToEndTest {
       ClaimValidationResult result = validate(legalHelpClaimUnderValidation());
 
       assertThat(result.getIssues())
-          .extracting(i -> i.getCode())
+          .extracting(ValidationIssue::getCode)
           .doesNotContain(
               ClaimValidationError.INVALID_CLAIM_HAS_DUPLICATE_IN_SAME_SUBMISSION.name());
     }
@@ -259,7 +259,7 @@ class DuplicateClaimValidatorEndToEndTest {
       ClaimValidationResult result = validate(legalHelpClaimUnderValidation());
 
       assertThat(result.getIssues())
-          .extracting(i -> i.getCode())
+          .extracting(ValidationIssue::getCode)
           .doesNotContain(
               ClaimValidationError.INVALID_CLAIM_HAS_DUPLICATE_IN_SAME_SUBMISSION.name());
     }
