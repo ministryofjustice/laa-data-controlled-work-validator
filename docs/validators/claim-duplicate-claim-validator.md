@@ -34,9 +34,9 @@ submission" claims are found.
 **Only "live" claims can be duplicates.** A stored claim is only considered a possible duplicate
 when:
 
-- its **claim status** is `READY_TO_PROCESS` or `VALID`, and
+- its **claim status** is `READY_TO_PROCESS`, `VALID`, or `VALIDATED_PENDING_APPROVAL`, and
 - its parent **submission status** is one of `CREATED`, `VALIDATION_IN_PROGRESS`,
-  `READY_FOR_VALIDATION`, or `VALIDATION_SUCCEEDED`.
+  `READY_FOR_VALIDATION`, `VALIDATION_SUCCEEDED`, or `VALIDATED_PENDING_APPROVAL`.
 
 Claims in any other status (e.g. `INVALID`, void) are ignored.
 
@@ -211,11 +211,11 @@ When the validator needs stored claims it calls the Data Claims API (`getClaims`
 |---|---|
 | Office account number | The claim's office |
 | Submission id | The claim's own submission (same‑submission check) / omitted (previous‑submission check) |
-| Submission statuses | `CREATED`, `VALIDATION_IN_PROGRESS`, `READY_FOR_VALIDATION`, `VALIDATION_SUCCEEDED` |
+| Submission statuses | `CREATED`, `VALIDATION_IN_PROGRESS`, `READY_FOR_VALIDATION`, `VALIDATION_SUCCEEDED`, `VALIDATED_PENDING_APPROVAL` |
 | Fee code | The claim's fee code |
 | Unique File Number | The claim's UFN |
 | Unique Client Number | The claim's UCN for **Legal Help**; **omitted (null)** for **Crime Lower** |
-| Claim statuses | `READY_TO_PROCESS`, `VALID` |
+| Claim statuses | `READY_TO_PROCESS`, `VALID`, `VALIDATED_PENDING_APPROVAL` |
 
 For the previous‑submission check, any rows belonging to the claim's own submission are removed from
 the results before matching.
@@ -225,7 +225,8 @@ the results before matching.
 ## Edge cases & guarantees
 
 - **Self‑exclusion:** the claim under validation is never reported as its own duplicate.
-- **Status filtering:** only `READY_TO_PROCESS` / `VALID` claims in eligible submissions are
+- **Status filtering:** only `READY_TO_PROCESS`, `VALID`, or `VALIDATED_PENDING_APPROVAL` claims in
+  eligible submissions are
   considered.
 - **PROD fee code (Crime Lower):** skipped entirely, no API call.
 - **API unavailable (fails closed):** if *any* Data Claims API lookup — same‑submission **or**

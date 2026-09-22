@@ -287,7 +287,7 @@ class DuplicateClaimValidatorEndToEndTest {
       validate(legalHelpClaimUnderValidation());
 
       // The same-submission lookup queries the provider scoped to the claim's own submission id
-      // and only VALID / READY_TO_PROCESS claim statuses.
+      // and only live claim statuses.
       verify(claimsDataProvider)
           .getClaims(
               eq(OFFICE),
@@ -297,7 +297,11 @@ class DuplicateClaimValidatorEndToEndTest {
               eq(UFN),
               eq(UCN),
               any(),
-              eq(List.of(ClaimStatus.READY_TO_PROCESS, ClaimStatus.VALID)),
+              eq(
+                  List.of(
+                      ClaimStatus.READY_TO_PROCESS,
+                      ClaimStatus.VALID,
+                      ClaimStatus.VALIDATED_PENDING_APPROVAL)),
               any(),
               any(),
               any());
