@@ -7,11 +7,13 @@ import io.github.resilience4j.retry.RetryRegistry;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.context.annotation.Bean;
+import org.springframework.http.client.reactive.ClientHttpConnector;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.client.DataClaimsClient;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.provider.ClaimsDataProvider;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.provider.FeeSchemeProvider;
@@ -32,6 +34,8 @@ import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.submis
  * <ul>
  *   <li>All expected beans are registered when minimum required properties are present.</li>
  *   <li>{@code @ConditionalOnMissingBean} allows importers to override any individual bean.</li>
+ *   <li>{@link ClientHttpConnectorCustomizer} beans registered by the importer reach
+ *       {@link WebClientConfig}, in order. </li>
  *   <li>The library never participates in component scanning (no &#64;Component anywhere).</li>
  * </ul>
  */
@@ -286,6 +290,79 @@ class ClaimsValidationAutoConfigurationTest {
             assertThat(ctx.getBean(ValidationService.class))
                 .isSameAs(CustomValidationServiceConfig.CUSTOM_INSTANCE);
           });
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Connector customizers reach WebClientConfig
+  // ─────────────────────────────────────────────────────────────────────────
+  @Nested
+  @DisplayName("Connector customizers")
+  class ConnectorCustomizers {
+    static class RecordingCustomizer implements ClientHttpConnectorCustomizer {
+      final List<String> clientNames = new java.util.ArrayList<>();
+
+      @Override
+      public ClientHttpConnector customize(String clientName, ClientHttpConnector connector) {
+        clientNames.add(clientName);
+        return connector;
+      }
+    }
+
+    static class InvocationLog {
+      final List<String> entries = new java.util.ArrayList<>();
+    }
+
+    static class RecordingCustomizerConfig {
+      @Bean
+      public InvocationLog invocationLog() {
+        return new InvocationLog();
+      }
+
+      @Bean
+      @Order(1)
+      public ClientHttpConnectorCustomizer firstCustomizer(InvocationLog log) {
+        return (name, connector) -> {
+          log.entries.add("first");
+          return connector;
+        };
+      }
+
+      @Bean
+      @Order(2)
+      public ClientHttpConnectorCustomizer secondCustomizer(InvocationLog log) {
+        return (name, connector) -> {
+          log.entries.add("second");
+          return connector;
+        };
+      }
+    }
+
+    @Test
+    @DisplayName("A registered customizer is applied to every client in the library")
+    void customizerIsAppliedToEveryClient() {
+      contextRunner
+              .withUserConfiguration(RecordingCustomizer.class)
+              .run(ctx -> assertThat(ctx.getBean(RecordingCustomizer.class).clientNames)
+                      .containsExactlyInAnyOrder(
+                              ClientHttpConnectorCustomizer.FEE_SCHEME,
+                              ClientHttpConnectorCustomizer.PROVIDER_DETAILS,
+                              ClientHttpConnectorCustomizer.DATA_CLAIMS));
+    }
+
+    @Test
+    @DisplayName("Customizers are applied in order given by @Order")
+    void customizersAreAppliedInOrder() {
+      contextRunner
+              .withUserConfiguration(RecordingCustomizer.class, RecordingCustomizerConfig.class)
+              .run(ctx -> assertThat(ctx.getBean(InvocationLog.class).entries)
+              .startsWith("first", "second"));
+    }
+
+    @Test
+    @DisplayName("Context starts with no customizers registered")
+    void contextStartsWithNoCustomizers() {
+      contextRunner.run(ctx -> assertThat(ctx).hasSingleBean(WebClientConfig.class));
     }
   }
 

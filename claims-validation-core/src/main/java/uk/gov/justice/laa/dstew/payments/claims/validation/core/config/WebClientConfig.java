@@ -3,7 +3,6 @@ package uk.gov.justice.laa.dstew.payments.claims.validation.core.config;
 import io.netty.channel.ChannelOption;
 import java.time.Duration;
 import java.util.List;
-
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.client.reactive.ClientHttpConnector;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
@@ -27,7 +26,6 @@ import uk.gov.justice.laa.dstew.payments.claims.validation.core.provider.impl.Ht
  */
 @Slf4j
 public class WebClientConfig {
-
   private static final String SERVICE_NAME_HEADER = "X-Service-Name";
   private final String serviceName;
   private final List<ClientHttpConnectorCustomizer> connectorCustomizers;
@@ -70,7 +68,8 @@ public class WebClientConfig {
    * @return An instance of {@link FeeSchemeClient}
    */
   public FeeSchemeClient feeSchemeClient(final FeeSchemeApiConfig properties) {
-    final WebClient webClient = createWebClient(properties, ClientHttpConnectorCustomizer.FEE_SCHEME);
+    final WebClient webClient = createWebClient(
+            properties, ClientHttpConnectorCustomizer.FEE_SCHEME);
     final WebClientAdapter webClientAdapter = WebClientAdapter.create(webClient);
     HttpServiceProxyFactory factory = HttpServiceProxyFactory.builderFor(webClientAdapter).build();
     return factory.createClient(FeeSchemeClient.class);
@@ -86,7 +85,8 @@ public class WebClientConfig {
    * @return An instance of {@link ProviderDetailsClient}
    */
   public ProviderDetailsClient providerDetailsClient(final ProviderDetailsApiConfig properties) {
-    final WebClient webClient = createWebClient(properties, ClientHttpConnectorCustomizer.PROVIDER_DETAILS);
+    final WebClient webClient = createWebClient(
+            properties, ClientHttpConnectorCustomizer.PROVIDER_DETAILS);
     final WebClientAdapter webClientAdapter = WebClientAdapter.create(webClient);
     HttpServiceProxyFactory factory = HttpServiceProxyFactory.builderFor(webClientAdapter).build();
     return factory.createClient(ProviderDetailsClient.class);
@@ -102,7 +102,8 @@ public class WebClientConfig {
    * @return An instance of {@link DataClaimsClient}
    */
   public DataClaimsClient dataClaimsClient(final DataClaimsApiConfig properties) {
-    final WebClient webClient = createWebClient(properties, ClientHttpConnectorCustomizer.DATA_CLAIMS);
+    final WebClient webClient = createWebClient(
+            properties, ClientHttpConnectorCustomizer.DATA_CLAIMS);
     final WebClientAdapter webClientAdapter = WebClientAdapter.create(webClient);
     HttpServiceProxyFactory factory = HttpServiceProxyFactory.builderFor(webClientAdapter).build();
     return factory.createClient(DataClaimsClient.class);

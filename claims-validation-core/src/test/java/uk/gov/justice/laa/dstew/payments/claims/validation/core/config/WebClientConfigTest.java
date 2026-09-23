@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -11,6 +12,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.springframework.http.client.reactive.ClientHttpConnector;
+import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.client.DataClaimsClient;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.client.FeeSchemeClient;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.client.ProviderDetailsClient;
@@ -26,6 +29,8 @@ import uk.gov.justice.laa.dstew.payments.claims.validation.core.provider.impl.Ht
  *   <li>{@code createWebClient} throws {@link IllegalStateException} when the URL is null or blank.
  *   <li>The {@code claimsDataProvider} bean returns an {@link HttpClaimsDataProvider} wrapping the
  *       supplied {@link DataClaimsClient}.
+ *   <li>Registered {@link ClientHttpConnectorCustomizer}s are applied, in order, to the connector
+ *       of every client, and are told which client is being built.
  * </ul>
  *
  * <p>Note: Full integration (WebClient creation, HTTP connectivity) is out of scope for unit tests.
@@ -253,6 +258,107 @@ class WebClientConfigTest {
       assertThatThrownBy(() -> webClientConfig.providerDetailsClient(properties))
           .isInstanceOf(IllegalStateException.class)
           .hasMessageContaining("ProviderDetailsApiConfig");
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Connector customizers
+  // ─────────────────────────────────────────────────────────────────────────
+  @Nested
+  @DisplayName("Connector customizers")
+  class ConnectorCustomizers {
+    @Test
+    @DisplayName("Passes the fee scheme client name to the customizer")
+    void passesFeeSchemeClientName() {
+      RecordingCustomizer customizer = new RecordingCustomizer();
+      WebClientConfig config = new WebClientConfig("test-service", List.of(customizer));
+
+      config.feeSchemeClient(configuredFeeSchemeApiConfig());
+
+      assertThat(customizer.clientNames)
+              .containsExactly(ClientHttpConnectorCustomizer.FEE_SCHEME);
+    }
+
+    @Test
+    @DisplayName("Passes the provider details client name to the customizer")
+    void passesProviderDetailsClientName() {
+      RecordingCustomizer customizer = new RecordingCustomizer();
+      WebClientConfig config = new WebClientConfig("test-service", List.of(customizer));
+
+      config.providerDetailsClient(configuredProviderDetailsApiConfig());
+
+      assertThat(customizer.clientNames)
+              .containsExactly(ClientHttpConnectorCustomizer.PROVIDER_DETAILS);
+    }
+
+    @Test
+    @DisplayName("Passes the data claims client name to the customizer")
+    void passesDataClaimsClientName() {
+      RecordingCustomizer customizer = new RecordingCustomizer();
+      WebClientConfig config = new WebClientConfig("test-service", List.of(customizer));
+
+      config.dataClaimsClient(configuredDataClaimsApiConfig());
+
+      assertThat(customizer.clientNames)
+              .containsExactly(ClientHttpConnectorCustomizer.DATA_CLAIMS);
+    }
+
+    @Test
+    @DisplayName("Receives the underlying connector to decorate")
+    void receivesUnderlyingConnector() {
+      RecordingCustomizer customizer = new RecordingCustomizer();
+      WebClientConfig config = new WebClientConfig("test-service", List.of(customizer));
+
+      config.feeSchemeClient(configuredFeeSchemeApiConfig());
+
+      assertThat(customizer.connectors)
+              .singleElement()
+              .isInstanceOf(ReactorClientHttpConnector.class);
+    }
+
+    @Test
+    @DisplayName("Chains each customizer onto the connector returned by the previous one")
+    void chainsCustomizersInOrder() {
+      ClientHttpConnector replacement = mock(ClientHttpConnector.class);
+      ClientHttpConnectorCustomizer first = (_, _) -> replacement;
+      RecordingCustomizer second = new RecordingCustomizer();
+      WebClientConfig config = new WebClientConfig("test-service", List.of(first, second));
+
+      config.feeSchemeClient(configuredFeeSchemeApiConfig());
+
+      assertThat(second.connectors).containsExactly(replacement);
+    }
+
+    @Test
+    @DisplayName("Builds a client when a customizer returns an unchanged connector")
+    void buildsClientWhenCustomizerReturnsUnchangedConnector() {
+      WebClientConfig config = new WebClientConfig(
+              "test-service", List.of((_, connector) -> connector));
+
+      assertThat(config.feeSchemeClient(configuredFeeSchemeApiConfig()))
+              .isInstanceOf(FeeSchemeClient.class);
+    }
+
+    @Test
+    @DisplayName("Builds every client as before when no customizers are registered")
+    void buildsClientsWhenNoCustomizers() {
+      WebClientConfig config = new WebClientConfig("test-service", List.of());
+
+      assertThat(config.feeSchemeClient(configuredFeeSchemeApiConfig())).isNotNull();
+      assertThat(config.providerDetailsClient(configuredProviderDetailsApiConfig())).isNotNull();
+      assertThat(config.dataClaimsClient(configuredDataClaimsApiConfig())).isNotNull();
+    }
+  }
+
+  private static final class RecordingCustomizer implements ClientHttpConnectorCustomizer {
+    private final List<String> clientNames = new java.util.ArrayList<>();
+    private final List<ClientHttpConnector> connectors = new java.util.ArrayList<>();
+
+    @Override
+    public ClientHttpConnector customize(String clientName, ClientHttpConnector connector) {
+      clientNames.add(clientName);
+      connectors.add(connector);
+      return connector;
     }
   }
 
