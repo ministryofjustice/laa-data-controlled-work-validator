@@ -2,7 +2,10 @@ package uk.gov.justice.laa.dstew.payments.claims.validation.core.config;
 
 import io.netty.channel.ChannelOption;
 import java.time.Duration;
+import java.util.List;
+
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.client.reactive.ClientHttpConnector;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.web.reactive.function.client.ClientRequest;
 import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
@@ -27,12 +30,32 @@ public class WebClientConfig {
 
   private static final String SERVICE_NAME_HEADER = "X-Service-Name";
   private final String serviceName;
+  private final List<ClientHttpConnectorCustomizer> connectorCustomizers;
 
+  /**
+   * Creates a configuration with no connector customizers.
+   */
   public WebClientConfig(String serviceName) {
-    this.serviceName = serviceName;
+    this(serviceName, List.of());
   }
 
-  /** Default constructor uses a generic service name; prefer the parameterised constructor. */
+  /**
+   * Creates a configuration whose outbound transport may be decorated by the importing
+   * application, for example to record request and response payloads.
+   *
+   * <p>Customizers are applied in order to the connector of every client this class builds,
+   * and are given the client name so they can decorate some clients and not others.
+   *
+   * @param serviceName value sent in the {@code X-Service-Name} header on every outbound call
+   * @param connectorCustomizers customizers to apply, in order; may be empty
+   */
+  public WebClientConfig(
+          String serviceName, List<ClientHttpConnectorCustomizer> connectorCustomizers) {
+    this.serviceName = serviceName;
+    this.connectorCustomizers = connectorCustomizers;
+  }
+
+  /** Default constructor uses a generic service name; prefer the parameterized constructor. */
   public WebClientConfig() {
     this("claims-validation-core");
   }
@@ -47,7 +70,7 @@ public class WebClientConfig {
    * @return An instance of {@link FeeSchemeClient}
    */
   public FeeSchemeClient feeSchemeClient(final FeeSchemeApiConfig properties) {
-    final WebClient webClient = createWebClient(properties);
+    final WebClient webClient = createWebClient(properties, ClientHttpConnectorCustomizer.FEE_SCHEME);
     final WebClientAdapter webClientAdapter = WebClientAdapter.create(webClient);
     HttpServiceProxyFactory factory = HttpServiceProxyFactory.builderFor(webClientAdapter).build();
     return factory.createClient(FeeSchemeClient.class);
@@ -63,7 +86,7 @@ public class WebClientConfig {
    * @return An instance of {@link ProviderDetailsClient}
    */
   public ProviderDetailsClient providerDetailsClient(final ProviderDetailsApiConfig properties) {
-    final WebClient webClient = createWebClient(properties);
+    final WebClient webClient = createWebClient(properties, ClientHttpConnectorCustomizer.PROVIDER_DETAILS);
     final WebClientAdapter webClientAdapter = WebClientAdapter.create(webClient);
     HttpServiceProxyFactory factory = HttpServiceProxyFactory.builderFor(webClientAdapter).build();
     return factory.createClient(ProviderDetailsClient.class);
@@ -79,7 +102,7 @@ public class WebClientConfig {
    * @return An instance of {@link DataClaimsClient}
    */
   public DataClaimsClient dataClaimsClient(final DataClaimsApiConfig properties) {
-    final WebClient webClient = createWebClient(properties);
+    final WebClient webClient = createWebClient(properties, ClientHttpConnectorCustomizer.DATA_CLAIMS);
     final WebClientAdapter webClientAdapter = WebClientAdapter.create(webClient);
     HttpServiceProxyFactory factory = HttpServiceProxyFactory.builderFor(webClientAdapter).build();
     return factory.createClient(DataClaimsClient.class);
@@ -102,7 +125,7 @@ public class WebClientConfig {
    * @param apiProperties The configuration properties for the API
    * @return A configured WebClient instance
    */
-  private WebClient createWebClient(final ApiProperties apiProperties) {
+  private WebClient createWebClient(final ApiProperties apiProperties, final String clientName) {
     String url = apiProperties.getUrl();
     if (url == null || url.isBlank()) {
       log.error("API URL is not configured for {}", apiProperties.getClass().getSimpleName());
@@ -130,11 +153,16 @@ public class WebClientConfig {
             .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, apiProperties.getConnectTimeoutMs())
             .responseTimeout(Duration.ofMillis(apiProperties.getReadTimeoutMs()));
 
+    ClientHttpConnector connector = new ReactorClientHttpConnector(httpClient);
+    for (ClientHttpConnectorCustomizer customizer : connectorCustomizers) {
+      connector = customizer.customize(clientName, connector);
+    }
+
     return WebClient.builder()
         .baseUrl(apiProperties.getUrl())
         .defaultHeader(apiProperties.getAuthHeader(), apiProperties.getAccessToken())
         .exchangeStrategies(strategies)
-        .clientConnector(new ReactorClientHttpConnector(httpClient))
+        .clientConnector(connector)
         .filter(logRequest())
         .filter(logResponse())
         .build();

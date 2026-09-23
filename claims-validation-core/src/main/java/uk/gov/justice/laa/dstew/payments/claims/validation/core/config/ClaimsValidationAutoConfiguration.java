@@ -2,6 +2,8 @@ package uk.gov.justice.laa.dstew.payments.claims.validation.core.config;
 
 import io.github.resilience4j.retry.RetryRegistry;
 import java.util.List;
+
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -159,10 +161,12 @@ public class ClaimsValidationAutoConfiguration {
   @Bean("coreWebClientConfig")
   @ConditionalOnMissingBean(WebClientConfig.class)
   public WebClientConfig coreWebClientConfig(
-      @Value("${" + ValidatorProperties.SERVICE_NAME_PROPERTY 
+          @Value("${" + ValidatorProperties.SERVICE_NAME_PROPERTY
               + ":${spring.application.name:claims-validation-core}}")
-      String serviceName) {
-    return new WebClientConfig(serviceName);
+      String serviceName,
+          ObjectProvider<ClientHttpConnectorCustomizer> connectorCustomizers) {
+    return new WebClientConfig(
+            serviceName, connectorCustomizers.orderedStream().toList());
   }
 
 
