@@ -322,7 +322,7 @@ class ClaimsValidationAutoConfigurationTest {
       @Bean
       @Order(1)
       public ClientHttpConnectorCustomizer firstCustomizer(InvocationLog log) {
-        return (name, connector) -> {
+        return (_, connector) -> {
           log.entries.add("first");
           return connector;
         };
@@ -331,7 +331,7 @@ class ClaimsValidationAutoConfigurationTest {
       @Bean
       @Order(2)
       public ClientHttpConnectorCustomizer secondCustomizer(InvocationLog log) {
-        return (name, connector) -> {
+        return (_, connector) -> {
           log.entries.add("second");
           return connector;
         };
