@@ -18,7 +18,7 @@ env:
 
 jobs:
   build:
-    uses: ministryofjustice/laa-ccms-common-workflows/.github/workflows/gradle-build-and-publish.yml@01e4abe0075a71c655247f7ae7552fd724a9f36b
+    uses: ministryofjustice/laa-ccms-common-workflows/.github/workflows/gradle-build-and-publish.yml@8f67eba8a755e30d5718f4c42d0c39c7e4520dfd
     permissions:
       contents: write
       packages: write
