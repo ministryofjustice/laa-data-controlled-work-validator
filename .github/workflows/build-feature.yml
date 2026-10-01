@@ -18,7 +18,7 @@ env:
 
 jobs:
   build:
-    uses: ministryofjustice/laa-ccms-common-workflows/.github/workflows/gradle-build-and-publish.yml@035ee98ca0047659f865532ea6234abd69529ee8 # v2.5.0
+    uses: ministryofjustice/laa-ccms-common-workflows/.github/workflows/gradle-build-and-publish.yml@01e4abe0075a71c655247f7ae7552fd724a9f36b
     permissions:
       contents: write
       packages: write
@@ -34,6 +34,7 @@ jobs:
       jacoco_coverage_report_path: 'claims-validation-core/build/reports/jacoco'
     secrets:
       gh_token: ${{ secrets.GITHUB_TOKEN }}
+      gh_packages_token: ${{ secrets.PHILS_PAT_TOKEN }}
       aws_region: ${{ vars.LAA_DATA_CLAIMS_EVENT_SERVICE_AWS_REGION }}
 
   sca-scan:
@@ -49,3 +50,4 @@ jobs:
       java_distribution: *JDK_DISTRIBUTION
     secrets:
       gh_token: ${{ secrets.GITHUB_TOKEN }}
+      gh_packages_token: ${{ secrets.gh_packages_token }}
