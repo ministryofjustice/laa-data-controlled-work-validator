@@ -124,6 +124,72 @@ class EffectiveCategoryOfLawClaimValidationTest {
         .contains(ClaimValidationError.INVALID_CATEGORY_OF_LAW_AND_FEE_CODE.name());
   }
 
+  @Test
+  @DisplayName("Should treat an empty Provider Details response as empty business data")
+  void shouldHandleEmptyProviderDetailsResponse() {
+    Claim claim = baseClaim();
+    when(httpProviderDetailsProvider.getProviderFirmSchedules(
+            claim.getOfficeAccountNumber(), LocalDate.of(2025, 8, 14)))
+        .thenReturn(Optional.empty());
+
+    FeeDetailsResponseV2 feeDetailsResponse = new FeeDetailsResponseV2();
+    feeDetailsResponse.setCategoryOfLawCodes(List.of("CAT1"));
+    when(feeSchemeClient.getFeeDetails(claim.getFeeCode()))
+        .thenReturn(Optional.of(feeDetailsResponse));
+
+    ClaimValidationContext context = ClaimValidationContext.builder().build();
+    validator.validate(claim, context);
+
+    assertThat(context.getIssues()).hasSize(1);
+    assertThat(context.getIssues().getFirst().toString())
+        .contains(ClaimValidationError.INVALID_CATEGORY_OF_LAW_NOT_AUTHORISED_FOR_PROVIDER.name())
+        .doesNotContain(ClaimValidationError.TECHNICAL_ERROR_PROVIDER_DETAILS_API.name());
+    verify(httpProviderDetailsProvider)
+        .getProviderFirmSchedules(claim.getOfficeAccountNumber(), LocalDate.of(2025, 8, 14));
+  }
+
+  @Test
+  @DisplayName("Should isolate categories by date in either processing order")
+  void shouldValidateClaimsIndependentlyInEitherOrder() {
+    final Claim civilClaim = claimForCategory("civilFee", "2025-01-10");
+    final Claim crimeClaim = claimForCategory("crimeFee", "2025-02-10");
+
+    when(httpProviderDetailsProvider.getProviderFirmSchedules(
+            "officeA", LocalDate.of(2025, 1, 10)))
+        .thenReturn(Optional.of(scheduleWithCategory("CIVIL")));
+    when(httpProviderDetailsProvider.getProviderFirmSchedules(
+            "officeA", LocalDate.of(2025, 2, 10)))
+        .thenReturn(Optional.of(scheduleWithCategory("CRIME")));
+
+    FeeDetailsResponseV2 civilFee = new FeeDetailsResponseV2();
+    civilFee.setCategoryOfLawCodes(List.of("CIVIL"));
+    FeeDetailsResponseV2 crimeFee = new FeeDetailsResponseV2();
+    crimeFee.setCategoryOfLawCodes(List.of("CRIME"));
+    when(feeSchemeClient.getFeeDetails("civilFee")).thenReturn(Optional.of(civilFee));
+    when(feeSchemeClient.getFeeDetails("crimeFee")).thenReturn(Optional.of(crimeFee));
+
+    ClaimValidationContext civilForward = ClaimValidationContext.builder().build();
+    ClaimValidationContext crimeForward = ClaimValidationContext.builder().build();
+    validator.validate(civilClaim, civilForward);
+    validator.validate(crimeClaim, crimeForward);
+
+    ClaimValidationContext crimeReverse = ClaimValidationContext.builder().build();
+    ClaimValidationContext civilReverse = ClaimValidationContext.builder().build();
+    validator.validate(crimeClaim, crimeReverse);
+    validator.validate(civilClaim, civilReverse);
+
+    assertThat(civilForward.getIssues()).isEmpty();
+    assertThat(crimeForward.getIssues()).isEmpty();
+    assertThat(civilReverse.getIssues()).isEmpty();
+    assertThat(crimeReverse.getIssues()).isEmpty();
+    assertThat(civilForward.getAuthorisedCategoryOfLawCode())
+        .isEqualTo(civilReverse.getAuthorisedCategoryOfLawCode())
+        .isEqualTo("CIVIL");
+    assertThat(crimeForward.getAuthorisedCategoryOfLawCode())
+        .isEqualTo(crimeReverse.getAuthorisedCategoryOfLawCode())
+        .isEqualTo("CRIME");
+  }
+
   @ParameterizedTest(name = "Should handle fee scheme API {0} exception")
   @MethodSource("exceptionProvider")
   @DisplayName("Should handle fee scheme API errors by adding technical error")
@@ -332,8 +398,8 @@ class EffectiveCategoryOfLawClaimValidationTest {
   }
 
   @Test
-  @DisplayName("Should call provider and fee scheme underlying clients only once when caching is enabled")
-  void shouldCacheProviderAndFeeSchemeCalls() {
+  @DisplayName("Should call Provider Details for each validation while Fee Scheme remains cached")
+  void shouldCallProviderForEachValidationAndCacheFeeSchemeCalls() {
     // Use real provider implementations backed by mocked REST clients so we can verify underlying calls
     ProviderDetailsClient mockProviderClient = mock(ProviderDetailsClient.class);
     FeeSchemeClient mockFeeClient = mock(FeeSchemeClient.class);
@@ -376,8 +442,8 @@ class EffectiveCategoryOfLawClaimValidationTest {
     ClaimValidationContext context2 = ClaimValidationContext.builder().build();
     realValidator.validate(claim, context2);
 
-    // underlying REST clients should only be invoked once each due to provider-level caching
-    verify(mockProviderClient, times(1)).getProviderFirmSchedules(eq("officeCache"), any(LocalDate.class));
+    // Provider Details is request-scoped; Fee Scheme retains its independent cache behaviour.
+    verify(mockProviderClient, times(2)).getProviderFirmSchedules(eq("officeCache"), any(LocalDate.class));
     verify(mockFeeClient, times(1)).getFeeDetails("feeCode5");
   }
 
@@ -530,6 +596,17 @@ class EffectiveCategoryOfLawClaimValidationTest {
         .addSchedulesItem(new FirmOfficeContractAndScheduleDetails()
             .addScheduleLinesItem(
                 new FirmOfficeContractAndScheduleLine().categoryOfLaw(category)));
+  }
+
+  private Claim claimForCategory(String feeCode, String caseStartDate) {
+    return Claim.builder()
+        .id(UUID.randomUUID())
+        .feeCode(feeCode)
+        .caseStartDate(caseStartDate)
+        .status(ClaimStatus.READY_TO_PROCESS)
+        .officeAccountNumber("officeA")
+        .areaOfLaw(AreaOfLaw.LEGAL_HELP)
+        .build();
   }
 
   /**
