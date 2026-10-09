@@ -23,7 +23,7 @@ env:
 
 jobs:
   release:
-    uses: ministryofjustice/laa-ccms-common-workflows/.github/workflows/gradle-build-and-publish.yml@035ee98ca0047659f865532ea6234abd69529ee8 # v2.5.0
+    uses: ministryofjustice/laa-ccms-common-workflows/.github/workflows/gradle-build-and-publish.yml@DSTEW-2417
     permissions:
       contents: write
       packages: write
@@ -33,3 +33,4 @@ jobs:
       release_type: ${{ inputs.release_type != 'auto' && inputs.release_type || '' }}
     secrets:
       gh_token: ${{ secrets.GITHUB_TOKEN }}
+      gh_packages_token: ${{ secrets.GH_PACKAGES_TOKEN }}

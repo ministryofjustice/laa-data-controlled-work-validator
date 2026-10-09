@@ -6,19 +6,6 @@ subprojects {
     group = 'uk.gov.justice.laa.dstew.payments.claims.validation'
     version = rootProject.version
 
-    repositories {
-        mavenCentral()
-        // GitHub Packages for published API models
-        maven {
-            name = "GitHubPackages"
-            url = uri("https://maven.pkg.github.com/ministryofjustice/laa-data-claims-api")
-            credentials {
-                username = System.getenv("GITHUB_ACTOR")
-                password = System.getenv("GITHUB_TOKEN")
-            }
-        }
-    }
-
     // Apply to subprojects that have java plugin
     plugins.withType(JavaPlugin).configureEach {
 
@@ -74,6 +61,5 @@ tasks.register("checkstyleStaged") {
 project(':claims-validation-core') {
     tasks.matching { it.name == 'publish' }.configureEach {
         dependsOn(':reference-fee-scheme-platform-api:publish')
-        dependsOn(':reference-provider-details-api:publish')
     }
 }
