@@ -34,7 +34,7 @@ jobs:
       jacoco_coverage_report_path: 'claims-validation-core/build/reports/jacoco'
     secrets:
       gh_token: ${{ secrets.GITHUB_TOKEN }}
-      gh_packages_token: ${{ secrets.PHILS_PAT_TOKEN }}
+      gh_packages_token: ${{ secrets.GH_PACKAGES_TOKEN }}
       aws_region: ${{ vars.LAA_DATA_CLAIMS_EVENT_SERVICE_AWS_REGION }}
 
   sca-scan:
@@ -50,4 +50,4 @@ jobs:
       java_distribution: *JDK_DISTRIBUTION
     secrets:
       gh_token: ${{ secrets.GITHUB_TOKEN }}
-      gh_packages_token: ${{ secrets.gh_packages_token }}
+      gh_packages_token: ${{ secrets.GH_PACKAGES_TOKEN }}
