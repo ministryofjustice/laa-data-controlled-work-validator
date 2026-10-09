@@ -15,12 +15,12 @@ registries:
     type: maven-repository
     url: https://maven.pkg.github.com/ministryofjustice/laa-spring-boot-common
     username: ${{ github.actor }}
-    password: ${{ secrets.GITHUB_TOKEN }}
+    password: ${{ secrets.GH_PACKAGES_TOKEN }}
   data-claims-api-github-packages:
     type: maven-repository
     url: https://maven.pkg.github.com/ministryofjustice/laa-data-claims-api
     username: ${{ github.actor }}
-    password: ${{ secrets.GITHUB_TOKEN }}
+    password: ${{ secrets.GH_PACKAGES_TOKEN }}
 
 updates:
   - package-ecosystem: "gradle"
