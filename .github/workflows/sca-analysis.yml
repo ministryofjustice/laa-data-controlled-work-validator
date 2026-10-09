@@ -55,7 +55,7 @@ jobs:
         run: ./gradlew assemble -x test --no-daemon
         env:
           GITHUB_TOKEN: ${{ secrets.gh_token }}
-          GITHUB_PACKAGES_TOKEN: ${{ secrets.PHILS_PAT_TOKEN }}
+          GITHUB_PACKAGES_TOKEN: ${{ secrets.GH_PACKAGES_TOKEN }}
 
       - name: Run SCA
         uses: ministryofjustice/devsecops-actions/sca@7dc13c20e2bf541b8a77fa1320a04983b18846f6 # v1.6.0
