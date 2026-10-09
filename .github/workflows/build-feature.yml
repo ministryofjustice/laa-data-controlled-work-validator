@@ -37,24 +37,17 @@ jobs:
       gh_packages_token: ${{ secrets.GH_PACKAGES_TOKEN }}
       aws_region: ${{ vars.LAA_DATA_CLAIMS_EVENT_SERVICE_AWS_REGION }}
 
-  image-scan:
-    name: Container image Snyk scan
-    uses: ministryofjustice/laa-ccms-common-workflows/.github/workflows/ecr-publish-image.yml@DSTEW-2417
+  sca-scan:
+    needs:
+      - build
+    uses: ./.github/workflows/sca-analysis.yml
     permissions:
       contents: read
-      id-token: write
+      packages: read
       security-events: write
     with:
-      jar_subproject: 'claims-validation-core'
-      image_version: ${{ format('claims-validation-core-snyk-cron-{0}', github.sha) }}
       java_version: *JAVA_VERSION
       java_distribution: *JDK_DISTRIBUTION
-      image_scan: 'true'
-      publish: 'false'
     secrets:
-      gh_token: ${{ secrets.GH_TOKEN }}
+      gh_token: ${{ secrets.GITHUB_TOKEN }}
       gh_packages_token: ${{ secrets.GH_PACKAGES_TOKEN }}
-      ecr_repository: ""
-      ecr_region: ""
-      ecr_role_to_assume: ""
-      snyk_token: ${{ secrets.SNYK_TOKEN }}
