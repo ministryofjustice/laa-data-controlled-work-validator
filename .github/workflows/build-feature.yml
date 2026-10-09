@@ -39,7 +39,7 @@ jobs:
 
   image-scan:
     name: Container image Snyk scan
-    uses: ministryofjustice/laa-ccms-common-workflows/.github/workflows/ecr-publish-image.yml@035ee98ca0047659f865532ea6234abd69529ee8 # v2.5.0
+    uses: ministryofjustice/laa-ccms-common-workflows/.github/workflows/ecr-publish-image.yml@DSTEW-2417
     permissions:
       contents: read
       id-token: write
