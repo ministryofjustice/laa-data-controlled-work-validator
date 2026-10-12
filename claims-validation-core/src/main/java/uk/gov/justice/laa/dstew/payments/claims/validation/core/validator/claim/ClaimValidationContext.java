@@ -39,6 +39,12 @@ public class ClaimValidationContext extends AbstractValidationContext {
   @Setter
   private String feeCodeDescription;
 
+  /**
+   * Whether the claim's fee code is an Inquest fee code, as reported by the fee-scheme platform.
+   */
+  @Setter
+  private Boolean isInquest;
+
   /** Other claims in the same submission (for duplicate checking). */
   @lombok.Builder.Default
   private final List<Claim> relatedClaims = List.of();

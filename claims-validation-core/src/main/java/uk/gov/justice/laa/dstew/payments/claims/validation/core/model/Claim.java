@@ -10,6 +10,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.justice.laa.dstew.payments.claimsdata.model.AreaOfLaw;
+import uk.gov.justice.laa.dstew.payments.claimsdata.model.ClaimInquestDetail;
 import uk.gov.justice.laa.dstew.payments.claimsdata.model.ClaimStatus;
 
 /**
@@ -253,5 +254,7 @@ public class Claim implements Serializable {
   private Boolean hasAssessment;
 
   private Integer version;
+
+  private ClaimInquestDetail inquestDetail;
 
 }

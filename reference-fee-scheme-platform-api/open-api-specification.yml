@@ -135,6 +135,9 @@ components:
         areaOfLaw:
           type: string
           description: "Area of Law stored in the system."
+        isInquest:
+          type: boolean
+          description: "Indicates whether the fee code is an Inquest fee code."
 
     FeeCalculationRequest:
       type: object

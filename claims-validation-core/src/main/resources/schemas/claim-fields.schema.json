@@ -1073,7 +1073,8 @@
     "has_assessment": {},
     "is_amended": {},
     "version": {},
-    "fee_calculation_response": {}
+    "fee_calculation_response": {},
+    "inquest_detail": {}
   },
   "additionalProperties": false,
   "required": [

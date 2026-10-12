@@ -181,6 +181,22 @@ class ClaimValidationTest {
       verify(feeSchemeProvider, never()).getFeeDetails(anyString());
     }
 
+    @ParameterizedTest(name = "isInquest={0}")
+    @ValueSource(booleans = {true, false})
+    @DisplayName("Sets isInquest from the fee-scheme response")
+    void setsIsInquestFromFeeDetails(boolean isInquest) {
+      when(feeSchemeProvider.getFeeDetails("INQ1")).thenReturn(Optional.of(
+          FeeDetailsResponseV2.builder().feeType("HOURLY").isInquest(isInquest).build()));
+
+      AtomicReference<ClaimValidationContext> captured = new AtomicReference<>();
+      ClaimValidator captor = stub(ClaimValidatorCode.CLAIM_SCHEMA_VALIDATOR, 0,  (c, ctx) -> captured.set(ctx));
+
+      pipeline(captor).validateClaim(
+          Claim.builder().feeCode("INQ1").build(), Set.of(ClaimValidatorCode.CLAIM_SCHEMA_VALIDATOR), List.of());
+
+      assertThat(captured.get().getIsInquest()).isEqualTo(isInquest);
+    }
+
     @Test
     @DisplayName("Sets feeCalculationType to null when provider returns empty Optional")
     void setsNullFeeTypeWhenProviderReturnsEmpty() {
