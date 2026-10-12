@@ -15,10 +15,12 @@ import org.springframework.context.annotation.Bean;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.client.DataClaimsClient;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.provider.ClaimsDataProvider;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.provider.FeeSchemeProvider;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.provider.GovernmentDepartmentProvider;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.provider.ProviderDetailsProvider;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.provider.impl.HttpClaimsDataProvider;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.provider.impl.HttpFeeSchemeProvider;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.provider.impl.HttpProviderDetailsProvider;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.provider.impl.StubGovernmentDepartmentProvider;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.service.ValidationService;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidation;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.rules.ClaimValidator;
@@ -127,6 +129,13 @@ class ClaimsValidationAutoConfigurationTest {
             .values().stream().toList();
         assertThat(validators).hasSizeGreaterThanOrEqualTo(10);
       });
+    }
+
+    @Test
+    @DisplayName("Stub GovernmentDepartmentProvider is registered by default")
+    void stubGovernmentDepartmentProviderIsRegistered() {
+      contextRunner.run(ctx -> assertThat(ctx.getBean(GovernmentDepartmentProvider.class))
+          .isInstanceOf(StubGovernmentDepartmentProvider.class));
     }
 
     @Test

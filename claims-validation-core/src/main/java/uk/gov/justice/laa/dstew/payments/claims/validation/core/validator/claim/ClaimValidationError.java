@@ -252,6 +252,62 @@ public enum ClaimValidationError implements ValidationError {
       "schedule_reference"
   ),
 
+  // Inquest errors
+  INQUEST_CLIENT_MEANS_TESTED_REQUIRED(
+      "Client Means Tested is required for Inquest claims",
+      null,
+      ValidationSeverity.ERROR,
+      "inquest_detail.is_client_means_tested"
+  ),
+  INQUEST_DECEASED_FORENAME_REQUIRED(
+      "Deceased Forename is required for non-means-tested Inquest claims",
+      null,
+      ValidationSeverity.ERROR,
+      "inquest_detail.deceased_forename"
+  ),
+  INQUEST_DECEASED_SURNAME_REQUIRED(
+      "Deceased Surname is required for non-means-tested Inquest claims",
+      null,
+      ValidationSeverity.ERROR,
+      "inquest_detail.deceased_surname"
+  ),
+  INQUEST_DATE_OF_DEATH_REQUIRED(
+      "Deceased Date of Death is required for non-means-tested Inquest claims",
+      null,
+      ValidationSeverity.ERROR,
+      "inquest_detail.deceased_date_of_death"
+  ),
+  INQUEST_DATE_OF_DEATH_INVALID(
+      "Deceased Date of Death must be a valid date",
+      null,
+      ValidationSeverity.ERROR,
+      "inquest_detail.deceased_date_of_death"
+  ),
+  INQUEST_DATE_OF_DEATH_OUT_OF_RANGE(
+      "Deceased Date of Death must be between 01/01/1900 and the Case Start Date, inclusive",
+      null,
+      ValidationSeverity.ERROR,
+      "inquest_detail.deceased_date_of_death"
+  ),
+  INQUEST_GOVERNMENT_DEPARTMENT_REQUIRED(
+      "At least one Government Department is required for non-means-tested Inquest claims",
+      null,
+      ValidationSeverity.ERROR,
+      "inquest_detail.interested_departments"
+  ),
+  INQUEST_GOVERNMENT_DEPARTMENT_TOO_MANY(
+      "A maximum of 10 Government Department occurrences can be supplied for a claim",
+      null,
+      ValidationSeverity.ERROR,
+      "inquest_detail.interested_departments"
+  ),
+  INQUEST_GOVERNMENT_DEPARTMENT_UNKNOWN(
+      "Government Department %s must match an active Government Department name",
+      null,
+      ValidationSeverity.ERROR,
+      null
+  ),
+
   // Warning level issues
   CLAIM_DATA_INCOMPLETE(
       "Some optional claim data is missing",

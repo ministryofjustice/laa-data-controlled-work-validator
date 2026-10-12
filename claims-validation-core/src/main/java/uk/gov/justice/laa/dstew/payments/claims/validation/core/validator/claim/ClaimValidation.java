@@ -191,6 +191,7 @@ public class ClaimValidation {
     }
 
     final FeeDetailsResponseV2 details = opt.get();
+    context.setIsInquest(details.getIsInquest());
 
     final String feeType = details.getFeeType();
     final String feeSchemeAreaOfLaw = details.getAreaOfLaw();

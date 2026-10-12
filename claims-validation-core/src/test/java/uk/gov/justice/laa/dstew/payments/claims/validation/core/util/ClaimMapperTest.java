@@ -9,6 +9,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
+import uk.gov.justice.laa.dstew.payments.claimsdata.model.ClaimInquestDetail;
 import uk.gov.justice.laa.dstew.payments.claimsdata.model.ClaimResponse;
 import uk.gov.justice.laa.dstew.payments.claimsdata.model.ClaimStatus;
 
@@ -159,6 +160,7 @@ class ClaimMapperTest {
     r.setCreatedByUserId("USER1");
     r.setIsAmended(false);
     r.setHasAssessment(true);
+    r.setInquestDetail(new ClaimInquestDetail().deceasedSurname("Smith"));
 
     return r;
   }
@@ -474,6 +476,7 @@ class ClaimMapperTest {
       assertThat(claim.getCreatedByUserId()).isEqualTo("USER1");
       assertThat(claim.getIsAmended()).isFalse();
       assertThat(claim.getHasAssessment()).isTrue();
+      assertThat(claim.getInquestDetail().getDeceasedSurname()).isEqualTo("Smith");
     }
   }
 
