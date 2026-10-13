@@ -14,6 +14,9 @@ on:
     secrets:
       gh_token:
         required: true
+      gh_packages_token:
+        description: "Read-only PAT (read:packages) for resolving GitHub Packages hosted in other repositories."
+        required: false
   workflow_dispatch:
     inputs:
       java_version:
@@ -53,6 +56,7 @@ jobs:
         run: ./gradlew assemble -x test --no-daemon
         env:
           GITHUB_TOKEN: ${{ secrets.gh_token }}
+          GITHUB_PACKAGES_TOKEN: ${{ secrets.gh_packages_token }}
 
       - name: Run SCA
         uses: ministryofjustice/devsecops-actions/sca@7dc13c20e2bf541b8a77fa1320a04983b18846f6 # v1.6.0
