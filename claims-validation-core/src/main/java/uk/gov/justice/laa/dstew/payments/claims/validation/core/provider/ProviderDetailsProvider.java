@@ -13,15 +13,14 @@ import uk.gov.justice.laadata.providers.model.ProviderFirmOfficeContractAndSched
  *
  * <ul>
  *   <li><b>External consumer (HTTP)</b> — wire in {@code HttpProviderDetailsProvider}, which
- *       delegates to {@code ProviderDetailsClient} over REST and adds positive/negative caching,
- *       coverage-window merging and in-flight deduplication.
+ *       delegates to {@code ProviderDetailsClient} over REST.
  *   <li><b>Bring-your-own source</b> — a consumer that already integrates with the Provider Details
  *       Platform (e.g. with its own client and local cache) can register its own implementation,
  *       which causes the HTTP-backed default to be skipped entirely.
  * </ul>
  *
  * <p>Implementations must not leak transport concerns (e.g. HTTP status codes) through this
- * interface. Caching is an implementation detail and is not part of this contract.
+ * interface.
  *
  * <h2>Usage example — HTTP (external service)</h2>
  *
