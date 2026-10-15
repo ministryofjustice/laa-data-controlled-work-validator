@@ -12,10 +12,12 @@ import uk.gov.justice.laa.dstew.payments.claims.validation.core.client.FeeScheme
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.client.ProviderDetailsClient;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.provider.ClaimsDataProvider;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.provider.FeeSchemeProvider;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.provider.GovernmentDepartmentProvider;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.provider.ProviderDetailsProvider;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.provider.impl.HttpClaimsDataProvider;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.provider.impl.HttpFeeSchemeProvider;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.provider.impl.HttpProviderDetailsProvider;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.provider.impl.StubGovernmentDepartmentProvider;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.service.ValidationService;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidation;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.rules.CaseDatesClaimValidator;
@@ -26,6 +28,7 @@ import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.rules.DisbursementsClaimValidator;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.rules.DuplicateClaimValidator;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.rules.EffectiveCategoryOfLawClaimValidator;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.rules.InquestClaimValidator;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.rules.MandatoryFieldClaimValidator;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.rules.MatterTypeClaimValidator;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.rules.OutcomeCodeClaimValidator;
@@ -146,6 +149,17 @@ public class ClaimsValidationAutoConfiguration {
     return new HttpClaimsDataProvider(webClientConfig.dataClaimsClient(properties));
   }
 
+  /**
+   * Government Department reference data for Inquest validation. Currently a stub until the Data
+   * Claims API exposes the endpoint (DSTEW-2358); importing applications can register their own
+   * {@link GovernmentDepartmentProvider} (e.g. repository-backed) to replace it.
+   */
+  @Bean("coreGovernmentDepartmentProvider")
+  @ConditionalOnMissingBean(GovernmentDepartmentProvider.class)
+  public GovernmentDepartmentProvider coreGovernmentDepartmentProvider() {
+    return new StubGovernmentDepartmentProvider();
+  }
+
   // ─────────────────────────────────────────────────────────────────────────
   // WebClient configuration (service-name is configurable per importing app)
   // ─────────────────────────────────────────────────────────────────────────
@@ -244,6 +258,13 @@ public class ClaimsValidationAutoConfiguration {
       ProviderDetailsProvider httpProviderDetailsProvider) {
     return new EffectiveCategoryOfLawClaimValidator(httpFeeSchemeProvider,
         httpProviderDetailsProvider);
+  }
+
+  @Bean("coreInquestClaimValidator")
+  @ConditionalOnMissingBean(InquestClaimValidator.class)
+  public InquestClaimValidator coreInquestClaimValidator(
+      GovernmentDepartmentProvider governmentDepartmentProvider) {
+    return new InquestClaimValidator(governmentDepartmentProvider);
   }
 
   @Bean("coreDuplicateClaimValidator")

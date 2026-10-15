@@ -112,6 +112,7 @@
 |                                  | is_amended                       | is_amended                         |                  | boolean                  |
 |                                  | has_assessment                   | has_assessment                     |                  | boolean                  |
 |                                  | version                          | version                            |                  | integer                  |
+| inquestDetail                      | inquest_detail                   | inquest_detail                     | object           | ClaimInquestDetail       |
 
 # Fields missing from OpenAPI but present in JSON schema:
 - totalWarnings

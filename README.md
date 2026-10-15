@@ -107,6 +107,7 @@ Validators run in priority order (lower numbers first):
 | [UniqueFileNumberClaimValidator](docs/validators/claim-unique-file-number-validator.md) | 100 | Validates UFN format (DDMMYY/NNN) and that date is in the past |
 | [CaseDatesClaimValidator](docs/validators/claim-case-dates-validator.md) | 100 | Validates case-related dates (start, concluded, transfer, representation order) |
 | [ClientDateOfBirthClaimValidator](docs/validators/claim-client-dob-validator.md) | 100 | Validates client DOBs are sensible (not future, after 1900) |
+| [InquestClaimValidator](docs/validators/claim-inquest-validator.md) | 100 | Validates Inquest details against FSP `is_inquest` and client means-tested status |
 | [DisbursementsClaimValidator](docs/validators/claim-disbursements-validator.md) | 100 | Validates disbursement VAT amounts and area-of-law limits |
 | [StageReachedClaimValidator](docs/validators/claim-stage-reached-validator.md) | 100 | Validates stage reached code by area of law using regexes |
 | [MatterTypeClaimValidator](docs/validators/claim-matter-type-validator.md) | 100 | Validates matter type code format per area of law |
