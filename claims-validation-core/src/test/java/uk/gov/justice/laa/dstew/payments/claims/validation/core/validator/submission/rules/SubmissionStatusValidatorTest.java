@@ -40,11 +40,13 @@ class SubmissionStatusValidatorTest {
     assertEquals(SubmissionValidatorCode.SUBMISSION_STATUS_VALIDATOR, validator.getValidatorCode());
   }
 
-  @Test
-  @DisplayName("Should do nothing if submission status is VALIDATION_IN_PROGRESS")
-  void shouldDoNothingIfSubmissionStatusIsValidationInProgress() {
+  @ParameterizedTest
+  @EnumSource(
+      value = SubmissionStatus.class,
+      names = {"VALIDATION_IN_PROGRESS", "FINAL_VALIDATION_IN_PROGRESS"})
+  @DisplayName("Should do nothing while submission validation is in progress")
+  void shouldDoNothingWhileSubmissionValidationIsInProgress(SubmissionStatus status) {
     // Given
-    SubmissionStatus status = SubmissionStatus.VALIDATION_IN_PROGRESS;
     SubmissionResponse submissionResponse =
         SubmissionResponse.builder().submissionId(UUID.randomUUID()).status(status).build();
     SubmissionValidationContext submissionValidationContext = SubmissionValidationContext.create();
@@ -90,8 +92,9 @@ class SubmissionStatusValidatorTest {
   @ParameterizedTest
   @EnumSource(
       value = SubmissionStatus.class,
-      names = {"READY_FOR_VALIDATION", "VALIDATION_IN_PROGRESS"},
+      names = {"READY_FOR_VALIDATION", "VALIDATION_IN_PROGRESS", "FINAL_VALIDATION_IN_PROGRESS"},
       mode = EnumSource.Mode.EXCLUDE)
+  @DisplayName("Should add an error when submission status is not valid for validation")
   void shouldAddErrorIfSubmissionStatusUnknownValue(SubmissionStatus status) {
     // Given
     SubmissionResponse submissionResponse =
