@@ -169,6 +169,12 @@ public enum ClaimValidationError implements ValidationError {
       ValidationSeverity.ERROR,
       null
   ),
+  TECHNICAL_ERROR_GOVERNMENT_DEPARTMENTS(
+      "A technical error occurred, please try again after some time",
+      "A technical error occurred when attempting to retrieve the Government Departments",
+      ValidationSeverity.ERROR,
+      "inquest_detail.interested_departments"
+  ),
 
   // Duplicate claim errors
   INVALID_CLAIM_HAS_DUPLICATE_IN_SAME_SUBMISSION(

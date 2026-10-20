@@ -12,7 +12,7 @@ This directory contains the core validation rules for LAA Data Claims. Each rule
 | UniqueFileNumberClaimValidator | Validates Unique File Number (UFN) format and date | [Details](#uniquefilenumberclaimvalidator) |
 | CaseDatesClaimValidator | Validates case-related dates (start, concluded, transfer, rep order) | [Details](#casedatesclaimvalidator) |
 | ClientDateOfBirthClaimValidator | Validates client date(s) of birth are in the past and after 1900 | [Details](#clientdateofbirthclaimvalidator) |
-| InquestClaimValidator | Validates Inquest details against FSP `is_inquest` and client means-tested status | [Details](#inquestclaimvalidator) |
+| InquestClaimValidator | Validates Inquest details against FSP `isInquest` and client means-tested status | [Details](#inquestclaimvalidator) |
 | DisbursementsClaimValidator | Validates disbursement VAT amounts are within limits | [Details](#disbursementsclaimvalidator) |
 | DuplicateClaimValidator | Checks for duplicate claims using area-of-law strategies | [Details](#duplicateclaimvalidator) |
 | EffectiveCategoryOfLawClaimValidator | Validates claim's effective category of law via external APIs | [Details](#effectivecategoryoflawclaimvalidator) |
@@ -105,7 +105,8 @@ This directory contains the core validation rules for LAA Data Claims. Each rule
 - Field format rules (deceased names, coroner's reference) live in `schemas/inquest-detail.schema.json` and are applied only for non-means-tested Inquest claims.
 
 **Key Checks:**
-- Uses `is_inquest` from the fee-scheme platform and `inquest_detail.is_client_means_tested` from the claim.
+- Uses `isInquest` from the fee-scheme platform and `inquest_detail.is_client_means_tested` from the claim.
+- Skipped when the claim has no `inquest_detail` (not supplied by the caller).
 - Validates deceased names, date of death, coroner's Inquest reference and Government Department occurrences.
 - See [claim-inquest-validator.md](validators/claim-inquest-validator.md) for the full rule set.
 

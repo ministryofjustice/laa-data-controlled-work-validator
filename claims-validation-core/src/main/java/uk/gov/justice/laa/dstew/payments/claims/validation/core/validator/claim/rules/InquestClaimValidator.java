@@ -3,13 +3,16 @@ package uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.time.format.ResolverStyle;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.StringUtils;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationIssue;
@@ -24,12 +27,13 @@ import uk.gov.justice.laa.dstew.payments.claimsdata.model.ClaimInquestDetail;
 /**
  * Validates the Inquest information supplied with a claim.
  *
- * <p>Applicability is driven by the fee-scheme platform's {@code is_inquest} flag and the client
+ * <p>Applicability is driven by the fee-scheme platform's {@code isInquest} flag and the client
  * means-tested value:
  *
  * <ul>
- *   <li>{@code is_inquest} unresolved or {@code false}: no checks.
- *   <li>{@code is_inquest = true}: the means-tested value is required. When {@code false}, the
+ *   <li>{@code isInquest} unresolved or {@code false}: no checks.
+ *   <li>{@code inquestDetail} null: no checks (caller did not supply Inquest data).
+ *   <li>{@code isInquest = true}: the means-tested value is required. When {@code false}, the
  *       field rules are applied; when {@code true}, no further checks.
  * </ul>
  *
@@ -37,6 +41,7 @@ import uk.gov.justice.laa.dstew.payments.claimsdata.model.ClaimInquestDetail;
  * are only applied to non-means-tested Inquest claims. Null, empty and whitespace-only values
  * are treated as absent.
  */
+@Slf4j
 @RequiredArgsConstructor
 public class InquestClaimValidator extends AbstractSchemaValidator<ClaimInquestDetail>
     implements ClaimValidator {
@@ -46,6 +51,9 @@ public class InquestClaimValidator extends AbstractSchemaValidator<ClaimInquestD
   private static final String DEPARTMENTS_PATH = PATH_PREFIX + "interested_departments";
   private static final int MAX_GOVERNMENT_DEPARTMENTS = 10;
   private static final LocalDate EARLIEST_DATE_OF_DEATH = LocalDate.of(1900, 1, 1);
+  /** Data Claims API returns {@code deceased_date_of_death} as DD/MM/YYYY. */
+  private static final DateTimeFormatter DATE_OF_DEATH_FORMATTER =
+      DateTimeFormatter.ofPattern("dd/MM/uuuu").withResolverStyle(ResolverStyle.STRICT);
 
   private final GovernmentDepartmentProvider governmentDepartmentProvider;
 
@@ -54,8 +62,12 @@ public class InquestClaimValidator extends AbstractSchemaValidator<ClaimInquestD
     if (!Boolean.TRUE.equals(context.getIsInquest())) {
       return;
     }
-    ClaimInquestDetail detail =
-        claim.getInquestDetail() != null ? claim.getInquestDetail() : new ClaimInquestDetail();
+    ClaimInquestDetail detail = claim.getInquestDetail();
+    if (detail == null) {
+      log.debug("Claim [{}] has an Inquest fee code but no Inquest detail was supplied; skipping",
+          claim.getId());
+      return;
+    }
 
     if (detail.getIsClientMeansTested() == null) {
       context.addValidationIssue(
@@ -98,14 +110,14 @@ public class InquestClaimValidator extends AbstractSchemaValidator<ClaimInquestD
           ClaimValidationError.INQUEST_DATE_OF_DEATH_REQUIRED.toValidationIssue());
       return;
     }
-    LocalDate dateOfDeath = parseIsoDate(value);
+    LocalDate dateOfDeath = parseStrict(value, DATE_OF_DEATH_FORMATTER);
     if (dateOfDeath == null) {
       context.addValidationIssue(
           ClaimValidationError.INQUEST_DATE_OF_DEATH_INVALID.toValidationIssue());
       return;
     }
 
-    LocalDate caseStartDate = parseIsoDate(caseStartDateValue);
+    LocalDate caseStartDate = parseStrict(caseStartDateValue, DateTimeFormatter.ISO_LOCAL_DATE);
     if (caseStartDate != null
         && !DateUtils.isDateWithinRange(dateOfDeath, EARLIEST_DATE_OF_DEATH, caseStartDate)) {
       context.addValidationIssue(
@@ -125,10 +137,19 @@ public class InquestClaimValidator extends AbstractSchemaValidator<ClaimInquestD
       context.addValidationIssue(
           ClaimValidationError.INQUEST_GOVERNMENT_DEPARTMENT_TOO_MANY.toValidationIssue());
     }
-    Set<String> activeDepartments =
-        governmentDepartmentProvider.getActiveGovernmentDepartments().stream()
-            .map(InquestClaimValidator::normaliseDepartment)
-            .collect(Collectors.toUnmodifiableSet());
+    Set<String> activeDepartments;
+    try {
+      activeDepartments =
+          governmentDepartmentProvider.getActiveGovernmentDepartments().stream()
+              .map(InquestClaimValidator::normaliseDepartment)
+              .collect(Collectors.toUnmodifiableSet());
+    } catch (Exception ex) {
+      log.error("Unable to retrieve Government Departments: {}", ex.getMessage(), ex);
+      context.addValidationIssue(
+          ClaimValidationError.TECHNICAL_ERROR_GOVERNMENT_DEPARTMENTS
+              .toValidationIssueWithTechnicalMessage(ex.getMessage()));
+      return;
+    }
     for (int index : populated) {
       if (!activeDepartments.contains(normaliseDepartment(departments.get(index)))) {
         ValidationIssue issue =
@@ -139,7 +160,6 @@ public class InquestClaimValidator extends AbstractSchemaValidator<ClaimInquestD
     }
   }
 
-  /** Zero-based indexes of populated Department slots; slot n is GOV_DEPT_(n+1). */
   private static List<Integer> populatedSlots(List<String> departments) {
     List<Integer> populated = new ArrayList<>();
     if (departments != null) {
@@ -157,13 +177,12 @@ public class InquestClaimValidator extends AbstractSchemaValidator<ClaimInquestD
     return name.replaceAll("(?U)\\s+", " ").strip().replace('’', '\'').toLowerCase(Locale.ROOT);
   }
 
-  /** Strict ISO parse, which turns 2026-02-31 into 02-28. */
-  private static LocalDate parseIsoDate(String value) {
+  private static LocalDate parseStrict(String value, DateTimeFormatter formatter) {
     if (!StringUtils.hasText(value)) {
       return null;
     }
     try {
-      return LocalDate.parse(value);
+      return LocalDate.parse(value, formatter);
     } catch (DateTimeParseException e) {
       return null;
     }

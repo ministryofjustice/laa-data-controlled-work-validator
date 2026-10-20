@@ -14,6 +14,7 @@ import org.springframework.web.service.annotation.GetExchange;
 import org.springframework.web.service.annotation.HttpExchange;
 import org.springframework.web.service.annotation.PatchExchange;
 import org.springframework.web.service.annotation.PostExchange;
+import reactor.core.publisher.Mono;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.provider.ClaimsDataProvider;
 import uk.gov.justice.laa.dstew.payments.claimsdata.model.AreaOfLaw;
 import uk.gov.justice.laa.dstew.payments.claimsdata.model.BulkSubmissionPatch;
@@ -26,6 +27,7 @@ import uk.gov.justice.laa.dstew.payments.claimsdata.model.CreateClaim201Response
 import uk.gov.justice.laa.dstew.payments.claimsdata.model.CreateMatterStart201Response;
 import uk.gov.justice.laa.dstew.payments.claimsdata.model.CreateSubmission201Response;
 import uk.gov.justice.laa.dstew.payments.claimsdata.model.GetBulkSubmission200Response;
+import uk.gov.justice.laa.dstew.payments.claimsdata.model.GovernmentDepartmentsList;
 import uk.gov.justice.laa.dstew.payments.claimsdata.model.MatterStartPost;
 import uk.gov.justice.laa.dstew.payments.claimsdata.model.SubmissionPatch;
 import uk.gov.justice.laa.dstew.payments.claimsdata.model.SubmissionPost;
@@ -239,4 +241,17 @@ public interface DataClaimsClient {
   @PostExchange("/submissions/{id}/matter-starts")
   ResponseEntity<CreateMatterStart201Response> createMatterStart(
       @PathVariable("id") String submissionId, @RequestBody MatterStartPost matterStart);
+
+  /**
+   * Get the active Government Departments reference data, in display order.
+   *
+   * <p>OpenAPI: {@code GET /system/references/departments}
+   *
+   * <p>Reactive, unlike the other methods, so that {@code HttpGovernmentDepartmentProvider} can
+   * retry it without blocking a Reactor scheduler thread.
+   *
+   * @return 200 OK with JSON body containing the active Government Departments
+   */
+  @GetExchange("/system/references/departments")
+  Mono<ResponseEntity<GovernmentDepartmentsList>> getGovernmentDepartments();
 }

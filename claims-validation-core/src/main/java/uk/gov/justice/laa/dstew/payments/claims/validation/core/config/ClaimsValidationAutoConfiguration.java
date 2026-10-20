@@ -16,8 +16,8 @@ import uk.gov.justice.laa.dstew.payments.claims.validation.core.provider.Governm
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.provider.ProviderDetailsProvider;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.provider.impl.HttpClaimsDataProvider;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.provider.impl.HttpFeeSchemeProvider;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.provider.impl.HttpGovernmentDepartmentProvider;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.provider.impl.HttpProviderDetailsProvider;
-import uk.gov.justice.laa.dstew.payments.claims.validation.core.provider.impl.StubGovernmentDepartmentProvider;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.service.ValidationService;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidation;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.rules.CaseDatesClaimValidator;
@@ -136,8 +136,8 @@ public class ClaimsValidationAutoConfiguration {
    * factory) rather than being exposed as a separate bean — it is an internal implementation detail
    * of this provider and has no other consumers. Consequently, when an importing application
    * registers its own {@link ClaimsDataProvider} (e.g. a repository-backed one), this method is
-   * skipped entirely and <em>no</em> {@code WebClient} is ever configured against the Data Claims
-   * API.
+   * skipped entirely. No {@code WebClient} is then configured against the Data Claims API, provided
+   * the application also registers its own {@link GovernmentDepartmentProvider}.
    *
    * <p>Importers that need a customised HTTP client should build and register their own
    * {@link ClaimsDataProvider}, wrapping a {@link DataClaimsClient} of their choosing.
@@ -150,14 +150,21 @@ public class ClaimsValidationAutoConfiguration {
   }
 
   /**
-   * Government Department reference data for Inquest validation. Currently a stub until the Data
-   * Claims API exposes the endpoint (DSTEW-2358); importing applications can register their own
-   * {@link GovernmentDepartmentProvider} (e.g. repository-backed) to replace it.
+   * HTTP-backed provider for the Government Department reference data used by Inquest validation,
+   * fetched from the Data Claims API.
+   *
+   * <p>Like {@link #coreClaimsDataProvider}, the {@link DataClaimsClient} is created inline, so
+   * this bean requires the Data Claims API properties. An importing application without them (e.g.
+   * the Data Claims API itself) must register its own {@link GovernmentDepartmentProvider} (e.g.
+   * repository-backed), which causes this method to be skipped.
    */
   @Bean("coreGovernmentDepartmentProvider")
   @ConditionalOnMissingBean(GovernmentDepartmentProvider.class)
-  public GovernmentDepartmentProvider coreGovernmentDepartmentProvider() {
-    return new StubGovernmentDepartmentProvider();
+  public GovernmentDepartmentProvider coreGovernmentDepartmentProvider(
+      WebClientConfig webClientConfig, DataClaimsApiConfig properties,
+      RetryRegistry retryRegistry) {
+    return new HttpGovernmentDepartmentProvider(
+        webClientConfig.dataClaimsClient(properties), retryRegistry);
   }
 
   // ─────────────────────────────────────────────────────────────────────────

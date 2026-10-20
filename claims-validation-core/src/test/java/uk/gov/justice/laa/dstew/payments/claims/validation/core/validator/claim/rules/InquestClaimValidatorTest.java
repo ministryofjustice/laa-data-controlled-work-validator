@@ -42,7 +42,7 @@ class InquestClaimValidatorTest {
         .isClientMeansTested(false)
         .deceasedForename("Anne-Marie")
         .deceasedSurname("O'Neil")
-        .deceasedDateOfDeath("2020-05-17")
+        .deceasedDateOfDeath("17/05/2020")
         .coronersInquestReference("AB/12-34.56")
         .interestedDepartments(departments(MOJ));
   }
@@ -112,8 +112,14 @@ class InquestClaimValidatorTest {
         "INQUEST_CLIENT_MEANS_TESTED_REQUIRED",
         "Client Means Tested is required for Inquest claims",
         "inquest_detail.is_client_means_tested");
-    assertThat(codes(validate(true, null)))
+    assertThat(codes(validate(true, new ClaimInquestDetail())))
         .containsExactly("INQUEST_CLIENT_MEANS_TESTED_REQUIRED");
+  }
+
+  @Test
+  @DisplayName("Inquest claim with no Inquest detail supplied is not checked")
+  void nullInquestDetailSkipped() {
+    assertThat(validate(true, null).getIssues()).isEmpty();
   }
 
   // ─── Mandatory fields ─────────────────────────────────────────────────────
@@ -225,7 +231,7 @@ class InquestClaimValidatorTest {
   class DateOfDeath {
 
     @ParameterizedTest(name = "[{index}] {0}")
-    @ValueSource(strings = {"1900-01-01", "2026-09-10"})
+    @ValueSource(strings = {"01/01/1900", "10/09/2026"})
     @DisplayName("Boundary dates pass")
     void inRange(String dateOfDeath) {
       assertThat(validate(true, validDetail().deceasedDateOfDeath(dateOfDeath)).getIssues())
@@ -233,7 +239,7 @@ class InquestClaimValidatorTest {
     }
 
     @ParameterizedTest(name = "[{index}] {0}")
-    @ValueSource(strings = {"1899-12-31", "2026-09-11"})
+    @ValueSource(strings = {"31/12/1899", "11/09/2026"})
     @DisplayName("Dates outside 01/01/1900 to the case start date are rejected")
     void outOfRange(String dateOfDeath) {
       assertSingleIssue(validate(true, validDetail().deceasedDateOfDeath(dateOfDeath)),
@@ -243,8 +249,8 @@ class InquestClaimValidatorTest {
     }
 
     @ParameterizedTest(name = "[{index}] {0}")
-    @ValueSource(strings = {"2026-02-31", "2026-13-01", "not-a-date", "31/12/2020"})
-    @DisplayName("Unparseable or impossible dates are rejected")
+    @ValueSource(strings = {"31/02/2026", "01/13/2026", "1/5/2020", "not-a-date", "2020-12-31"})
+    @DisplayName("Unparseable, impossible, unpadded or ISO dates are rejected")
     void invalidDate(String dateOfDeath) {
       assertSingleIssue(validate(true, validDetail().deceasedDateOfDeath(dateOfDeath)),
           "INQUEST_DATE_OF_DEATH_INVALID", "Deceased Date of Death must be a valid date",
@@ -253,10 +259,10 @@ class InquestClaimValidatorTest {
 
     @ParameterizedTest(name = "[{index}] case start \"{0}\"")
     @NullAndEmptySource
-    @ValueSource(strings = {"2026-02-30"})
+    @ValueSource(strings = {"2026-02-30", "10/09/2026"})
     @DisplayName("Missing or invalid case start date skips the range check")
     void missingOrInvalidCaseStartDate(String caseStartDate) {
-      assertThat(validate(true, validDetail().deceasedDateOfDeath("1800-01-01"), caseStartDate)
+      assertThat(validate(true, validDetail().deceasedDateOfDeath("01/01/1800"), caseStartDate)
           .getIssues()).isEmpty();
     }
   }
@@ -266,6 +272,23 @@ class InquestClaimValidatorTest {
   @Nested
   @DisplayName("Government Departments")
   class GovernmentDepartments {
+
+    @Test
+    @DisplayName("Provider failure produces a technical error instead of propagating")
+    void providerFailureProducesTechnicalError() {
+      validator = new InquestClaimValidator(() -> {
+        throw new IllegalStateException("Data Claims API unavailable");
+      });
+      validator.init();
+
+      ClaimValidationContext context = validate(true, validDetail());
+
+      assertSingleIssue(context, "TECHNICAL_ERROR_GOVERNMENT_DEPARTMENTS",
+          "A technical error occurred, please try again after some time",
+          "inquest_detail.interested_departments");
+      assertThat(context.getIssues().getFirst().getTechnicalMessage())
+          .isEqualTo("Data Claims API unavailable");
+    }
 
     @ParameterizedTest(name = "[{index}] \"{0}\"")
     @ValueSource(strings = {"ministry   OF JUSTICE", " Ministry of Justice ",
@@ -287,8 +310,8 @@ class InquestClaimValidatorTest {
     }
 
     @Test
-    @DisplayName("Unknown name reports its original slot, before blanks are compacted")
-    void reportsOriginalSlot() {
+    @DisplayName("Unknown name reports its one-based position in the supplied list")
+    void reportsPositionInSuppliedList() {
       ClaimValidationContext context = validate(true,
           validDetail().interestedDepartments(departments(" ", MOJ, "Unknown")));
 

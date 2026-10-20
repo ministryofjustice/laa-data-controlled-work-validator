@@ -19,8 +19,8 @@ import uk.gov.justice.laa.dstew.payments.claims.validation.core.provider.Governm
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.provider.ProviderDetailsProvider;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.provider.impl.HttpClaimsDataProvider;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.provider.impl.HttpFeeSchemeProvider;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.provider.impl.HttpGovernmentDepartmentProvider;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.provider.impl.HttpProviderDetailsProvider;
-import uk.gov.justice.laa.dstew.payments.claims.validation.core.provider.impl.StubGovernmentDepartmentProvider;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.service.ValidationService;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidation;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.rules.ClaimValidator;
@@ -132,10 +132,10 @@ class ClaimsValidationAutoConfigurationTest {
     }
 
     @Test
-    @DisplayName("Stub GovernmentDepartmentProvider is registered by default")
-    void stubGovernmentDepartmentProviderIsRegistered() {
+    @DisplayName("GovernmentDepartmentProvider defaults to HttpGovernmentDepartmentProvider")
+    void httpGovernmentDepartmentProviderIsRegistered() {
       contextRunner.run(ctx -> assertThat(ctx.getBean(GovernmentDepartmentProvider.class))
-          .isInstanceOf(StubGovernmentDepartmentProvider.class));
+          .isInstanceOf(HttpGovernmentDepartmentProvider.class));
     }
 
     @Test
@@ -205,21 +205,48 @@ class ClaimsValidationAutoConfigurationTest {
           });
     }
 
+    /** Custom GovernmentDepartmentProvider simulating a repository-backed implementation. */
+    @TestConfiguration
+    static class CustomGovernmentDepartmentProviderConfig {
+      @Bean
+      public GovernmentDepartmentProvider customGovernmentDepartmentProvider() {
+        return mock(GovernmentDepartmentProvider.class);
+      }
+    }
+
     @Test
-    @DisplayName("Custom ClaimsDataProvider allows context to start without DataClaims API properties")
-    void customClaimsDataProviderAllowsContextWithoutDataClaimsProps() {
+    @DisplayName("Custom Data Claims providers allow context to start without DataClaims API "
+        + "properties")
+    void customDataClaimsProvidersAllowContextWithoutDataClaimsProps() {
+      new ApplicationContextRunner()
+          .withConfiguration(AutoConfigurations.of(ClaimsValidationAutoConfiguration.class))
+          .withUserConfiguration(ExternalDependenciesConfig.class,
+              CustomClaimsDataProviderConfig.class, CustomGovernmentDepartmentProviderConfig.class)
+          .withPropertyValues(REQUIRED_PROPERTIES_NO_DATA_CLAIMS)
+          .run(ctx -> {
+            // Context should start even though data-claims-api properties are not provided,
+            // because the consuming application supplied both Data Claims-backed providers.
+            assertThat(ctx).hasNotFailed();
+            assertThat(ctx.getBean(ClaimsDataProvider.class))
+                .isNotInstanceOf(HttpClaimsDataProvider.class);
+            assertThat(ctx.getBean(GovernmentDepartmentProvider.class))
+                .isNotInstanceOf(HttpGovernmentDepartmentProvider.class);
+          });
+    }
+
+    @Test
+    @DisplayName("Custom ClaimsDataProvider alone still needs DataClaims API properties for the "
+        + "default GovernmentDepartmentProvider")
+    void customClaimsDataProviderAloneNeedsDataClaimsProps() {
       new ApplicationContextRunner()
           .withConfiguration(AutoConfigurations.of(ClaimsValidationAutoConfiguration.class))
           .withUserConfiguration(ExternalDependenciesConfig.class,
               CustomClaimsDataProviderConfig.class)
           .withPropertyValues(REQUIRED_PROPERTIES_NO_DATA_CLAIMS)
-          .run(ctx -> {
-            // Context should start even though data-claims-api properties are not provided,
-            // because the consuming application supplied its own ClaimsDataProvider.
-            assertThat(ctx).hasSingleBean(ClaimsDataProvider.class);
-            assertThat(ctx.getBean(ClaimsDataProvider.class))
-                .isNotInstanceOf(HttpClaimsDataProvider.class);
-          });
+          .run(ctx -> assertThat(ctx).getFailure()
+              .rootCause()
+              .isInstanceOf(IllegalStateException.class)
+              .hasMessage("API URL is not configured for DataClaimsApiConfig"));
     }
 
     /** Custom FeeSchemeProvider simulating a consumer with its own client and cache. */
