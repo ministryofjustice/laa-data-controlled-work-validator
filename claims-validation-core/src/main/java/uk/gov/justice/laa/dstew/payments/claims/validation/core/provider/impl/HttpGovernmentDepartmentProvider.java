@@ -4,9 +4,11 @@ import io.github.resilience4j.retry.RetryRegistry;
 import java.time.Duration;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Supplier;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;
+import org.springframework.util.function.SingletonSupplier;
 import reactor.core.publisher.Mono;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.client.DataClaimsClient;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.provider.GovernmentDepartmentProvider;
@@ -21,6 +23,9 @@ import uk.gov.justice.laa.dstew.payments.claimsdata.model.GovernmentDepartmentsL
  * {@link HttpFeeSchemeProvider}, cache hits do not extend the TTL, so the list is reloaded
  * periodically even under constant traffic. Failures and empty lists are never cached, so the next
  * call retries rather than pinning a bad state for the TTL.
+ *
+ * <p>The {@link DataClaimsClient} is created on first use, so an application that never validates
+ * Inquest departments does not need the Data Claims API properties.
  */
 @Slf4j
 public class HttpGovernmentDepartmentProvider extends AbstractHttpCachingProvider<List<String>>
@@ -32,12 +37,17 @@ public class HttpGovernmentDepartmentProvider extends AbstractHttpCachingProvide
   private static final String RETRY_NAME = "dataClaimsRetry";
   private static final String CACHE_KEY = "government-departments";
 
-  private final DataClaimsClient dataClaimsClient;
+  private final SingletonSupplier<DataClaimsClient> dataClaimsClient;
 
   public HttpGovernmentDepartmentProvider(
       DataClaimsClient dataClaimsClient, RetryRegistry retryRegistry) {
+    this(SingletonSupplier.of(Objects.requireNonNull(dataClaimsClient)), retryRegistry);
+  }
+
+  public HttpGovernmentDepartmentProvider(
+      Supplier<DataClaimsClient> dataClaimsClient, RetryRegistry retryRegistry) {
     super(retryRegistry, POSITIVE_CACHE_TTL, NEGATIVE_CACHE_TTL);
-    this.dataClaimsClient = Objects.requireNonNull(dataClaimsClient);
+    this.dataClaimsClient = SingletonSupplier.of(Objects.requireNonNull(dataClaimsClient));
   }
 
   /**
@@ -59,8 +69,10 @@ public class HttpGovernmentDepartmentProvider extends AbstractHttpCachingProvide
       return Mono.just(cached.get().value());
     }
 
+    // Resolved outside the retry so a configuration error (e.g. missing URL) is not retried.
+    DataClaimsClient client = dataClaimsClient.obtain();
     return fetchDeduped(CACHE_KEY, () ->
-        Mono.defer(dataClaimsClient::getGovernmentDepartments)
+        Mono.defer(client::getGovernmentDepartments)
             .map(HttpGovernmentDepartmentProvider::toNames)
             .transformDeferred(retryOperator(RETRY_NAME))
             .doOnNext(names -> cachePositive(CACHE_KEY, names)));

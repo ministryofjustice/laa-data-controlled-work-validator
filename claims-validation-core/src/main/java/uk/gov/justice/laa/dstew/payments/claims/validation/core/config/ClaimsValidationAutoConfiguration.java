@@ -136,8 +136,9 @@ public class ClaimsValidationAutoConfiguration {
    * factory) rather than being exposed as a separate bean — it is an internal implementation detail
    * of this provider and has no other consumers. Consequently, when an importing application
    * registers its own {@link ClaimsDataProvider} (e.g. a repository-backed one), this method is
-   * skipped entirely. No {@code WebClient} is then configured against the Data Claims API, provided
-   * the application also registers its own {@link GovernmentDepartmentProvider}.
+   * skipped entirely and no {@code WebClient} is configured against the Data Claims API unless the
+   * default {@link GovernmentDepartmentProvider} is used (see
+   * {@link #coreGovernmentDepartmentProvider}).
    *
    * <p>Importers that need a customised HTTP client should build and register their own
    * {@link ClaimsDataProvider}, wrapping a {@link DataClaimsClient} of their choosing.
@@ -153,9 +154,10 @@ public class ClaimsValidationAutoConfiguration {
    * HTTP-backed provider for the Government Department reference data used by Inquest validation,
    * fetched from the Data Claims API.
    *
-   * <p>Like {@link #coreClaimsDataProvider}, the {@link DataClaimsClient} is created inline, so
-   * this bean requires the Data Claims API properties. An importing application without them (e.g.
-   * the Data Claims API itself) must register its own {@link GovernmentDepartmentProvider} (e.g.
+   * <p>The {@link DataClaimsClient} is created on first use rather than at startup, so an
+   * application without the Data Claims API properties still starts. Until they are configured,
+   * Inquest claims that need the departments report {@code TECHNICAL_ERROR_GOVERNMENT_DEPARTMENTS}.
+   * Applications can instead register their own {@link GovernmentDepartmentProvider} (e.g.
    * repository-backed), which causes this method to be skipped.
    */
   @Bean("coreGovernmentDepartmentProvider")
@@ -164,7 +166,7 @@ public class ClaimsValidationAutoConfiguration {
       WebClientConfig webClientConfig, DataClaimsApiConfig properties,
       RetryRegistry retryRegistry) {
     return new HttpGovernmentDepartmentProvider(
-        webClientConfig.dataClaimsClient(properties), retryRegistry);
+        () -> webClientConfig.dataClaimsClient(properties), retryRegistry);
   }
 
   // ─────────────────────────────────────────────────────────────────────────

@@ -26,6 +26,6 @@ Priority & scope
 Notes
 
 - The default `HttpGovernmentDepartmentProvider` fetches the list from the Data Claims API (`GET /api/v1/system/references/departments`) and caches it for 30 minutes (fixed TTL; failures and empty lists are not cached). It uses the `dataClaimsRetry` Resilience4j retry instance.
-- It needs the `laa.dstew.payments.validator.data-claims-api.*` properties. An application without them (e.g. the Data Claims API itself) must register its own `GovernmentDepartmentProvider` bean (e.g. repository-backed), or the context will fail to start.
+- It needs the `laa.dstew.payments.validator.data-claims-api.*` properties, but only when first used: its client is created lazily, so an application without them (e.g. the Data Claims API itself) still starts. In that case non-means-tested Inquest claims report `TECHNICAL_ERROR_GOVERNMENT_DEPARTMENTS` until the application registers its own `GovernmentDepartmentProvider` bean (e.g. repository-backed) or configures the URL.
 - `isClientMeansTested` is a `Boolean`. Parsing `INQ_CLIENT_MEANS_TESTED` (true/false, case-insensitive) and rejecting other values is the ingesting service's job.
 - Open item: whether the coroner's reference may contain internal spaces (currently rejected).

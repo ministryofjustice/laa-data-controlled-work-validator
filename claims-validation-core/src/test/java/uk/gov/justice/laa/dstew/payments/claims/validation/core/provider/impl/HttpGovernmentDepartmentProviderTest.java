@@ -14,6 +14,7 @@ import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -163,5 +164,47 @@ class HttpGovernmentDepartmentProviderTest {
         .isInstanceOf(IllegalStateException.class)
         .hasMessage("Data Claims API returned no Government Departments");
     verify(dataClaimsClient, times(3)).getGovernmentDepartments();
+  }
+
+  @Test
+  @DisplayName("Client is created on first use, once, and a failed creation is retried later")
+  void clientIsCreatedLazily() {
+    AtomicInteger creations = new AtomicInteger();
+    provider = new HttpGovernmentDepartmentProvider(() -> {
+      if (creations.incrementAndGet() == 1) {
+        throw new IllegalStateException("API URL is not configured for DataClaimsApiConfig");
+      }
+      return dataClaimsClient;
+    }, RetryRegistry.ofDefaults());
+    assertThat(creations).hasValue(0);
+
+    assertThatThrownBy(provider::getActiveGovernmentDepartments)
+        .hasMessage("API URL is not configured for DataClaimsApiConfig");
+    assertThat(creations).hasValue(1);
+
+    when(dataClaimsClient.getGovernmentDepartments()).thenReturn(response("Home Office"));
+    assertThat(provider.getActiveGovernmentDepartments()).containsExactly("Home Office");
+    advanceClock(Duration.ofMinutes(31));
+    provider.getActiveGovernmentDepartments();
+
+    assertThat(creations).hasValue(2);
+    verify(dataClaimsClient, times(2)).getGovernmentDepartments();
+  }
+
+  @Test
+  @DisplayName("Null client is rejected at construction")
+  void nullClientRejected() {
+    assertThatThrownBy(() ->
+        new HttpGovernmentDepartmentProvider((DataClaimsClient) null, RetryRegistry.ofDefaults()))
+        .isInstanceOf(NullPointerException.class);
+  }
+
+  @Test
+  @DisplayName("Supplier returning null fails with a clear error on first use")
+  void nullSuppliedClientFailsClearly() {
+    provider = new HttpGovernmentDepartmentProvider(() -> null, RetryRegistry.ofDefaults());
+
+    assertThatThrownBy(provider::getActiveGovernmentDepartments)
+        .isInstanceOf(IllegalStateException.class);
   }
 }

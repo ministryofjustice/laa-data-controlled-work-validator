@@ -1,6 +1,7 @@
 package uk.gov.justice.laa.dstew.payments.claims.validation.core.config;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 
 import io.github.resilience4j.retry.RetryRegistry;
@@ -235,18 +236,22 @@ class ClaimsValidationAutoConfigurationTest {
     }
 
     @Test
-    @DisplayName("Custom ClaimsDataProvider alone still needs DataClaims API properties for the "
-        + "default GovernmentDepartmentProvider")
-    void customClaimsDataProviderAloneNeedsDataClaimsProps() {
+    @DisplayName("Custom ClaimsDataProvider alone starts without DataClaims API properties; the "
+        + "default GovernmentDepartmentProvider only fails when used")
+    void customClaimsDataProviderAloneStartsWithoutDataClaimsProps() {
       new ApplicationContextRunner()
           .withConfiguration(AutoConfigurations.of(ClaimsValidationAutoConfiguration.class))
           .withUserConfiguration(ExternalDependenciesConfig.class,
               CustomClaimsDataProviderConfig.class)
           .withPropertyValues(REQUIRED_PROPERTIES_NO_DATA_CLAIMS)
-          .run(ctx -> assertThat(ctx).getFailure()
-              .rootCause()
-              .isInstanceOf(IllegalStateException.class)
-              .hasMessage("API URL is not configured for DataClaimsApiConfig"));
+          .run(ctx -> {
+            assertThat(ctx).hasNotFailed();
+            GovernmentDepartmentProvider provider = ctx.getBean(GovernmentDepartmentProvider.class);
+            assertThat(provider).isInstanceOf(HttpGovernmentDepartmentProvider.class);
+            assertThatThrownBy(provider::getActiveGovernmentDepartments)
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("API URL is not configured for DataClaimsApiConfig");
+          });
     }
 
     /** Custom FeeSchemeProvider simulating a consumer with its own client and cache. */
