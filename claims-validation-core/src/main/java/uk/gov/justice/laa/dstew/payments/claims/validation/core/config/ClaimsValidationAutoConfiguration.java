@@ -28,6 +28,7 @@ import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.rules.DisbursementsClaimValidator;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.rules.DuplicateClaimValidator;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.rules.EffectiveCategoryOfLawClaimValidator;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.rules.InquestClaimSchemaValidator;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.rules.InquestClaimValidator;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.rules.MandatoryFieldClaimValidator;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.rules.MatterTypeClaimValidator;
@@ -274,6 +275,12 @@ public class ClaimsValidationAutoConfiguration {
   public InquestClaimValidator coreInquestClaimValidator(
       GovernmentDepartmentProvider governmentDepartmentProvider) {
     return new InquestClaimValidator(governmentDepartmentProvider);
+  }
+
+  @Bean("coreInquestClaimSchemaValidator")
+  @ConditionalOnMissingBean(InquestClaimSchemaValidator.class)
+  public InquestClaimSchemaValidator coreInquestClaimSchemaValidator() {
+    return new InquestClaimSchemaValidator();
   }
 
   @Bean("coreDuplicateClaimValidator")

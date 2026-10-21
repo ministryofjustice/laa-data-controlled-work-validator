@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "Inquest Detail Fields",
-  "description": "Field format rules for non-means-tested Inquest claims. Blank values are allowed here (presence is checked by InquestClaimValidator). Applied only once the claim is identified as Inquest and the client is not means tested. Applicability, mandatory, date and Government Department rules are enforced in InquestClaimValidator.",
+  "description": "Field format rules for non-means-tested Inquest claims, applied by InquestClaimSchemaValidator. Blank values are allowed here (presence is checked by InquestClaimValidator). Applied only once the claim is identified as Inquest and the client is not means tested. Applicability, mandatory, date and Government Department rules are enforced in InquestClaimValidator.",
   "type": "object",
   "properties": {
     "deceased_forename": {

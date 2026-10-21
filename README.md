@@ -102,6 +102,7 @@ Validators run in priority order (lower numbers first):
 | Validator | Priority | Description |
 |-----------|----------|-------------|
 | [ClaimSchemaValidator](docs/validators/claim-schema-validator.md) | 1 | JSON schema validation (patterns, types, required fields) |
+| [InquestClaimSchemaValidator](docs/validators/claim-inquest-schema-validator.md) | 1 | JSON schema validation of Inquest detail formats (non-means-tested Inquest claims only) |
 | [MandatoryFieldClaimValidator](docs/validators/claim-mandatory-field-validator.md) | 10 | Checks required fields are present (area-of-law driven) |
 | [DisbursementClaimStartDateValidator](docs/validators/claim-disbursement-start-date-validator.md) | 10 | Validates disbursements are submitted a minimum number of months after case start |
 | [UniqueFileNumberClaimValidator](docs/validators/claim-unique-file-number-validator.md) | 100 | Validates UFN format (DDMMYY/NNN) and that date is in the past |

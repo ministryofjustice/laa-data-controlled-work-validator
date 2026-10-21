@@ -26,7 +26,6 @@ class InquestClaimValidatorTest {
 
   private static final String MOJ = "Ministry of Justice";
   private static final String CASE_START_DATE = "2026-09-10";
-  private static final String SCHEMA_ERROR = "SCHEMA_VALIDATION_ERROR";
 
   private InquestClaimValidator validator;
 
@@ -34,7 +33,6 @@ class InquestClaimValidatorTest {
   void setUp() {
     validator = new InquestClaimValidator(
         () -> List.of(MOJ, "Home Office", "Attorney General’s Office"));
-    validator.init();
   }
 
   private static ClaimInquestDetail validDetail() {
@@ -92,13 +90,13 @@ class InquestClaimValidatorTest {
   @Test
   @DisplayName("Unresolved is_inquest skips all checks")
   void unresolvedInquestFlagSkipsChecks() {
-    assertThat(validate(null, validDetail().deceasedForename("@")).getIssues()).isEmpty();
+    assertThat(validate(null, validDetail().deceasedForename(null)).getIssues()).isEmpty();
   }
 
   @Test
   @DisplayName("Non-Inquest and means-tested Inquest claims are not checked")
   void nonApplicableClaimsSkipped() {
-    ClaimInquestDetail invalid = validDetail().deceasedForename("@").interestedDepartments(null);
+    ClaimInquestDetail invalid = validDetail().deceasedForename(null).interestedDepartments(null);
 
     assertThat(validate(false, invalid).getIssues()).isEmpty();
     assertThat(validate(false, null).getIssues()).isEmpty();
@@ -163,67 +161,6 @@ class InquestClaimValidatorTest {
     }
   }
 
-  // ─── Schema format rules ──────────────────────────────────────────────────
-
-  @Nested
-  @DisplayName("Deceased names (schema)")
-  class DeceasedNames {
-
-    private static final String FORENAME_MESSAGE = "Deceased Forename must contain only letters, "
-        + "numbers, spaces, hyphens, apostrophes, ampersands, and be a maximum of 30 characters";
-    private static final String SURNAME_MESSAGE = "Deceased Surname must contain only letters, "
-        + "numbers, spaces, hyphens, apostrophes, ampersands, and be a maximum of 30 characters";
-
-    private void assertRejected(String value) {
-      assertSingleIssue(validate(true, validDetail().deceasedForename(value)), SCHEMA_ERROR,
-          FORENAME_MESSAGE, "inquest_detail.deceased_forename");
-      assertSingleIssue(validate(true, validDetail().deceasedSurname(value)), SCHEMA_ERROR,
-          SURNAME_MESSAGE, "inquest_detail.deceased_surname");
-    }
-
-    @ParameterizedTest(name = "[{index}] \"{0}\"")
-    @ValueSource(strings = {"Anne-Marie", "O'Neil", "O’Neil", "A & B 2", "Élodie", "李",
-        "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"})
-    @DisplayName("Permitted values up to 30 characters pass")
-    void permittedValuesPass(String value) {
-      assertThat(validate(true, validDetail().deceasedForename(value)).getIssues()).isEmpty();
-      assertThat(validate(true, validDetail().deceasedSurname(value)).getIssues()).isEmpty();
-    }
-
-    @ParameterizedTest(name = "[{index}] \"{0}\"")
-    @ValueSource(strings = {"Ann@", "Ann/Marie", "Ann.", "Ann_Marie",
-        "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"})
-    @DisplayName("Other characters or 31 characters are rejected")
-    void invalidValuesRejected(String value) {
-      assertRejected(value);
-    }
-  }
-
-  @Nested
-  @DisplayName("Coroner's Inquest Reference (schema)")
-  class InquestReference {
-
-    private static final String MESSAGE = "Coroner's Inquest Reference must contain only letters, "
-        + "numbers, forward slashes, hyphens, periods, and be a maximum of 30 characters";
-
-    @ParameterizedTest(name = "[{index}] \"{0}\"")
-    @NullAndEmptySource
-    @ValueSource(strings = {" ", "AB/12-34.56", "AB/12-34.5AB/12-34.5AB/12-34.5"})
-    @DisplayName("Omitted, permitted or 30-character references pass")
-    void permittedReferencesPass(String reference) {
-      assertThat(validate(true, validDetail().coronersInquestReference(reference)).getIssues())
-          .isEmpty();
-    }
-
-    @ParameterizedTest(name = "[{index}] \"{0}\"")
-    @ValueSource(strings = {"AB@12", "AB_12", "AB 12", "AB/12-34.5AB/12-34.5AB/12-34.56"})
-    @DisplayName("Other characters, internal spaces or 31 characters are rejected")
-    void invalidReferencesRejected(String reference) {
-      assertSingleIssue(validate(true, validDetail().coronersInquestReference(reference)),
-          SCHEMA_ERROR, MESSAGE, "inquest_detail.coroners_inquest_reference");
-    }
-  }
-
   // ─── Date of death ────────────────────────────────────────────────────────
 
   @Nested
@@ -279,7 +216,6 @@ class InquestClaimValidatorTest {
       validator = new InquestClaimValidator(() -> {
         throw new IllegalStateException("Data Claims API unavailable");
       });
-      validator.init();
 
       ClaimValidationContext context = validate(true, validDetail());
 

@@ -1,7 +1,5 @@
 package uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.rules;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -21,7 +19,6 @@ import uk.gov.justice.laa.dstew.payments.claims.validation.core.util.DateUtils;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidationContext;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidationError;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidatorCode;
-import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.schema.AbstractSchemaValidator;
 import uk.gov.justice.laa.dstew.payments.claimsdata.model.ClaimInquestDetail;
 
 /**
@@ -37,18 +34,15 @@ import uk.gov.justice.laa.dstew.payments.claimsdata.model.ClaimInquestDetail;
  *       field rules are applied; when {@code true}, no further checks.
  * </ul>
  *
- * <p>Field length and character rules live in {@code /schemas/inquest-detail.schema.json} and
- * are only applied to non-means-tested Inquest claims. Null, empty and whitespace-only values
- * are treated as absent.
+ * <p>Field length and character rules are enforced separately by
+ * {@link InquestClaimSchemaValidator}. Null, empty and whitespace-only values are treated as
+ * absent.
  */
 @Slf4j
 @RequiredArgsConstructor
-public class InquestClaimValidator extends AbstractSchemaValidator<ClaimInquestDetail>
-    implements ClaimValidator {
+public class InquestClaimValidator implements ClaimValidator {
 
-  private static final String SCHEMA_PATH = "/schemas/inquest-detail.schema.json";
-  private static final String PATH_PREFIX = "inquest_detail.";
-  private static final String DEPARTMENTS_PATH = PATH_PREFIX + "interested_departments";
+  private static final String DEPARTMENTS_PATH = "inquest_detail.interested_departments";
   private static final int MAX_GOVERNMENT_DEPARTMENTS = 10;
   private static final LocalDate EARLIEST_DATE_OF_DEATH = LocalDate.of(1900, 1, 1);
   /** Data Claims API returns {@code deceased_date_of_death} as DD/MM/YYYY. */
@@ -59,22 +53,16 @@ public class InquestClaimValidator extends AbstractSchemaValidator<ClaimInquestD
 
   @Override
   public void validate(Claim claim, ClaimValidationContext context) {
-    if (!Boolean.TRUE.equals(context.getIsInquest())) {
+    if (!InquestApplicability.hasInquestDetail(claim, context)) {
       return;
     }
     ClaimInquestDetail detail = claim.getInquestDetail();
-    if (detail == null) {
-      log.debug("Claim [{}] has an Inquest fee code but no Inquest detail was supplied; skipping",
-          claim.getId());
-      return;
-    }
-
     if (detail.getIsClientMeansTested() == null) {
       context.addValidationIssue(
           ClaimValidationError.INQUEST_CLIENT_MEANS_TESTED_REQUIRED.toValidationIssue());
       return;
     }
-    if (detail.getIsClientMeansTested()) {
+    if (!InquestApplicability.requiresFieldRules(claim, context)) {
       return;
     }
 
@@ -82,7 +70,6 @@ public class InquestClaimValidator extends AbstractSchemaValidator<ClaimInquestD
         ClaimValidationError.INQUEST_DECEASED_FORENAME_REQUIRED, context);
     requireText(detail.getDeceasedSurname(),
         ClaimValidationError.INQUEST_DECEASED_SURNAME_REQUIRED, context);
-    validateFieldFormats(detail, context);
     validateDateOfDeath(detail.getDeceasedDateOfDeath(), claim.getCaseStartDate(), context);
     validateGovernmentDepartments(detail.getInterestedDepartments(), context);
   }
@@ -91,15 +78,6 @@ public class InquestClaimValidator extends AbstractSchemaValidator<ClaimInquestD
       String value, ClaimValidationError error, ClaimValidationContext context) {
     if (!StringUtils.hasText(value)) {
       context.addValidationIssue(error.toValidationIssue());
-    }
-  }
-
-  private void validateFieldFormats(ClaimInquestDetail detail, ClaimValidationContext context) {
-    for (ValidationIssue issue : validateSubject(detail)) {
-      if (issue.getPath() != null) {
-        issue.setPath(PATH_PREFIX + issue.getPath());
-      }
-      context.addValidationIssue(issue);
     }
   }
 
@@ -186,21 +164,6 @@ public class InquestClaimValidator extends AbstractSchemaValidator<ClaimInquestD
     } catch (DateTimeParseException e) {
       return null;
     }
-  }
-
-  @Override
-  protected String getSchemaPath() {
-    return SCHEMA_PATH;
-  }
-
-  @Override
-  protected void configureObjectMapper(ObjectMapper mapper) {
-    mapper.setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
-  }
-
-  @Override
-  protected String extractDiscriminator(ClaimInquestDetail detail) {
-    return null;
   }
 
   @Override

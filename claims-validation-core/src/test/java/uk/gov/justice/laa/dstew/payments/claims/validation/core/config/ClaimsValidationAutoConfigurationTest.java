@@ -25,6 +25,8 @@ import uk.gov.justice.laa.dstew.payments.claims.validation.core.provider.impl.Ht
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.service.ValidationService;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidation;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.rules.ClaimValidator;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.rules.InquestClaimSchemaValidator;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.rules.InquestClaimValidator;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.submission.SubmissionValidation;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.submission.rules.SubmissionValidator;
 
@@ -129,6 +131,15 @@ class ClaimsValidationAutoConfigurationTest {
         List<ClaimValidator> validators = ctx.getBeansOfType(ClaimValidator.class)
             .values().stream().toList();
         assertThat(validators).hasSizeGreaterThanOrEqualTo(10);
+      });
+    }
+
+    @Test
+    @DisplayName("Inquest rules and schema validators are both registered")
+    void inquestValidatorsAreRegistered() {
+      contextRunner.run(ctx -> {
+        assertThat(ctx).hasSingleBean(InquestClaimValidator.class);
+        assertThat(ctx).hasSingleBean(InquestClaimSchemaValidator.class);
       });
     }
 
