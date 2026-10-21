@@ -24,7 +24,7 @@ Purpose: give an AI agent the minimal, concrete knowledge to be productive in th
     - ./gradlew test
     - ./gradlew integrationTest
   - Java 25 and Spring Boot 4.x are used (see `README.md` and `claims-validation-core/gradle.properties`).
-  - External model artifacts are fetched from a GitHub Packages Maven repo configured in `build.gradle`. CI/automation must set `GITHUB_ACTOR` and `GITHUB_TOKEN` env vars when publishing or resolving packages.
+  - External model artifacts are fetched from a GitHub Packages Maven repo configured in `build.gradle`. CI/automation must set `GITHUB_ACTOR` and `GITHUB_PACKAGES_TOKEN` env vars when resolving packages; `GITHUB_TOKEN` remains for normal GitHub Actions operations.
 
 - Project-specific conventions & patterns
   - Auto-config entry point: all library beans are created in `ClaimsValidationAutoConfiguration` to avoid component-scan collisions when the library is added to other apps. Consumers override behaviour by registering beans of the same type — the core beans are guarded by `@ConditionalOnMissingBean`.
@@ -48,7 +48,7 @@ Purpose: give an AI agent the minimal, concrete knowledge to be productive in th
 
 - Useful local dev commands
   - Install pre-commit hooks: `./scripts/setup-hooks.sh`.
-  - Build everything: `./gradlew build` (make sure `GITHUB_TOKEN` present if Maven packages required).
+  - Build everything: `./gradlew build` (make sure `GITHUB_ACTOR` and `GITHUB_PACKAGES_TOKEN` are present if Maven packages are required).
 
 If you need more depth on any of the above (e.g. describe a validator's implementation, or list all validator classes and priorities), tell me which area and I'll expand the notes or produce a diagram.
 
