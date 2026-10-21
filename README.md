@@ -102,11 +102,13 @@ Validators run in priority order (lower numbers first):
 | Validator | Priority | Description |
 |-----------|----------|-------------|
 | [ClaimSchemaValidator](docs/validators/claim-schema-validator.md) | 1 | JSON schema validation (patterns, types, required fields) |
+| [InquestClaimSchemaValidator](docs/validators/claim-inquest-schema-validator.md) | 1 | JSON schema validation of Inquest detail formats (non-means-tested Inquest claims only) |
 | [MandatoryFieldClaimValidator](docs/validators/claim-mandatory-field-validator.md) | 10 | Checks required fields are present (area-of-law driven) |
 | [DisbursementClaimStartDateValidator](docs/validators/claim-disbursement-start-date-validator.md) | 10 | Validates disbursements are submitted a minimum number of months after case start |
 | [UniqueFileNumberClaimValidator](docs/validators/claim-unique-file-number-validator.md) | 100 | Validates UFN format (DDMMYY/NNN) and that date is in the past |
 | [CaseDatesClaimValidator](docs/validators/claim-case-dates-validator.md) | 100 | Validates case-related dates (start, concluded, transfer, representation order) |
 | [ClientDateOfBirthClaimValidator](docs/validators/claim-client-dob-validator.md) | 100 | Validates client DOBs are sensible (not future, after 1900) |
+| [InquestClaimValidator](docs/validators/claim-inquest-validator.md) | 100 | Validates Inquest details against FSP `isInquest` and client means-tested status |
 | [DisbursementsClaimValidator](docs/validators/claim-disbursements-validator.md) | 100 | Validates disbursement VAT amounts and area-of-law limits |
 | [StageReachedClaimValidator](docs/validators/claim-stage-reached-validator.md) | 100 | Validates stage reached code by area of law using regexes |
 | [MatterTypeClaimValidator](docs/validators/claim-matter-type-validator.md) | 100 | Validates matter type code format per area of law |
@@ -172,7 +174,7 @@ example an HTTP adapter mapping a `"scope"` field of strings to codes and reject
 This project exposes configuration via Spring Boot properties (configuration properties classes) and also supports environment variable overrides. Key configurable groups and the corresponding Spring property prefixes are:
 
 - laa.dstew.payments.validator.fee-scheme-platform-api.* (Fee Scheme Platform API client)
-- laa.dstew.payments.validator.data-claims-api.* (Data Claims API client)
+- laa.dstew.payments.validator.data-claims-api.* (Data Claims API client; see the note below if you supply your own Data Claims providers)
 - laa.dstew.payments.validator.provider-details-api.* (Provider Details API client)
 - laa.dstew.payments.validator.submission.minimum-period (Submission validation minimum period)
 
@@ -251,6 +253,8 @@ Notes
 
 - Timeouts are wired via the ApiProperties implementations (`FeeSchemeApiConfig`, `DataClaimsApiConfig`, `ProviderDetailsApiConfig`).
 - `laa.dstew.payments.validator.submission.minimum-period` controls the earliest allowed submission period; it is parsed as a month-year (e.g. Jan-2018) in `SubmissionPeriodValidator`.
+- `laa.dstew.payments.validator.data-claims-api.url` is used by two default beans: `HttpClaimsDataProvider` (duplicate checks; required at startup unless you register your own `ClaimsDataProvider`) and `HttpGovernmentDepartmentProvider` (Inquest Government Department reference data; its client is created on first use). An application that omits the Data Claims API properties (e.g. the Data Claims API itself) still starts if it registers its own `ClaimsDataProvider`, but non-means-tested Inquest claims will report `TECHNICAL_ERROR_GOVERNMENT_DEPARTMENTS` until it also registers its own `GovernmentDepartmentProvider` (e.g. repository-backed) or configures the URL.
+- `HttpGovernmentDepartmentProvider` retries using the Resilience4j retry instance `dataClaimsRetry`. Configure it under `resilience4j.retry.instances.dataClaimsRetry`, otherwise Resilience4j defaults apply.
 - `laa.dstew.payments.validator.service-name` sets the value sent in the `X-Service-Name` header on all outbound HTTP calls. Defaults to `spring.application.name` when not set.
 - The project also reads some values via environment variables when used in the standalone service modules; the examples above show common overrides.
 

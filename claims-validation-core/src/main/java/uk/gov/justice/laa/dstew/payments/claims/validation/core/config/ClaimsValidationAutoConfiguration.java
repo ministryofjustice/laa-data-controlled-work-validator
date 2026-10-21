@@ -12,9 +12,11 @@ import uk.gov.justice.laa.dstew.payments.claims.validation.core.client.FeeScheme
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.client.ProviderDetailsClient;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.provider.ClaimsDataProvider;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.provider.FeeSchemeProvider;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.provider.GovernmentDepartmentProvider;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.provider.ProviderDetailsProvider;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.provider.impl.HttpClaimsDataProvider;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.provider.impl.HttpFeeSchemeProvider;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.provider.impl.HttpGovernmentDepartmentProvider;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.provider.impl.HttpProviderDetailsProvider;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.service.ValidationService;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidation;
@@ -26,6 +28,8 @@ import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.rules.DisbursementsClaimValidator;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.rules.DuplicateClaimValidator;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.rules.EffectiveCategoryOfLawClaimValidator;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.rules.InquestClaimSchemaValidator;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.rules.InquestClaimValidator;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.rules.MandatoryFieldClaimValidator;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.rules.MatterTypeClaimValidator;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.rules.OutcomeCodeClaimValidator;
@@ -133,8 +137,9 @@ public class ClaimsValidationAutoConfiguration {
    * factory) rather than being exposed as a separate bean — it is an internal implementation detail
    * of this provider and has no other consumers. Consequently, when an importing application
    * registers its own {@link ClaimsDataProvider} (e.g. a repository-backed one), this method is
-   * skipped entirely and <em>no</em> {@code WebClient} is ever configured against the Data Claims
-   * API.
+   * skipped entirely and no {@code WebClient} is configured against the Data Claims API unless the
+   * default {@link GovernmentDepartmentProvider} is used (see
+   * {@link #coreGovernmentDepartmentProvider}).
    *
    * <p>Importers that need a customised HTTP client should build and register their own
    * {@link ClaimsDataProvider}, wrapping a {@link DataClaimsClient} of their choosing.
@@ -144,6 +149,25 @@ public class ClaimsValidationAutoConfiguration {
   public ClaimsDataProvider coreClaimsDataProvider(WebClientConfig webClientConfig,
       DataClaimsApiConfig properties) {
     return new HttpClaimsDataProvider(webClientConfig.dataClaimsClient(properties));
+  }
+
+  /**
+   * HTTP-backed provider for the Government Department reference data used by Inquest validation,
+   * fetched from the Data Claims API.
+   *
+   * <p>The {@link DataClaimsClient} is created on first use rather than at startup, so an
+   * application without the Data Claims API properties still starts. Until they are configured,
+   * Inquest claims that need the departments report {@code TECHNICAL_ERROR_GOVERNMENT_DEPARTMENTS}.
+   * Applications can instead register their own {@link GovernmentDepartmentProvider} (e.g.
+   * repository-backed), which causes this method to be skipped.
+   */
+  @Bean("coreGovernmentDepartmentProvider")
+  @ConditionalOnMissingBean(GovernmentDepartmentProvider.class)
+  public GovernmentDepartmentProvider coreGovernmentDepartmentProvider(
+      WebClientConfig webClientConfig, DataClaimsApiConfig properties,
+      RetryRegistry retryRegistry) {
+    return new HttpGovernmentDepartmentProvider(
+        () -> webClientConfig.dataClaimsClient(properties), retryRegistry);
   }
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -244,6 +268,19 @@ public class ClaimsValidationAutoConfiguration {
       ProviderDetailsProvider httpProviderDetailsProvider) {
     return new EffectiveCategoryOfLawClaimValidator(httpFeeSchemeProvider,
         httpProviderDetailsProvider);
+  }
+
+  @Bean("coreInquestClaimValidator")
+  @ConditionalOnMissingBean(InquestClaimValidator.class)
+  public InquestClaimValidator coreInquestClaimValidator(
+      GovernmentDepartmentProvider governmentDepartmentProvider) {
+    return new InquestClaimValidator(governmentDepartmentProvider);
+  }
+
+  @Bean("coreInquestClaimSchemaValidator")
+  @ConditionalOnMissingBean(InquestClaimSchemaValidator.class)
+  public InquestClaimSchemaValidator coreInquestClaimSchemaValidator() {
+    return new InquestClaimSchemaValidator();
   }
 
   @Bean("coreDuplicateClaimValidator")

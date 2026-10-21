@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Inquest Detail Fields",
+  "description": "Field format rules for non-means-tested Inquest claims, applied by InquestClaimSchemaValidator. Blank values are allowed here (presence is checked by InquestClaimValidator). Applied only once the claim is identified as Inquest and the client is not means tested. Applicability, mandatory, date and Government Department rules are enforced in InquestClaimValidator.",
+  "type": "object",
+  "properties": {
+    "deceased_forename": {
+      "type": "string",
+      "pattern": "^(\\s*|[\\p{L}0-9 \\-'’&]{1,30})$",
+      "validationErrorMessages": [
+        {
+          "key": "ALL",
+          "value": "Deceased Forename must contain only letters, numbers, spaces, hyphens, apostrophes, ampersands, and be a maximum of 30 characters"
+        }
+      ]
+    },
+    "deceased_surname": {
+      "type": "string",
+      "pattern": "^(\\s*|[\\p{L}0-9 \\-'’&]{1,30})$",
+      "validationErrorMessages": [
+        {
+          "key": "ALL",
+          "value": "Deceased Surname must contain only letters, numbers, spaces, hyphens, apostrophes, ampersands, and be a maximum of 30 characters"
+        }
+      ]
+    },
+    "coroners_inquest_reference": {
+      "type": "string",
+      "pattern": "^(\\s*|[A-Za-z0-9/.\\-]{1,30})$",
+      "validationErrorMessages": [
+        {
+          "key": "ALL",
+          "value": "Coroner's Inquest Reference must contain only letters, numbers, forward slashes, hyphens, periods, and be a maximum of 30 characters"
+        }
+      ]
+    },
+    "is_client_means_tested": {},
+    "deceased_date_of_death": {},
+    "interested_departments": {}
+  },
+  "additionalProperties": false
+}

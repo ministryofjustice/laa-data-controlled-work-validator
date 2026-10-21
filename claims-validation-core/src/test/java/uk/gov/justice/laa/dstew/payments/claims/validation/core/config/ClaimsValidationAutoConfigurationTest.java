@@ -1,6 +1,7 @@
 package uk.gov.justice.laa.dstew.payments.claims.validation.core.config;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 
 import io.github.resilience4j.retry.RetryRegistry;
@@ -15,13 +16,17 @@ import org.springframework.context.annotation.Bean;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.client.DataClaimsClient;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.provider.ClaimsDataProvider;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.provider.FeeSchemeProvider;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.provider.GovernmentDepartmentProvider;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.provider.ProviderDetailsProvider;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.provider.impl.HttpClaimsDataProvider;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.provider.impl.HttpFeeSchemeProvider;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.provider.impl.HttpGovernmentDepartmentProvider;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.provider.impl.HttpProviderDetailsProvider;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.service.ValidationService;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidation;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.rules.ClaimValidator;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.rules.InquestClaimSchemaValidator;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.rules.InquestClaimValidator;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.submission.SubmissionValidation;
 import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.submission.rules.SubmissionValidator;
 
@@ -130,6 +135,22 @@ class ClaimsValidationAutoConfigurationTest {
     }
 
     @Test
+    @DisplayName("Inquest rules and schema validators are both registered")
+    void inquestValidatorsAreRegistered() {
+      contextRunner.run(ctx -> {
+        assertThat(ctx).hasSingleBean(InquestClaimValidator.class);
+        assertThat(ctx).hasSingleBean(InquestClaimSchemaValidator.class);
+      });
+    }
+
+    @Test
+    @DisplayName("GovernmentDepartmentProvider defaults to HttpGovernmentDepartmentProvider")
+    void httpGovernmentDepartmentProviderIsRegistered() {
+      contextRunner.run(ctx -> assertThat(ctx.getBean(GovernmentDepartmentProvider.class))
+          .isInstanceOf(HttpGovernmentDepartmentProvider.class));
+    }
+
+    @Test
     @DisplayName("All expected submission validators are registered")
     void allSubmissionValidatorsAreRegistered() {
       contextRunner.run(ctx -> {
@@ -196,20 +217,51 @@ class ClaimsValidationAutoConfigurationTest {
           });
     }
 
+    /** Custom GovernmentDepartmentProvider simulating a repository-backed implementation. */
+    @TestConfiguration
+    static class CustomGovernmentDepartmentProviderConfig {
+      @Bean
+      public GovernmentDepartmentProvider customGovernmentDepartmentProvider() {
+        return mock(GovernmentDepartmentProvider.class);
+      }
+    }
+
     @Test
-    @DisplayName("Custom ClaimsDataProvider allows context to start without DataClaims API properties")
-    void customClaimsDataProviderAllowsContextWithoutDataClaimsProps() {
+    @DisplayName("Custom Data Claims providers allow context to start without DataClaims API "
+        + "properties")
+    void customDataClaimsProvidersAllowContextWithoutDataClaimsProps() {
+      new ApplicationContextRunner()
+          .withConfiguration(AutoConfigurations.of(ClaimsValidationAutoConfiguration.class))
+          .withUserConfiguration(ExternalDependenciesConfig.class,
+              CustomClaimsDataProviderConfig.class, CustomGovernmentDepartmentProviderConfig.class)
+          .withPropertyValues(REQUIRED_PROPERTIES_NO_DATA_CLAIMS)
+          .run(ctx -> {
+            // Context should start even though data-claims-api properties are not provided,
+            // because the consuming application supplied both Data Claims-backed providers.
+            assertThat(ctx).hasNotFailed();
+            assertThat(ctx.getBean(ClaimsDataProvider.class))
+                .isNotInstanceOf(HttpClaimsDataProvider.class);
+            assertThat(ctx.getBean(GovernmentDepartmentProvider.class))
+                .isNotInstanceOf(HttpGovernmentDepartmentProvider.class);
+          });
+    }
+
+    @Test
+    @DisplayName("Custom ClaimsDataProvider alone starts without DataClaims API properties; the "
+        + "default GovernmentDepartmentProvider only fails when used")
+    void customClaimsDataProviderAloneStartsWithoutDataClaimsProps() {
       new ApplicationContextRunner()
           .withConfiguration(AutoConfigurations.of(ClaimsValidationAutoConfiguration.class))
           .withUserConfiguration(ExternalDependenciesConfig.class,
               CustomClaimsDataProviderConfig.class)
           .withPropertyValues(REQUIRED_PROPERTIES_NO_DATA_CLAIMS)
           .run(ctx -> {
-            // Context should start even though data-claims-api properties are not provided,
-            // because the consuming application supplied its own ClaimsDataProvider.
-            assertThat(ctx).hasSingleBean(ClaimsDataProvider.class);
-            assertThat(ctx.getBean(ClaimsDataProvider.class))
-                .isNotInstanceOf(HttpClaimsDataProvider.class);
+            assertThat(ctx).hasNotFailed();
+            GovernmentDepartmentProvider provider = ctx.getBean(GovernmentDepartmentProvider.class);
+            assertThat(provider).isInstanceOf(HttpGovernmentDepartmentProvider.class);
+            assertThatThrownBy(provider::getActiveGovernmentDepartments)
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("API URL is not configured for DataClaimsApiConfig");
           });
     }
 

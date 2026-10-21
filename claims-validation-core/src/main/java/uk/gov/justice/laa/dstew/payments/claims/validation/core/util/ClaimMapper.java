@@ -166,6 +166,7 @@ public final class ClaimMapper {
     claim.setCreatedByUserId(response.getCreatedByUserId());
     claim.setIsAmended(response.getIsAmended());
     claim.setHasAssessment(response.getHasAssessment());
+    claim.setInquestDetail(response.getInquestDetail());
 
     return claim;
   }

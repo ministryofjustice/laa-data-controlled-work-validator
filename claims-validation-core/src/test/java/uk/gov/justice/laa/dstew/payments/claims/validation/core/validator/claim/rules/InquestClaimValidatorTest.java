@@ -1,0 +1,281 @@
+package uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.rules;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Stream;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
+import org.junit.jupiter.params.provider.ValueSource;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.Claim;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.model.ValidationIssue;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidationContext;
+import uk.gov.justice.laa.dstew.payments.claims.validation.core.validator.claim.ClaimValidatorCode;
+import uk.gov.justice.laa.dstew.payments.claimsdata.model.ClaimInquestDetail;
+
+@DisplayName("Inquest claim validator")
+class InquestClaimValidatorTest {
+
+  private static final String MOJ = "Ministry of Justice";
+  private static final String CASE_START_DATE = "2026-09-10";
+
+  private InquestClaimValidator validator;
+
+  @BeforeEach
+  void setUp() {
+    validator = new InquestClaimValidator(
+        () -> List.of(MOJ, "Home Office", "Attorney General’s Office"));
+  }
+
+  private static ClaimInquestDetail validDetail() {
+    return new ClaimInquestDetail()
+        .isClientMeansTested(false)
+        .deceasedForename("Anne-Marie")
+        .deceasedSurname("O'Neil")
+        .deceasedDateOfDeath("17/05/2020")
+        .coronersInquestReference("AB/12-34.56")
+        .interestedDepartments(departments(MOJ));
+  }
+
+  private static List<String> departments(String... values) {
+    return new ArrayList<>(Arrays.asList(values));
+  }
+
+  private ClaimValidationContext validate(Boolean isInquest, ClaimInquestDetail detail) {
+    return validate(isInquest, detail, CASE_START_DATE);
+  }
+
+  private ClaimValidationContext validate(
+      Boolean isInquest, ClaimInquestDetail detail, String caseStartDate) {
+    ClaimValidationContext context = ClaimValidationContext.builder().build();
+    context.setIsInquest(isInquest);
+    validator.validate(
+        Claim.builder().caseStartDate(caseStartDate).inquestDetail(detail).build(), context);
+    return context;
+  }
+
+  private static List<String> codes(ClaimValidationContext context) {
+    return context.getIssues().stream().map(ValidationIssue::getCode).toList();
+  }
+
+  private static void assertSingleIssue(
+      ClaimValidationContext context, String code, String message, String path) {
+    assertThat(context.getIssues()).singleElement().satisfies(issue -> {
+      assertThat(issue.getCode()).isEqualTo(code);
+      assertThat(issue.getMessage()).isEqualTo(message);
+      assertThat(issue.getPath()).isEqualTo(path);
+    });
+  }
+
+  @Test
+  void metadata() {
+    assertThat(validator.getValidatorCode()).isEqualTo(ClaimValidatorCode.CLAIM_INQUEST_VALIDATOR);
+    assertThat(validator.priority()).isEqualTo(100);
+  }
+
+  @Test
+  @DisplayName("Valid non-means-tested Inquest claim passes")
+  void validClaimPasses() {
+    assertThat(validate(true, validDetail()).getIssues()).isEmpty();
+  }
+
+  @Test
+  @DisplayName("Unresolved is_inquest skips all checks")
+  void unresolvedInquestFlagSkipsChecks() {
+    assertThat(validate(null, validDetail().deceasedForename(null)).getIssues()).isEmpty();
+  }
+
+  @Test
+  @DisplayName("Non-Inquest and means-tested Inquest claims are not checked")
+  void nonApplicableClaimsSkipped() {
+    ClaimInquestDetail invalid = validDetail().deceasedForename(null).interestedDepartments(null);
+
+    assertThat(validate(false, invalid).getIssues()).isEmpty();
+    assertThat(validate(false, null).getIssues()).isEmpty();
+    assertThat(validate(true, invalid.isClientMeansTested(true)).getIssues()).isEmpty();
+  }
+
+  @Test
+  @DisplayName("Inquest claim without means-tested value produces only the required error")
+  void meansTestedRequired() {
+    assertSingleIssue(validate(true, validDetail().isClientMeansTested(null)),
+        "INQUEST_CLIENT_MEANS_TESTED_REQUIRED",
+        "Client Means Tested is required for Inquest claims",
+        "inquest_detail.is_client_means_tested");
+    assertThat(codes(validate(true, new ClaimInquestDetail())))
+        .containsExactly("INQUEST_CLIENT_MEANS_TESTED_REQUIRED");
+  }
+
+  @Test
+  @DisplayName("Inquest claim with no Inquest detail supplied is not checked")
+  void nullInquestDetailSkipped() {
+    assertThat(validate(true, null).getIssues()).isEmpty();
+  }
+
+  // ─── Mandatory fields ─────────────────────────────────────────────────────
+
+  @Nested
+  @DisplayName("Mandatory fields")
+  class MandatoryFields {
+
+    @ParameterizedTest(name = "[{index}] \"{0}\"")
+    @NullAndEmptySource
+    @ValueSource(strings = {" ", "\t"})
+    @DisplayName("Absent forename, surname or date of death are each rejected")
+    void absentFieldsRejected(String value) {
+      assertSingleIssue(validate(true, validDetail().deceasedForename(value)),
+          "INQUEST_DECEASED_FORENAME_REQUIRED",
+          "Deceased Forename is required for non-means-tested Inquest claims",
+          "inquest_detail.deceased_forename");
+      assertSingleIssue(validate(true, validDetail().deceasedSurname(value)),
+          "INQUEST_DECEASED_SURNAME_REQUIRED",
+          "Deceased Surname is required for non-means-tested Inquest claims",
+          "inquest_detail.deceased_surname");
+      assertSingleIssue(validate(true, validDetail().deceasedDateOfDeath(value)),
+          "INQUEST_DATE_OF_DEATH_REQUIRED",
+          "Deceased Date of Death is required for non-means-tested Inquest claims",
+          "inquest_detail.deceased_date_of_death");
+    }
+
+    static Stream<List<String>> absentDepartments() {
+      return Stream.of(null, departments(), departments((String) null),
+          departments("", "  "), new ArrayList<>(Collections.nCopies(10, " ")));
+    }
+
+    @ParameterizedTest(name = "[{index}] {0}")
+    @MethodSource("absentDepartments")
+    @DisplayName("All Department occurrences absent is rejected")
+    void absentDepartmentsRejected(List<String> value) {
+      assertSingleIssue(validate(true, validDetail().interestedDepartments(value)),
+          "INQUEST_GOVERNMENT_DEPARTMENT_REQUIRED",
+          "At least one Government Department is required for non-means-tested Inquest claims",
+          "inquest_detail.interested_departments");
+    }
+  }
+
+  // ─── Date of death ────────────────────────────────────────────────────────
+
+  @Nested
+  @DisplayName("Date of death")
+  class DateOfDeath {
+
+    @ParameterizedTest(name = "[{index}] {0}")
+    @ValueSource(strings = {"01/01/1900", "10/09/2026"})
+    @DisplayName("Boundary dates pass")
+    void inRange(String dateOfDeath) {
+      assertThat(validate(true, validDetail().deceasedDateOfDeath(dateOfDeath)).getIssues())
+          .isEmpty();
+    }
+
+    @ParameterizedTest(name = "[{index}] {0}")
+    @ValueSource(strings = {"31/12/1899", "11/09/2026"})
+    @DisplayName("Dates outside 01/01/1900 to the case start date are rejected")
+    void outOfRange(String dateOfDeath) {
+      assertSingleIssue(validate(true, validDetail().deceasedDateOfDeath(dateOfDeath)),
+          "INQUEST_DATE_OF_DEATH_OUT_OF_RANGE",
+          "Deceased Date of Death must be between 01/01/1900 and the Case Start Date, inclusive",
+          "inquest_detail.deceased_date_of_death");
+    }
+
+    @ParameterizedTest(name = "[{index}] {0}")
+    @ValueSource(strings = {"31/02/2026", "01/13/2026", "1/5/2020", "not-a-date", "2020-12-31"})
+    @DisplayName("Unparseable, impossible, unpadded or ISO dates are rejected")
+    void invalidDate(String dateOfDeath) {
+      assertSingleIssue(validate(true, validDetail().deceasedDateOfDeath(dateOfDeath)),
+          "INQUEST_DATE_OF_DEATH_INVALID", "Deceased Date of Death must be a valid date",
+          "inquest_detail.deceased_date_of_death");
+    }
+
+    @ParameterizedTest(name = "[{index}] case start \"{0}\"")
+    @NullAndEmptySource
+    @ValueSource(strings = {"2026-02-30", "10/09/2026"})
+    @DisplayName("Missing or invalid case start date skips the range check")
+    void missingOrInvalidCaseStartDate(String caseStartDate) {
+      assertThat(validate(true, validDetail().deceasedDateOfDeath("01/01/1800"), caseStartDate)
+          .getIssues()).isEmpty();
+    }
+  }
+
+  // ─── Government Departments ───────────────────────────────────────────────
+
+  @Nested
+  @DisplayName("Government Departments")
+  class GovernmentDepartments {
+
+    @Test
+    @DisplayName("Provider failure produces a technical error instead of propagating")
+    void providerFailureProducesTechnicalError() {
+      validator = new InquestClaimValidator(() -> {
+        throw new IllegalStateException("Data Claims API unavailable");
+      });
+
+      ClaimValidationContext context = validate(true, validDetail());
+
+      assertSingleIssue(context, "TECHNICAL_ERROR_GOVERNMENT_DEPARTMENTS",
+          "A technical error occurred, please try again after some time",
+          "inquest_detail.interested_departments");
+      assertThat(context.getIssues().getFirst().getTechnicalMessage())
+          .isEqualTo("Data Claims API unavailable");
+    }
+
+    @ParameterizedTest(name = "[{index}] \"{0}\"")
+    @ValueSource(strings = {"ministry   OF JUSTICE", " Ministry of Justice ",
+        "Attorney General's Office", "Attorney General’s Office"})
+    @DisplayName("Names match after normalising whitespace, apostrophes and case")
+    void normalisedMatch(String name) {
+      assertThat(validate(true, validDetail().interestedDepartments(departments(name)))
+          .getIssues()).isEmpty();
+    }
+
+    @ParameterizedTest(name = "[{index}] \"{0}\"")
+    @ValueSource(strings = {"MOJ", "Ministry", "Ministry of Magic", "Ministry of Defence"})
+    @DisplayName("Codes, partial, unknown and inactive names are rejected")
+    void unknownNamesRejected(String name) {
+      assertSingleIssue(validate(true, validDetail().interestedDepartments(departments(name))),
+          "INQUEST_GOVERNMENT_DEPARTMENT_UNKNOWN",
+          "Government Department 1 must match an active Government Department name",
+          "inquest_detail.interested_departments[0]");
+    }
+
+    @Test
+    @DisplayName("Unknown name reports its one-based position in the supplied list")
+    void reportsPositionInSuppliedList() {
+      ClaimValidationContext context = validate(true,
+          validDetail().interestedDepartments(departments(" ", MOJ, "Unknown")));
+
+      assertSingleIssue(context, "INQUEST_GOVERNMENT_DEPARTMENT_UNKNOWN",
+          "Government Department 3 must match an active Government Department name",
+          "inquest_detail.interested_departments[2]");
+    }
+
+    @Test
+    @DisplayName("Blank slot 1 with populated slots 2 and 3 passes")
+    void blankFirstSlotPasses() {
+      assertThat(validate(true,
+          validDetail().interestedDepartments(departments("", MOJ, "Home Office")))
+          .getIssues()).isEmpty();
+    }
+
+    @Test
+    @DisplayName("10 occurrences (including repetitions) pass; 11 are rejected")
+    void maximumOccurrences() {
+      assertThat(validate(true, validDetail()
+          .interestedDepartments(new ArrayList<>(Collections.nCopies(10, MOJ)))).getIssues())
+          .isEmpty();
+
+      assertSingleIssue(validate(true, validDetail()
+              .interestedDepartments(new ArrayList<>(Collections.nCopies(11, MOJ)))),
+          "INQUEST_GOVERNMENT_DEPARTMENT_TOO_MANY",
+          "A maximum of 10 Government Department occurrences can be supplied for a claim",
+          "inquest_detail.interested_departments");
+    }
+  }
+}
