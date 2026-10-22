@@ -113,6 +113,8 @@ class DuplicateClaimLegalHelpValidationServiceStrategyTest
               SubmissionStatus.CREATED,
               SubmissionStatus.VALIDATION_IN_PROGRESS,
               SubmissionStatus.READY_FOR_VALIDATION,
+              SubmissionStatus.READY_FOR_FINAL_VALIDATION,
+              SubmissionStatus.FINAL_VALIDATION_IN_PROGRESS,
               SubmissionStatus.VALIDATION_SUCCEEDED,
               SubmissionStatus.VALIDATED_PENDING_APPROVAL),
           submissionStatusArgumentCaptor.getValue());

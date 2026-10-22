@@ -103,6 +103,8 @@ class DuplicateSubmissionValidatorEndToEndTest {
           "CREATED",
           "READY_FOR_VALIDATION",
           "VALIDATION_IN_PROGRESS",
+          "READY_FOR_FINAL_VALIDATION",
+          "FINAL_VALIDATION_IN_PROGRESS",
           "VALIDATION_SUCCEEDED"
         })
     void olderLiveSubmissionBlocks(final SubmissionStatus status) {

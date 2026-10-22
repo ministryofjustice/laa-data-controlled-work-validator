@@ -36,7 +36,8 @@ when:
 
 - its **claim status** is `READY_TO_PROCESS`, `VALID`, or `VALIDATED_PENDING_APPROVAL`, and
 - its parent **submission status** is one of `CREATED`, `VALIDATION_IN_PROGRESS`,
-  `READY_FOR_VALIDATION`, `VALIDATION_SUCCEEDED`, or `VALIDATED_PENDING_APPROVAL`.
+  `READY_FOR_VALIDATION`, `READY_FOR_FINAL_VALIDATION`, `FINAL_VALIDATION_IN_PROGRESS`,
+  `VALIDATION_SUCCEEDED`, or `VALIDATED_PENDING_APPROVAL`.
 
 Claims in any other status (e.g. `INVALID`, void) are ignored.
 
@@ -211,7 +212,7 @@ When the validator needs stored claims it calls the Data Claims API (`getClaims`
 |---|---|
 | Office account number | The claim's office |
 | Submission id | The claim's own submission (same‑submission check) / omitted (previous‑submission check) |
-| Submission statuses | `CREATED`, `VALIDATION_IN_PROGRESS`, `READY_FOR_VALIDATION`, `VALIDATION_SUCCEEDED`, `VALIDATED_PENDING_APPROVAL` |
+| Submission statuses | `CREATED`, `VALIDATION_IN_PROGRESS`, `READY_FOR_VALIDATION`, `READY_FOR_FINAL_VALIDATION`, `FINAL_VALIDATION_IN_PROGRESS`, `VALIDATION_SUCCEEDED`, `VALIDATED_PENDING_APPROVAL` |
 | Fee code | The claim's fee code |
 | Unique File Number | The claim's UFN |
 | Unique Client Number | The claim's UCN for **Legal Help**; **omitted (null)** for **Crime Lower** |

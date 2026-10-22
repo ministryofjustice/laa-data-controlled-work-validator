@@ -8,7 +8,7 @@ How it works
 
 - Reads the `SubmissionResponse.getStatus()` and writes context/log messages based on the status value.
 - Handles several cases:
-  - `VALIDATION_IN_PROGRESS`: logs that validation is already running for the submission.
+  - `VALIDATION_IN_PROGRESS` or `FINAL_VALIDATION_IN_PROGRESS`: logs that validation is already running for the submission.
   - `READY_FOR_VALIDATION`: logs that validation will start (status transition is handled by the caller/service layer).
   - `null`: adds `SUBMISSION_STATUS_IS_NULL` validation issue to the context.
   - any other unexpected state: logs and adds `INCORRECT_SUBMISSION_STATUS_FOR_VALIDATION` with the current status.
