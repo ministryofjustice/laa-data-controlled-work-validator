@@ -90,7 +90,7 @@ class SubmissionSchemaValidatorTest {
   @EnumSource(
       value = SubmissionStatus.class,
       names = {"READY_FOR_FINAL_VALIDATION", "FINAL_VALIDATION_IN_PROGRESS"})
-  @DisplayName("Should accept final-validation submission statuses")
+  @DisplayName("Should accept final validation submission statuses")
   void shouldAcceptFinalValidationSubmissionStatuses(SubmissionStatus status) {
     SubmissionValidationContext submissionValidationContext =
         validate(baseBuilder().status(status).build());
